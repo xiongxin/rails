@@ -1,0 +1,3031 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <title>Active Record Migrations - Rails 指南</title>
+    <meta name="viewport" content="width=device-width" />
+
+    <link rel="stylesheet" href="http://cdn.staticfile.org/twitter-bootstrap/3.1.1/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="http://docs-china.com/rails//styles/docs.css" />
+</head>
+<body>
+    <a class="sr-only" href="#content">跳到正文</a>
+
+    <nav class="navbar navbar-static-top docs-nav" id="top">
+        <div class="container">
+            <div class="navbar-header">
+                <a href="http://docs-china.com" class="navbar-brand" title="回到首页">&larr; Docs China</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="header" role="banner">
+        <div class="container">
+            <h1 class="logo"><a href="http://docs-china.com/rails//" title="Rails 指南">Rails 指南</a></h1>
+            
+            <iframe src="http://ghbtns.com/github-btn.html?user=docs-china&repo=rails&type=fork&count=false"
+  allowtransparency="true" frameborder="0" scrolling="0" width="62" height="20"></iframe>
+            
+        </div>
+    </header>
+
+    <div id="content" class="content" role="main">
+        <div class="container">
+            <div class="row">
+                <main class="main col-sm-9 col-md-9">
+                    <article class="entry">
+                        <h1>Active Record Migrations</h1>
+                        <p>Migrations are a feature of Active Record that allows you to evolve your
+database schema over time. Rather than write schema modifications in pure SQL,
+migrations allow you to use an easy Ruby DSL to describe changes to your
+tables.</p>
+
+<p>After reading this guide, you will know:</p>
+
+<ul>
+  <li>The generators you can use to create them.</li>
+  <li>The methods Active Record provides to manipulate your database.</li>
+  <li>The Rake tasks that manipulate migrations and your schema.</li>
+  <li>How migrations relate to <code>schema.rb</code>.</li>
+</ul>
+
+<hr />
+
+<h2>Migration Overview</h2>
+
+<p>Migrations are a convenient way to alter your database schema over time in a
+consistent and easy way. They use a Ruby DSL so that you don’t have to write
+SQL by hand, allowing your schema and changes to be database independent.</p>
+
+<p>You can think of each migration as being a new ‘version’ of the database. A
+schema starts off with nothing in it, and each migration modifies it to add or
+remove tables, columns, or entries. Active Record knows how to update your
+schema along this timeline, bringing it from whatever point it is in the
+history to the latest version. Active Record will also update your
+<code>db/schema.rb</code> file to match the up-to-date structure of your database.</p>
+
+<p>Here’s an example of a migration:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">CreateProducts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_table</span> <span class="ss">:products</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:name</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">text</span> <span class="ss">:description</span>
+
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>This migration adds a table called <code>products</code> with a string column called
+<code>name</code> and a text column called <code>description</code>. A primary key column called <code>id</code>
+will also be added implicitly, as it’s the default primary key for all Active
+Record models. The <code>timestamps</code> macro adds two columns, <code>created_at</code> and
+<code>updated_at</code>. These special columns are automatically managed by Active Record
+if they exist.</p>
+
+<p>Note that we define the change that we want to happen moving forward in time.
+Before this migration is run, there will be no table. After, the table will
+exist. Active Record knows how to reverse this migration as well: if we roll
+this migration back, it will remove the table.</p>
+
+<p>On databases that support transactions with statements that change the schema,
+migrations are wrapped in a transaction. If the database does not support this
+then when a migration fails the parts of it that succeeded will not be rolled
+back. You will have to rollback the changes that were made by hand.</p>
+
+<p>NOTE: There are certain queries that can’t run inside a transaction. If your
+adapter supports DDL transactions you can use <code>disable_ddl_transaction!</code> to
+disable them for a single migration.</p>
+
+<p>If you wish for a migration to do something that Active Record doesn’t know how
+to reverse, you can use <code>reversible</code>:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">ChangeProductsPrice</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">reversible</span> <span class="k">do</span> <span class="o">|</span><span class="n">dir</span><span class="o">|</span>
+      <span class="n">change_table</span> <span class="ss">:products</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+        <span class="n">dir</span><span class="p">.</span><span class="nf">up</span>   <span class="p">{</span> <span class="n">t</span><span class="p">.</span><span class="nf">change</span> <span class="ss">:price</span><span class="p">,</span> <span class="ss">:string</span> <span class="p">}</span>
+        <span class="n">dir</span><span class="p">.</span><span class="nf">down</span> <span class="p">{</span> <span class="n">t</span><span class="p">.</span><span class="nf">change</span> <span class="ss">:price</span><span class="p">,</span> <span class="ss">:integer</span> <span class="p">}</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>Alternatively, you can use <code>up</code> and <code>down</code> instead of <code>change</code>:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">ChangeProductsPrice</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
+  <span class="k">def</span> <span class="nf">up</span>
+    <span class="n">change_table</span> <span class="ss">:products</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">change</span> <span class="ss">:price</span><span class="p">,</span> <span class="ss">:string</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">down</span>
+    <span class="n">change_table</span> <span class="ss">:products</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">change</span> <span class="ss">:price</span><span class="p">,</span> <span class="ss">:integer</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<h2>Creating a Migration</h2>
+
+<h3>Creating a Standalone Migration</h3>
+
+<p>Migrations are stored as files in the <code>db/migrate</code> directory, one for each
+migration class. The name of the file is of the form
+<code>YYYYMMDDHHMMSS_create_products.rb</code>, that is to say a UTC timestamp
+identifying the migration followed by an underscore followed by the name
+of the migration. The name of the migration class (CamelCased version)
+should match the latter part of the file name. For example
+<code>20080906120000_create_products.rb</code> should define class <code>CreateProducts</code> and
+<code>20080906120001_add_details_to_products.rb</code> should define
+<code>AddDetailsToProducts</code>. Rails uses this timestamp to determine which migration
+should be run and in what order, so if you’re copying a migration from another
+application or generate a file yourself, be aware of its position in the order.</p>
+
+<p>Of course, calculating timestamps is no fun, so Active Record provides a
+generator to handle making it for you:</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails generate migration AddPartNumberToProducts
+</pre>
+
+</div>
+<p>This will create an empty but appropriately named migration:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">AddPartNumberToProducts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
+  <span class="k">def</span> <span class="nf">change</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>If the migration name is of the form “AddXXXToYYY” or “RemoveXXXFromYYY” and is
+followed by a list of column names and types then a migration containing the
+appropriate <code>add_column</code> and <code>remove_column</code> statements will be created.</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails generate migration AddPartNumberToProducts part_number:string
+</pre>
+
+</div>
+<p>will generate</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">AddPartNumberToProducts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">add_column</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:part_number</span><span class="p">,</span> <span class="ss">:string</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>If you’d like to add an index on the new column, you can do that as well:</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails generate migration AddPartNumberToProducts part_number:string:index
+</pre>
+
+</div>
+<p>will generate</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">AddPartNumberToProducts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">add_column</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:part_number</span><span class="p">,</span> <span class="ss">:string</span>
+    <span class="n">add_index</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:part_number</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>Similarly, you can generate a migration to remove a column from the command line:</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails generate migration RemovePartNumberFromProducts part_number:string
+</pre>
+
+</div>
+<p>generates</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">RemovePartNumberFromProducts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">remove_column</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:part_number</span><span class="p">,</span> <span class="ss">:string</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>You are not limited to one magically generated column. For example:</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails generate migration AddDetailsToProducts part_number:string price:decimal
+</pre>
+
+</div>
+<p>generates</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">AddDetailsToProducts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">add_column</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:part_number</span><span class="p">,</span> <span class="ss">:string</span>
+    <span class="n">add_column</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:price</span><span class="p">,</span> <span class="ss">:decimal</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>If the migration name is of the form “CreateXXX” and is
+followed by a list of column names and types then a migration creating the table
+XXX with the columns listed will be generated. For example:</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails generate migration CreateProducts name:string part_number:string
+</pre>
+
+</div>
+<p>generates</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">CreateProducts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_table</span> <span class="ss">:products</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:name</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:part_number</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>As always, what has been generated for you is just a starting point. You can add
+or remove from it as you see fit by editing the
+<code>db/migrate/YYYYMMDDHHMMSS_add_details_to_products.rb</code> file.</p>
+
+<p>Also, the generator accepts column type as <code>references</code>(also available as
+<code>belongs_to</code>). For instance:</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails generate migration AddUserRefToProducts user:references
+</pre>
+
+</div>
+<p>generates</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">AddUserRefToProducts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">add_reference</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:user</span><span class="p">,</span> <span class="ss">index: </span><span class="kp">true</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>This migration will create a <code>user_id</code> column and appropriate index.</p>
+
+<p>There is also a generator which will produce join tables if <code>JoinTable</code> is part of the name:</p>
+
+<div class="codeblock bash"><pre class="highlight">rails g migration CreateJoinTableCustomerProduct customer product
+</pre>
+
+</div>
+<p>will produce the following migration:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">CreateJoinTableCustomerProduct</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_join_table</span> <span class="ss">:customers</span><span class="p">,</span> <span class="ss">:products</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="c1"># t.index [:customer_id, :product_id]</span>
+      <span class="c1"># t.index [:product_id, :customer_id]</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<h3>Model Generators</h3>
+
+<p>The model and scaffold generators will create migrations appropriate for adding
+a new model. This migration will already contain instructions for creating the
+relevant table. If you tell Rails what columns you want, then statements for
+adding these columns will also be created. For example, running:</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails generate model Product name:string description:text
+</pre>
+
+</div>
+<p>will create a migration that looks like this</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">CreateProducts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_table</span> <span class="ss">:products</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:name</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">text</span> <span class="ss">:description</span>
+
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>You can append as many column name/type pairs as you want.</p>
+
+<h3>Supported Type Modifiers</h3>
+
+<p>You can also specify some options just after the field type between curly
+braces. You can use the following modifiers:</p>
+
+<ul>
+  <li><code>limit</code>        Sets the maximum size of the <code>string/text/binary/integer</code> fields.</li>
+  <li><code>precision</code>    Defines the precision for the <code>decimal</code> fields, representing the total number of digits in the number.</li>
+  <li><code>scale</code>        Defines the scale for the <code>decimal</code> fields, representing the number of digits after the decimal point.</li>
+  <li><code>polymorphic</code>  Adds a <code>type</code> column for <code>belongs_to</code> associations.</li>
+  <li><code>null</code>         Allows or disallows <code>NULL</code> values in the column.</li>
+</ul>
+
+<p>For instance, running:</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails generate migration AddDetailsToProducts <span class="s1">'price:decimal{5,2}'</span> supplier:references<span class="o">{</span>polymorphic<span class="o">}</span>
+</pre>
+
+</div>
+<p>will produce a migration that looks like this</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">AddDetailsToProducts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">add_column</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:price</span><span class="p">,</span> <span class="ss">:decimal</span><span class="p">,</span> <span class="ss">precision: </span><span class="mi">5</span><span class="p">,</span> <span class="ss">scale: </span><span class="mi">2</span>
+    <span class="n">add_reference</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:supplier</span><span class="p">,</span> <span class="ss">polymorphic: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">index: </span><span class="kp">true</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<h2>Writing a Migration</h2>
+
+<p>Once you have created your migration using one of the generators it’s time to
+get to work!</p>
+
+<h3>Creating a Table</h3>
+
+<p>The <code>create_table</code> method is one of the most fundamental, but most of the time,
+will be generated for you from using a model or scaffold generator. A typical
+use would be</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">create_table</span> <span class="ss">:products</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:name</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>which creates a <code>products</code> table with a column called <code>name</code> (and as discussed
+below, an implicit <code>id</code> column).</p>
+
+<p>By default, <code>create_table</code> will create a primary key called <code>id</code>. You can change
+the name of the primary key with the <code>:primary_key</code> option (don’t forget to
+update the corresponding model) or, if you don’t want a primary key at all, you
+can pass the option <code>id: false</code>. If you need to pass database specific options
+you can place an SQL fragment in the <code>:options</code> option. For example:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">create_table</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">options: </span><span class="s2">"ENGINE=BLACKHOLE"</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>will append <code>ENGINE=BLACKHOLE</code> to the SQL statement used to create the table
+(when using MySQL, the default is <code>ENGINE=InnoDB</code>).</p>
+
+<h3>Creating a Join Table</h3>
+
+<p>Migration method <code>create_join_table</code> creates a HABTM join table. A typical use
+would be:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">create_join_table</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:categories</span>
+</pre>
+
+</div>
+<p>which creates a <code>categories_products</code> table with two columns called
+<code>category_id</code> and <code>product_id</code>. These columns have the option <code>:null</code> set to
+<code>false</code> by default. This can be overridden by specifying the <code>:column_options</code>
+option.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">create_join_table</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:categories</span><span class="p">,</span> <span class="ss">column_options: </span><span class="p">{</span><span class="ss">null: </span><span class="kp">true</span><span class="p">}</span>
+</pre>
+
+</div>
+<p>will create the <code>product_id</code> and <code>category_id</code> with the <code>:null</code> option as
+<code>true</code>.</p>
+
+<p>You can pass the option <code>:table_name</code> when you want to customize the table
+name. For example:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">create_join_table</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:categories</span><span class="p">,</span> <span class="ss">table_name: :categorization</span>
+</pre>
+
+</div>
+<p>will create a <code>categorization</code> table.</p>
+
+<p><code>create_join_table</code> also accepts a block, which you can use to add indices
+(which are not created by default) or additional columns:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">create_join_table</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:categories</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">index</span> <span class="ss">:product_id</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">index</span> <span class="ss">:category_id</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<h3>Changing Tables</h3>
+
+<p>A close cousin of <code>create_table</code> is <code>change_table</code>, used for changing existing
+tables. It is used in a similar fashion to <code>create_table</code> but the object
+yielded to the block knows more tricks. For example:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">change_table</span> <span class="ss">:products</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">remove</span> <span class="ss">:description</span><span class="p">,</span> <span class="ss">:name</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:part_number</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">index</span> <span class="ss">:part_number</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">rename</span> <span class="ss">:upccode</span><span class="p">,</span> <span class="ss">:upc_code</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>removes the <code>description</code> and <code>name</code> columns, creates a <code>part_number</code> string
+column and adds an index on it. Finally it renames the <code>upccode</code> column.</p>
+
+<h3>When Helpers aren’t Enough</h3>
+
+<p>If the helpers provided by Active Record aren’t enough you can use the <code>execute</code>
+method to execute arbitrary SQL:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="no">Product</span><span class="p">.</span><span class="nf">connection</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="s1">'UPDATE `products` SET `price`=`free` WHERE 1'</span><span class="p">)</span>
+</pre>
+
+</div>
+<p>For more details and examples of individual methods, check the API documentation.
+In particular the documentation for
+<a href="http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html"><code>ActiveRecord::ConnectionAdapters::SchemaStatements</code></a>
+(which provides the methods available in the <code>change</code>, <code>up</code> and <code>down</code> methods),
+<a href="http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/TableDefinition.html"><code>ActiveRecord::ConnectionAdapters::TableDefinition</code></a>
+(which provides the methods available on the object yielded by <code>create_table</code>)
+and
+<a href="http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/Table.html"><code>ActiveRecord::ConnectionAdapters::Table</code></a>
+(which provides the methods available on the object yielded by <code>change_table</code>).</p>
+
+<h3>Using the <code>change</code> Method</h3>
+
+<p>The <code>change</code> method is the primary way of writing migrations. It works for the
+majority of cases, where Active Record knows how to reverse the migration
+automatically. Currently, the <code>change</code> method supports only these migration
+definitions:</p>
+
+<ul>
+  <li><code>add_column</code></li>
+  <li><code>add_index</code></li>
+  <li><code>add_reference</code></li>
+  <li><code>add_timestamps</code></li>
+  <li><code>create_table</code></li>
+  <li><code>create_join_table</code></li>
+  <li><code>drop_table</code> (must supply a block)</li>
+  <li><code>drop_join_table</code> (must supply a block)</li>
+  <li><code>remove_timestamps</code></li>
+  <li><code>rename_column</code></li>
+  <li><code>rename_index</code></li>
+  <li><code>remove_reference</code></li>
+  <li><code>rename_table</code></li>
+</ul>
+
+<p><code>change_table</code> is also reversible, as long as the block does not call <code>change</code>,
+<code>change_default</code> or <code>remove</code>.</p>
+
+<p>If you’re going to need to use any other methods, you should use <code>reversible</code>
+or write the <code>up</code> and <code>down</code> methods instead of using the <code>change</code> method.</p>
+
+<h3>Using <code>reversible</code></h3>
+
+<p>Complex migrations may require processing that Active Record doesn’t know how
+to reverse. You can use <code>reversible</code> to specify what to do when running a
+migration what else to do when reverting it. For example:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">ExampleMigration</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_table</span> <span class="ss">:products</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">references</span> <span class="ss">:category</span>
+    <span class="k">end</span>
+
+    <span class="n">reversible</span> <span class="k">do</span> <span class="o">|</span><span class="n">dir</span><span class="o">|</span>
+      <span class="n">dir</span><span class="p">.</span><span class="nf">up</span> <span class="k">do</span>
+        <span class="c1">#add a foreign key</span>
+        <span class="n">execute</span> <span class="o">&lt;&lt;-</span><span class="no">SQL</span><span class="sh">
+          ALTER TABLE products
+            ADD CONSTRAINT fk_products_categories
+            FOREIGN KEY (category_id)
+            REFERENCES categories(id)
+</span><span class="no">        SQL</span>
+      <span class="k">end</span>
+      <span class="n">dir</span><span class="p">.</span><span class="nf">down</span> <span class="k">do</span>
+        <span class="n">execute</span> <span class="o">&lt;&lt;-</span><span class="no">SQL</span><span class="sh">
+          ALTER TABLE products
+            DROP FOREIGN KEY fk_products_categories
+</span><span class="no">        SQL</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+
+    <span class="n">add_column</span> <span class="ss">:users</span><span class="p">,</span> <span class="ss">:home_page_url</span><span class="p">,</span> <span class="ss">:string</span>
+    <span class="n">rename_column</span> <span class="ss">:users</span><span class="p">,</span> <span class="ss">:email</span><span class="p">,</span> <span class="ss">:email_address</span>
+  <span class="k">end</span>
+</pre>
+
+</div>
+<p>Using <code>reversible</code> will ensure that the instructions are executed in the
+right order too. If the previous example migration is reverted,
+the <code>down</code> block will be run after the <code>home_page_url</code> column is removed and
+right before the table <code>products</code> is dropped.</p>
+
+<p>Sometimes your migration will do something which is just plain irreversible; for
+example, it might destroy some data. In such cases, you can raise
+<code>ActiveRecord::IrreversibleMigration</code> in your <code>down</code> block. If someone tries
+to revert your migration, an error message will be displayed saying that it
+can’t be done.</p>
+
+<h3>Using the <code>up</code>/<code>down</code> Methods</h3>
+
+<p>You can also use the old style of migration using <code>up</code> and <code>down</code> methods
+instead of the <code>change</code> method.
+The <code>up</code> method should describe the transformation you’d like to make to your
+schema, and the <code>down</code> method of your migration should revert the
+transformations done by the <code>up</code> method. In other words, the database schema
+should be unchanged if you do an <code>up</code> followed by a <code>down</code>. For example, if you
+create a table in the <code>up</code> method, you should drop it in the <code>down</code> method. It
+is wise to reverse the transformations in precisely the reverse order they were
+made in the <code>up</code> method. The example in the <code>reversible</code> section is equivalent to:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">ExampleMigration</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
+  <span class="k">def</span> <span class="nf">up</span>
+    <span class="n">create_table</span> <span class="ss">:products</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">references</span> <span class="ss">:category</span>
+    <span class="k">end</span>
+
+    <span class="c1"># add a foreign key</span>
+    <span class="n">execute</span> <span class="o">&lt;&lt;-</span><span class="no">SQL</span><span class="sh">
+      ALTER TABLE products
+        ADD CONSTRAINT fk_products_categories
+        FOREIGN KEY (category_id)
+        REFERENCES categories(id)
+</span><span class="no">    SQL</span>
+
+    <span class="n">add_column</span> <span class="ss">:users</span><span class="p">,</span> <span class="ss">:home_page_url</span><span class="p">,</span> <span class="ss">:string</span>
+    <span class="n">rename_column</span> <span class="ss">:users</span><span class="p">,</span> <span class="ss">:email</span><span class="p">,</span> <span class="ss">:email_address</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">down</span>
+    <span class="n">rename_column</span> <span class="ss">:users</span><span class="p">,</span> <span class="ss">:email_address</span><span class="p">,</span> <span class="ss">:email</span>
+    <span class="n">remove_column</span> <span class="ss">:users</span><span class="p">,</span> <span class="ss">:home_page_url</span>
+
+    <span class="n">execute</span> <span class="o">&lt;&lt;-</span><span class="no">SQL</span><span class="sh">
+      ALTER TABLE products
+        DROP FOREIGN KEY fk_products_categories
+</span><span class="no">    SQL</span>
+
+    <span class="n">drop_table</span> <span class="ss">:products</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>If your migration is irreversible, you should raise
+<code>ActiveRecord::IrreversibleMigration</code> from your <code>down</code> method. If someone tries
+to revert your migration, an error message will be displayed saying that it
+can’t be done.</p>
+
+<h3>Reverting Previous Migrations</h3>
+
+<p>You can use Active Record’s ability to rollback migrations using the <code>revert</code> method:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">require_relative</span> <span class="s1">'2012121212_example_migration'</span>
+
+<span class="k">class</span> <span class="nc">FixupExampleMigration</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">revert</span> <span class="no">ExampleMigration</span>
+
+    <span class="n">create_table</span><span class="p">(</span><span class="ss">:apples</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:variety</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>The <code>revert</code> method also accepts a block of instructions to reverse.
+This could be useful to revert selected parts of previous migrations.
+For example, let’s imagine that <code>ExampleMigration</code> is committed and it
+is later decided it would be best to serialize the product list instead.
+One could write:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">SerializeProductListMigration</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">add_column</span> <span class="ss">:categories</span><span class="p">,</span> <span class="ss">:product_list</span>
+
+    <span class="n">reversible</span> <span class="k">do</span> <span class="o">|</span><span class="n">dir</span><span class="o">|</span>
+      <span class="n">dir</span><span class="p">.</span><span class="nf">up</span> <span class="k">do</span>
+        <span class="c1"># transfer data from Products to Category#product_list</span>
+      <span class="k">end</span>
+      <span class="n">dir</span><span class="p">.</span><span class="nf">down</span> <span class="k">do</span>
+        <span class="c1"># create Products from Category#product_list</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+
+    <span class="n">revert</span> <span class="k">do</span>
+      <span class="c1"># copy-pasted code from ExampleMigration</span>
+      <span class="n">create_table</span> <span class="ss">:products</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+        <span class="n">t</span><span class="p">.</span><span class="nf">references</span> <span class="ss">:category</span>
+      <span class="k">end</span>
+
+      <span class="n">reversible</span> <span class="k">do</span> <span class="o">|</span><span class="n">dir</span><span class="o">|</span>
+        <span class="n">dir</span><span class="p">.</span><span class="nf">up</span> <span class="k">do</span>
+          <span class="c1">#add a foreign key</span>
+          <span class="n">execute</span> <span class="o">&lt;&lt;-</span><span class="no">SQL</span><span class="sh">
+            ALTER TABLE products
+              ADD CONSTRAINT fk_products_categories
+              FOREIGN KEY (category_id)
+              REFERENCES categories(id)
+</span><span class="no">          SQL</span>
+        <span class="k">end</span>
+        <span class="n">dir</span><span class="p">.</span><span class="nf">down</span> <span class="k">do</span>
+          <span class="n">execute</span> <span class="o">&lt;&lt;-</span><span class="no">SQL</span><span class="sh">
+            ALTER TABLE products
+              DROP FOREIGN KEY fk_products_categories
+</span><span class="no">          SQL</span>
+        <span class="k">end</span>
+      <span class="k">end</span>
+
+      <span class="c1"># The rest of the migration was ok</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>The same migration could also have been written without using <code>revert</code>
+but this would have involved a few more steps: reversing the order
+of <code>create_table</code> and <code>reversible</code>, replacing <code>create_table</code>
+by <code>drop_table</code>, and finally replacing <code>up</code> by <code>down</code> and vice-versa.
+This is all taken care of by <code>revert</code>.</p>
+
+<h2>Running Migrations</h2>
+
+<p>Rails provides a set of Rake tasks to run certain sets of migrations.</p>
+
+<p>The very first migration related Rake task you will use will probably be
+<code>rake db:migrate</code>. In its most basic form it just runs the <code>change</code> or <code>up</code>
+method for all the migrations that have not yet been run. If there are
+no such migrations, it exits. It will run these migrations in order based
+on the date of the migration.</p>
+
+<p>Note that running the <code>db:migrate</code> task also invokes the <code>db:schema:dump</code> task, which
+will update your <code>db/schema.rb</code> file to match the structure of your database.</p>
+
+<p>If you specify a target version, Active Record will run the required migrations
+(change, up, down) until it has reached the specified version. The version
+is the numerical prefix on the migration’s filename. For example, to migrate
+to version 20080906120000 run:</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rake db:migrate <span class="nv">VERSION</span><span class="o">=</span>20080906120000
+</pre>
+
+</div>
+<p>If version 20080906120000 is greater than the current version (i.e., it is
+migrating upwards), this will run the <code>change</code> (or <code>up</code>) method
+on all migrations up to and
+including 20080906120000, and will not execute any later migrations. If
+migrating downwards, this will run the <code>down</code> method on all the migrations
+down to, but not including, 20080906120000.</p>
+
+<h3>Rolling Back</h3>
+
+<p>A common task is to rollback the last migration. For example, if you made a
+mistake in it and wish to correct it. Rather than tracking down the version
+number associated with the previous migration you can run:</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rake db:rollback
+</pre>
+
+</div>
+<p>This will rollback the latest migration, either by reverting the <code>change</code>
+method or by running the <code>down</code> method. If you need to undo
+several migrations you can provide a <code>STEP</code> parameter:</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rake db:rollback <span class="nv">STEP</span><span class="o">=</span>3
+</pre>
+
+</div>
+<p>will revert the last 3 migrations.</p>
+
+<p>The <code>db:migrate:redo</code> task is a shortcut for doing a rollback and then migrating
+back up again. As with the <code>db:rollback</code> task, you can use the <code>STEP</code> parameter
+if you need to go more than one version back, for example:</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rake db:migrate:redo <span class="nv">STEP</span><span class="o">=</span>3
+</pre>
+
+</div>
+<p>Neither of these Rake tasks do anything you could not do with <code>db:migrate</code>. They
+are simply more convenient, since you do not need to explicitly specify the
+version to migrate to.</p>
+
+<h3>Setup the Database</h3>
+
+<p>The <code>rake db:setup</code> task will create the database, load the schema and initialize
+it with the seed data.</p>
+
+<h3>Resetting the Database</h3>
+
+<p>The <code>rake db:reset</code> task will drop the database and set it up again. This is
+functionally equivalent to <code>rake db:drop db:setup</code>.</p>
+
+<p>NOTE: This is not the same as running all the migrations. It will only use the
+contents of the current <code>schema.rb</code> file. If a migration can’t be rolled back,
+<code>rake db:reset</code> may not help you. To find out more about dumping the schema see
+<a href="#schema-dumping-and-you">Schema Dumping and You</a> section.</p>
+
+<h3>Running Specific Migrations</h3>
+
+<p>If you need to run a specific migration up or down, the <code>db:migrate:up</code> and
+<code>db:migrate:down</code> tasks will do that. Just specify the appropriate version and
+the corresponding migration will have its <code>change</code>, <code>up</code> or <code>down</code> method
+invoked, for example:</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rake db:migrate:up <span class="nv">VERSION</span><span class="o">=</span>20080906120000
+</pre>
+
+</div>
+<p>will run the 20080906120000 migration by running the <code>change</code> method (or the
+<code>up</code> method). This task will
+first check whether the migration is already performed and will do nothing if
+Active Record believes that it has already been run.</p>
+
+<h3>Running Migrations in Different Environments</h3>
+
+<p>By default running <code>rake db:migrate</code> will run in the <code>development</code> environment.
+To run migrations against another environment you can specify it using the
+<code>RAILS_ENV</code> environment variable while running the command. For example to run
+migrations against the <code>test</code> environment you could run:</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rake db:migrate <span class="nv">RAILS_ENV</span><span class="o">=</span><span class="nb">test</span>
+</pre>
+
+</div>
+<h3>Changing the Output of Running Migrations</h3>
+
+<p>By default migrations tell you exactly what they’re doing and how long it took.
+A migration creating a table and adding an index might produce output like this</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="o">==</span>  CreateProducts: migrating <span class="o">=================================================</span>
+-- create_table<span class="o">(</span>:products<span class="o">)</span>
+   -&gt; 0.0028s
+<span class="o">==</span>  CreateProducts: migrated <span class="o">(</span>0.0028s<span class="o">)</span> <span class="o">========================================</span>
+</pre>
+
+</div>
+<p>Several methods are provided in migrations that allow you to control all this:</p>
+
+<div class="table"><table>
+  <thead>
+    <tr>
+      <th>Method</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>suppress_messages</td>
+      <td>Takes a block as an argument and suppresses any output generated by the block.</td>
+    </tr>
+    <tr>
+      <td>say</td>
+      <td>Takes a message argument and outputs it as is. A second boolean argument can be passed to specify whether to indent or not.</td>
+    </tr>
+    <tr>
+      <td>say_with_time</td>
+      <td>Outputs text along with how long it took to run its block. If the block returns an integer it assumes it is the number of rows affected.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>For example, this migration:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">CreateProducts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">suppress_messages</span> <span class="k">do</span>
+      <span class="n">create_table</span> <span class="ss">:products</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+        <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:name</span>
+        <span class="n">t</span><span class="p">.</span><span class="nf">text</span> <span class="ss">:description</span>
+        <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+
+    <span class="n">say</span> <span class="s2">"Created a table"</span>
+
+    <span class="n">suppress_messages</span> <span class="p">{</span><span class="n">add_index</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:name</span><span class="p">}</span>
+    <span class="n">say</span> <span class="s2">"and an index!"</span><span class="p">,</span> <span class="kp">true</span>
+
+    <span class="n">say_with_time</span> <span class="s1">'Waiting for a while'</span> <span class="k">do</span>
+      <span class="nb">sleep</span> <span class="mi">10</span>
+      <span class="mi">250</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>generates the following output</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="o">==</span>  CreateProducts: migrating <span class="o">=================================================</span>
+-- Created a table
+   -&gt; and an index!
+-- Waiting <span class="k">for </span>a <span class="k">while</span>
+   -&gt; 10.0013s
+   -&gt; 250 rows
+<span class="o">==</span>  CreateProducts: migrated <span class="o">(</span>10.0054s<span class="o">)</span> <span class="o">=======================================</span>
+</pre>
+
+</div>
+<p>If you want Active Record to not output anything, then running <code>rake db:migrate
+VERBOSE=false</code> will suppress all output.</p>
+
+<h2>Changing Existing Migrations</h2>
+
+<p>Occasionally you will make a mistake when writing a migration. If you have
+already run the migration then you cannot just edit the migration and run the
+migration again: Rails thinks it has already run the migration and so will do
+nothing when you run <code>rake db:migrate</code>. You must rollback the migration (for
+example with <code>rake db:rollback</code>), edit your migration and then run
+<code>rake db:migrate</code> to run the corrected version.</p>
+
+<p>In general, editing existing migrations is not a good idea. You will be
+creating extra work for yourself and your co-workers and cause major headaches
+if the existing version of the migration has already been run on production
+machines. Instead, you should write a new migration that performs the changes
+you require. Editing a freshly generated migration that has not yet been
+committed to source control (or, more generally, which has not been propagated
+beyond your development machine) is relatively harmless.</p>
+
+<p>The <code>revert</code> method can be helpful when writing a new migration to undo
+previous migrations in whole or in part
+(see <a href="#reverting-previous-migrations">Reverting Previous Migrations</a> above).</p>
+
+<h2>Schema Dumping and You</h2>
+
+<h3>What are Schema Files for?</h3>
+
+<p>Migrations, mighty as they may be, are not the authoritative source for your
+database schema. That role falls to either <code>db/schema.rb</code> or an SQL file which
+Active Record generates by examining the database. They are not designed to be
+edited, they just represent the current state of the database.</p>
+
+<p>There is no need (and it is error prone) to deploy a new instance of an app by
+replaying the entire migration history. It is much simpler and faster to just
+load into the database a description of the current schema.</p>
+
+<p>For example, this is how the test database is created: the current development
+database is dumped (either to <code>db/schema.rb</code> or <code>db/structure.sql</code>) and then
+loaded into the test database.</p>
+
+<p>Schema files are also useful if you want a quick look at what attributes an
+Active Record object has. This information is not in the model’s code and is
+frequently spread across several migrations, but the information is nicely
+summed up in the schema file. The
+<a href="https://github.com/ctran/annotate_models">annotate_models</a> gem automatically
+adds and updates comments at the top of each model summarizing the schema if
+you desire that functionality.</p>
+
+<h3>Types of Schema Dumps</h3>
+
+<p>There are two ways to dump the schema. This is set in <code>config/application.rb</code>
+by the <code>config.active_record.schema_format</code> setting, which may be either <code>:sql</code>
+or <code>:ruby</code>.</p>
+
+<p>If <code>:ruby</code> is selected then the schema is stored in <code>db/schema.rb</code>. If you look
+at this file you’ll find that it looks an awful lot like one very big
+migration:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Schema</span><span class="p">.</span><span class="nf">define</span><span class="p">(</span><span class="ss">version: </span><span class="mi">20080906171750</span><span class="p">)</span> <span class="k">do</span>
+  <span class="n">create_table</span> <span class="s2">"authors"</span><span class="p">,</span> <span class="ss">force: </span><span class="kp">true</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+    <span class="n">t</span><span class="p">.</span><span class="nf">string</span>   <span class="s2">"name"</span>
+    <span class="n">t</span><span class="p">.</span><span class="nf">datetime</span> <span class="s2">"created_at"</span>
+    <span class="n">t</span><span class="p">.</span><span class="nf">datetime</span> <span class="s2">"updated_at"</span>
+  <span class="k">end</span>
+
+  <span class="n">create_table</span> <span class="s2">"products"</span><span class="p">,</span> <span class="ss">force: </span><span class="kp">true</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+    <span class="n">t</span><span class="p">.</span><span class="nf">string</span>   <span class="s2">"name"</span>
+    <span class="n">t</span><span class="p">.</span><span class="nf">text</span> <span class="s2">"description"</span>
+    <span class="n">t</span><span class="p">.</span><span class="nf">datetime</span> <span class="s2">"created_at"</span>
+    <span class="n">t</span><span class="p">.</span><span class="nf">datetime</span> <span class="s2">"updated_at"</span>
+    <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="s2">"part_number"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>In many ways this is exactly what it is. This file is created by inspecting the
+database and expressing its structure using <code>create_table</code>, <code>add_index</code>, and so
+on. Because this is database-independent, it could be loaded into any database
+that Active Record supports. This could be very useful if you were to
+distribute an application that is able to run against multiple databases.</p>
+
+<p>There is however a trade-off: <code>db/schema.rb</code> cannot express database specific
+items such as foreign key constraints, triggers, or stored procedures. While in
+a migration you can execute custom SQL statements, the schema dumper cannot
+reconstitute those statements from the database. If you are using features like
+this, then you should set the schema format to <code>:sql</code>.</p>
+
+<p>Instead of using Active Record’s schema dumper, the database’s structure will
+be dumped using a tool specific to the database (via the <code>db:structure:dump</code>
+Rake task) into <code>db/structure.sql</code>. For example, for PostgreSQL, the <code>pg_dump</code>
+utility is used. For MySQL, this file will contain the output of
+<code>SHOW CREATE TABLE</code> for the various tables.</p>
+
+<p>Loading these schemas is simply a question of executing the SQL statements they
+contain. By definition, this will create a perfect copy of the database’s
+structure. Using the <code>:sql</code> schema format will, however, prevent loading the
+schema into a RDBMS other than the one used to create it.</p>
+
+<h3>Schema Dumps and Source Control</h3>
+
+<p>Because schema dumps are the authoritative source for your database schema, it
+is strongly recommended that you check them into source control.</p>
+
+<h2>Active Record and Referential Integrity</h2>
+
+<p>The Active Record way claims that intelligence belongs in your models, not in
+the database. As such, features such as triggers or foreign key constraints,
+which push some of that intelligence back into the database, are not heavily
+used.</p>
+
+<p>Validations such as <code>validates :foreign_key, uniqueness: true</code> are one way in
+which models can enforce data integrity. The <code>:dependent</code> option on
+associations allows models to automatically destroy child objects when the
+parent is destroyed. Like anything which operates at the application level,
+these cannot guarantee referential integrity and so some people augment them
+with foreign key constraints in the database.</p>
+
+<p>Although Active Record does not provide any tools for working directly with
+such features, the <code>execute</code> method can be used to execute arbitrary SQL. You
+can also use a gem like
+<a href="https://github.com/matthuhiggins/foreigner">foreigner</a> which adds foreign key
+support to Active Record (including support for dumping foreign keys in
+<code>db/schema.rb</code>).</p>
+
+<h2>Migrations and Seed Data</h2>
+
+<p>Some people use migrations to add data to the database:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">AddInitialProducts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
+  <span class="k">def</span> <span class="nf">up</span>
+    <span class="mi">5</span><span class="p">.</span><span class="nf">times</span> <span class="k">do</span> <span class="o">|</span><span class="n">i</span><span class="o">|</span>
+      <span class="no">Product</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="nb">name</span><span class="p">:</span> <span class="s2">"Product #</span><span class="si">#{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="ss">description: </span><span class="s2">"A product."</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">down</span>
+    <span class="no">Product</span><span class="p">.</span><span class="nf">delete_all</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>However, Rails has a ‘seeds’ feature that should be used for seeding a database
+with initial data. It’s a really simple feature: just fill up <code>db/seeds.rb</code>
+with some Ruby code, and run <code>rake db:seed</code>:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="mi">5</span><span class="p">.</span><span class="nf">times</span> <span class="k">do</span> <span class="o">|</span><span class="n">i</span><span class="o">|</span>
+  <span class="no">Product</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="nb">name</span><span class="p">:</span> <span class="s2">"Product #</span><span class="si">#{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="ss">description: </span><span class="s2">"A product."</span><span class="p">)</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>This is generally a much cleaner way to set up the database of a blank
+application.</p>
+
+                    </article>
+                    <div class="section-nav clearfix">
+  <div class="pull-left">
+    
+      <a href="http://docs-china.com/rails//active_record_basics.html" class="prev">
+        &laquo;前一篇
+      </a>
+    
+  </div>
+  <div class="pull-right">
+    
+      <a href="http://docs-china.com/rails//active_record_validations.html" class="next">
+        后一篇&raquo;
+      </a>
+    
+  </div>
+</div>
+
+                </main>
+                <div class="sidebar col-sm-3 col-md-3 hidden-xs">
+                    <aside>
+    
+    <h4>起跑</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//getting_started.html">Rails 入门</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+    <h4>模型</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//active_record_basics.html">Active Record Basics</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class="current"><a href="http://docs-china.com/rails//migrations.html">Active Record Migrations</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//active_record_validations.html">Active Record Validations</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//active_record_callbacks.html">Active Record Callbacks</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//association_basics.html">Active Record Associations</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+    <h4>视图</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//action_view_overview.html">Action View Overview</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//layouts_and_rendering.html">Layouts and Rendering in Rails</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//form_helpers.html">Form Helpers</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+    <h4>控制器</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//action_controller_overview.html">Action Controller 简介</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//routing.html">Rails 路由全解</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+    <h4>深入</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//active_support_core_extensions.html">Active Support Core Extensions</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//i18n.html">Rails Internationalization (I18n) API</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//action_mailer_basics.html">Action Mailer Basics</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//testing.html">A Guide to Testing Rails Applications</a></li>
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//security.html">Ruby on Rails Security Guide</a></li>
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//debugging_rails_applications.html">Debugging Rails Applications</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//configuring.html">Configuring Rails Applications</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//command_line.html">The Rails Command Line</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//caching_with_rails.html">Caching with Rails An overview</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//asset_pipeline.html">The Asset Pipeline</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//working_with_javascript_in_rails.html">Working with JavaScript in Rails</a></li>
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//engines.html">Getting Started with Engines</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//initialization.html">The Rails Initialization Process</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+    <h4>扩展</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//plugins.html">The Basics of Creating Rails Plugins</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//rails_on_rack.html">Rails on Rack</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//generators.html">Creating and Customizing Rails Generators & Templates</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+</aside>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer" role="contentinfo">
+        <div class="container">
+            <div>
+                <ul class="social">
+                    <li class="github">
+                        <a href="https://github.com/docs-china/rails/" title="在 GitHub 上关注我们">Github</a>
+                    </li>
+                    <li class="weibo">
+                        <a href="http://weibo.com/docschina" title="关注我们的微博">@DocsChina</a>
+                    </li>
+                </ul>
+            </div>
+
+            <p>本文档授权协议：<a href="http://creativecommons.org/licenses/by-sa/4.0/deed.zh" title="CC BY-SA 4.0">CC BY-SA 4.0</a></p>
+        </div>
+    </footer>
+</body>
+</html>

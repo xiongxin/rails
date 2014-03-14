@@ -1,0 +1,2465 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <title>Working with JavaScript in Rails - Rails 指南</title>
+    <meta name="viewport" content="width=device-width" />
+
+    <link rel="stylesheet" href="http://cdn.staticfile.org/twitter-bootstrap/3.1.1/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="http://docs-china.com/rails//styles/docs.css" />
+</head>
+<body>
+    <a class="sr-only" href="#content">跳到正文</a>
+
+    <nav class="navbar navbar-static-top docs-nav" id="top">
+        <div class="container">
+            <div class="navbar-header">
+                <a href="http://docs-china.com" class="navbar-brand" title="回到首页">&larr; Docs China</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="header" role="banner">
+        <div class="container">
+            <h1 class="logo"><a href="http://docs-china.com/rails//" title="Rails 指南">Rails 指南</a></h1>
+            
+            <iframe src="http://ghbtns.com/github-btn.html?user=docs-china&repo=rails&type=fork&count=false"
+  allowtransparency="true" frameborder="0" scrolling="0" width="62" height="20"></iframe>
+            
+        </div>
+    </header>
+
+    <div id="content" class="content" role="main">
+        <div class="container">
+            <div class="row">
+                <main class="main col-sm-9 col-md-9">
+                    <article class="entry">
+                        <h1>Working with JavaScript in Rails</h1>
+                        <p>This guide covers the built-in Ajax/JavaScript functionality of Rails (and
+more); it will enable you to create rich and dynamic Ajax applications with
+ease!</p>
+
+<p>After reading this guide, you will know:</p>
+
+<ul>
+  <li>The basics of Ajax.</li>
+  <li>Unobtrusive JavaScript.</li>
+  <li>How Rails’ built-in helpers assist you.</li>
+  <li>How to handle Ajax on the server side.</li>
+  <li>The Turbolinks gem.</li>
+</ul>
+
+<hr />
+
+<h2>An Introduction to Ajax</h2>
+
+<p>In order to understand Ajax, you must first understand what a web browser does
+normally.</p>
+
+<p>When you type <code>http://localhost:3000</code> into your browser’s address bar and hit
+‘Go,’ the browser (your ‘client’) makes a request to the server. It parses the
+response, then fetches all associated assets, like JavaScript files,
+stylesheets and images. It then assembles the page. If you click a link, it
+does the same process: fetch the page, fetch the assets, put it all together,
+show you the results. This is called the ‘request response cycle.’</p>
+
+<p>JavaScript can also make requests to the server, and parse the response. It
+also has the ability to update information on the page. Combining these two
+powers, a JavaScript writer can make a web page that can update just parts of
+itself, without needing to get the full page data from the server. This is a
+powerful technique that we call Ajax.</p>
+
+<p>Rails ships with CoffeeScript by default, and so the rest of the examples
+in this guide will be in CoffeeScript. All of these lessons, of course, apply
+to vanilla JavaScript as well.</p>
+
+<p>As an example, here’s some CoffeeScript code that makes an Ajax request using
+the jQuery library:</p>
+
+<div class="codeblock coffeescript"><pre class="highlight"><span class="nx">$</span><span class="p">.</span><span class="na">ajax</span><span class="p">(</span><span class="na">url</span><span class="o">:</span> <span class="s">"/test"</span><span class="p">).</span><span class="na">done</span> <span class="p">(</span><span class="nx">html</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nx">$</span><span class="p">(</span><span class="s">"#results"</span><span class="p">).</span><span class="na">append</span> <span class="nx">html</span>
+</pre>
+
+</div>
+<p>This code fetches data from “/test”, and then appends the result to the <code>div</code>
+with an id of <code>results</code>.</p>
+
+<p>Rails provides quite a bit of built-in support for building web pages with this
+technique. You rarely have to write this code yourself. The rest of this guide
+will show you how Rails can help you write websites in this way, but it’s
+all built on top of this fairly simple technique.</p>
+
+<h2>Unobtrusive JavaScript</h2>
+
+<p>Rails uses a technique called “Unobtrusive JavaScript” to handle attaching
+JavaScript to the DOM. This is generally considered to be a best-practice
+within the frontend community, but you may occasionally read tutorials that
+demonstrate other ways.</p>
+
+<p>Here’s the simplest way to write JavaScript. You may see it referred to as
+‘inline JavaScript’:</p>
+
+<div class="codeblock html"><pre class="highlight"><span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"#"</span> <span class="na">onclick=</span><span class="s">"this.style.backgroundColor='#990000'"</span><span class="nt">&gt;</span>Paint it red<span class="nt">&lt;/a&gt;</span>
+</pre>
+
+</div><p>When clicked, the link background will become red. Here’s the problem: what
+happens when we have lots of JavaScript we want to execute on a click?</p>
+
+<div class="codeblock html"><pre class="highlight"><span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"#"</span> <span class="na">onclick=</span><span class="s">"this.style.backgroundColor='#009900';this.style.color='#FFFFFF';"</span><span class="nt">&gt;</span>Paint it green<span class="nt">&lt;/a&gt;</span>
+</pre>
+
+</div>
+<p>Awkward, right? We could pull the function definition out of the click handler,
+and turn it into CoffeeScript:</p>
+
+<div class="codeblock coffeescript"><pre class="highlight"><span class="nx">paintIt</span> <span class="o">=</span> <span class="p">(</span><span class="nx">element</span><span class="p">,</span> <span class="nx">backgroundColor</span><span class="p">,</span> <span class="nx">textColor</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nx">element</span><span class="p">.</span><span class="na">style</span><span class="p">.</span><span class="na">backgroundColor</span> <span class="o">=</span> <span class="nx">backgroundColor</span>
+  <span class="k">if</span> <span class="nx">textColor</span><span class="o">?</span>
+    <span class="nx">element</span><span class="p">.</span><span class="na">style</span><span class="p">.</span><span class="na">color</span> <span class="o">=</span> <span class="nx">textColor</span>
+</pre>
+
+</div>
+<p>And then on our page:</p>
+
+<div class="codeblock html"><pre class="highlight"><span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"#"</span> <span class="na">onclick=</span><span class="s">"paintIt(this, '#990000')"</span><span class="nt">&gt;</span>Paint it red<span class="nt">&lt;/a&gt;</span>
+</pre>
+
+</div>
+<p>That’s a little bit better, but what about multiple links that have the same
+effect?</p>
+
+<div class="codeblock html"><pre class="highlight"><span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"#"</span> <span class="na">onclick=</span><span class="s">"paintIt(this, '#990000')"</span><span class="nt">&gt;</span>Paint it red<span class="nt">&lt;/a&gt;</span>
+<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"#"</span> <span class="na">onclick=</span><span class="s">"paintIt(this, '#009900', '#FFFFFF')"</span><span class="nt">&gt;</span>Paint it green<span class="nt">&lt;/a&gt;</span>
+<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"#"</span> <span class="na">onclick=</span><span class="s">"paintIt(this, '#000099', '#FFFFFF')"</span><span class="nt">&gt;</span>Paint it blue<span class="nt">&lt;/a&gt;</span>
+</pre>
+
+</div>
+<p>Not very DRY, eh? We can fix this by using events instead. We’ll add a <code>data-*</code>
+attribute to our link, and then bind a handler to the click event of every link
+that has that attribute:</p>
+
+<div class="codeblock html"><pre class="highlight">paintIt = (element, backgroundColor, textColor) -&gt;
+  element.style.backgroundColor = backgroundColor
+  if textColor?
+    element.style.color = textColor
+
+$ -&gt;
+  $("a[data-background-color]").click -&gt;
+    backgroundColor = $(this).data("background-color")
+    textColor = $(this).data("text-color")
+    paintIt(this, backgroundColor, textColor)
+</pre>
+
+</div><div class="codeblock text"><pre class="highlight">&lt;a href="#" data-background-color="#990000"&gt;Paint it red&lt;/a&gt;
+&lt;a href="#" data-background-color="#009900" data-text-color="#FFFFFF"&gt;Paint it green&lt;/a&gt;
+&lt;a href="#" data-background-color="#000099" data-text-color="#FFFFFF"&gt;Paint it blue&lt;/a&gt;
+</pre>
+
+</div>
+<p>We call this ‘unobtrusive’ JavaScript because we’re no longer mixing our
+JavaScript into our HTML. We’ve properly separated our concerns, making future
+change easy. We can easily add behavior to any link by adding the data
+attribute. We can run all of our JavaScript through a minimizer and
+concatenator. We can serve our entire JavaScript bundle on every page, which
+means that it’ll get downloaded on the first page load and then be cached on
+every page after that. Lots of little benefits really add up.</p>
+
+<p>The Rails team strongly encourages you to write your CoffeeScript (and
+JavaScript) in this style, and you can expect that many libraries will also
+follow this pattern.</p>
+
+<h2>Built-in Helpers</h2>
+
+<p>Rails provides a bunch of view helper methods written in Ruby to assist you
+in generating HTML. Sometimes, you want to add a little Ajax to those elements,
+and Rails has got your back in those cases.</p>
+
+<p>Because of Unobtrusive JavaScript, the Rails “Ajax helpers” are actually in two
+parts: the JavaScript half and the Ruby half.</p>
+
+<p><a href="https://github.com/rails/jquery-ujs/blob/master/src/rails.js">rails.js</a>
+provides the JavaScript half, and the regular Ruby view helpers add appropriate
+tags to your DOM. The CoffeeScript in rails.js then listens for these
+attributes, and attaches appropriate handlers.</p>
+
+<h3>form_for</h3>
+
+<p><a href="http://api.rubyonrails.org/classes/ActionView/Helpers/FormHelper.html#method-i-form_for"><code>form_for</code></a>
+is a helper that assists with writing forms. <code>form_for</code> takes a <code>:remote</code>
+option. It works like this:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">form_for</span><span class="p">(</span><span class="vi">@post</span><span class="p">,</span> <span class="ss">remote: </span><span class="kp">true</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  ...
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>This will generate the following HTML:</p>
+
+<div class="codeblock html"><pre class="highlight"><span class="nt">&lt;form</span> <span class="na">accept-charset=</span><span class="s">"UTF-8"</span> <span class="na">action=</span><span class="s">"/posts"</span> <span class="na">class=</span><span class="s">"new_post"</span> <span class="na">data-remote=</span><span class="s">"true"</span> <span class="na">id=</span><span class="s">"new_post"</span> <span class="na">method=</span><span class="s">"post"</span><span class="nt">&gt;</span>
+  ...
+<span class="nt">&lt;/form&gt;</span>
+</pre>
+
+</div>
+<p>Note the <code>data-remote="true"</code>. Now, the form will be submitted by Ajax rather
+than by the browser’s normal submit mechanism.</p>
+
+<p>You probably don’t want to just sit there with a filled out <code>&lt;form&gt;</code>, though.
+You probably want to do something upon a successful submission. To do that,
+bind to the <code>ajax:success</code> event. On failure, use <code>ajax:error</code>. Check it out:</p>
+
+<div class="codeblock coffeescript"><pre class="highlight"><span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="na">ready</span> <span class="o">-&gt;</span>
+  <span class="nx">$</span><span class="p">(</span><span class="s">"#new_post"</span><span class="p">).</span><span class="na">on</span><span class="p">(</span><span class="s">"ajax:success"</span><span class="p">,</span> <span class="p">(</span><span class="nx">e</span><span class="p">,</span> <span class="nx">data</span><span class="p">,</span> <span class="nx">status</span><span class="p">,</span> <span class="nx">xhr</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="nx">$</span><span class="p">(</span><span class="s">"#new_post"</span><span class="p">).</span><span class="na">append</span> <span class="nx">xhr</span><span class="p">.</span><span class="na">responseText</span>
+  <span class="p">).</span><span class="na">on</span> <span class="s">"ajax:error"</span><span class="p">,</span> <span class="p">(</span><span class="nx">e</span><span class="p">,</span> <span class="nx">xhr</span><span class="p">,</span> <span class="nx">status</span><span class="p">,</span> <span class="nx">error</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="nx">$</span><span class="p">(</span><span class="s">"#new_post"</span><span class="p">).</span><span class="na">append</span> <span class="s">"&lt;p&gt;ERROR&lt;/p&gt;"</span>
+</pre>
+
+</div>
+<p>Obviously, you’ll want to be a bit more sophisticated than that, but it’s a
+start. You can see more about the events <a href="https://github.com/rails/jquery-ujs/wiki/ajax">in the jquery-ujs wiki</a>.</p>
+
+<h3>form_tag</h3>
+
+<p><a href="http://api.rubyonrails.org/classes/ActionView/Helpers/FormTagHelper.html#method-i-form_tag"><code>form_tag</code></a>
+is very similar to <code>form_for</code>. It has a <code>:remote</code> option that you can use like
+this:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">form_tag</span><span class="p">(</span><span class="s1">'/posts'</span><span class="p">,</span> <span class="ss">remote: </span><span class="kp">true</span><span class="p">)</span> <span class="k">do</span> <span class="cp">%&gt;</span>
+  ...
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>This will generate the following HTML:</p>
+
+<div class="codeblock html"><pre class="highlight"><span class="nt">&lt;form</span> <span class="na">accept-charset=</span><span class="s">"UTF-8"</span> <span class="na">action=</span><span class="s">"/posts"</span> <span class="na">data-remote=</span><span class="s">"true"</span> <span class="na">method=</span><span class="s">"post"</span><span class="nt">&gt;</span>
+  ...
+<span class="nt">&lt;/form&gt;</span>
+</pre>
+
+</div>
+<p>Everything else is the same as <code>form_for</code>. See its documentation for full
+details.</p>
+
+<h3>link_to</h3>
+
+<p><a href="http://api.rubyonrails.org/classes/ActionView/Helpers/UrlHelper.html#method-i-link_to"><code>link_to</code></a>
+is a helper that assists with generating links. It has a <code>:remote</code> option you
+can use like this:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="s2">"a post"</span><span class="p">,</span> <span class="vi">@post</span><span class="p">,</span> <span class="ss">remote: </span><span class="kp">true</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>which generates</p>
+
+<div class="codeblock html"><pre class="highlight"><span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"/posts/1"</span> <span class="na">data-remote=</span><span class="s">"true"</span><span class="nt">&gt;</span>a post<span class="nt">&lt;/a&gt;</span>
+</pre>
+
+</div>
+<p>You can bind to the same Ajax events as <code>form_for</code>. Here’s an example. Let’s
+assume that we have a list of posts that can be deleted with just one
+click. We would generate some HTML like this:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="s2">"Delete post"</span><span class="p">,</span> <span class="vi">@post</span><span class="p">,</span> <span class="ss">remote: </span><span class="kp">true</span><span class="p">,</span> <span class="nb">method</span><span class="p">:</span> <span class="ss">:delete</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>and write some CoffeeScript like this:</p>
+
+<div class="codeblock coffeescript"><pre class="highlight"><span class="nx">$</span> <span class="o">-&gt;</span>
+  <span class="nx">$</span><span class="p">(</span><span class="s">"a[data-remote]"</span><span class="p">).</span><span class="na">on</span> <span class="s">"ajax:success"</span><span class="p">,</span> <span class="p">(</span><span class="nx">e</span><span class="p">,</span> <span class="nx">data</span><span class="p">,</span> <span class="nx">status</span><span class="p">,</span> <span class="nx">xhr</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="nx">alert</span> <span class="s">"The post was deleted."</span>
+</pre>
+
+</div>
+<h3>button_to</h3>
+
+<p><a href="http://api.rubyonrails.org/classes/ActionView/Helpers/UrlHelper.html#method-i-button_to"><code>button_to</code></a> is a helper that helps you create buttons. It has a <code>:remote</code> option that you can call like this:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">button_to</span> <span class="s2">"A post"</span><span class="p">,</span> <span class="vi">@post</span><span class="p">,</span> <span class="ss">remote: </span><span class="kp">true</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>this generates</p>
+
+<div class="codeblock html"><pre class="highlight"><span class="nt">&lt;form</span> <span class="na">action=</span><span class="s">"/posts/1"</span> <span class="na">class=</span><span class="s">"button_to"</span> <span class="na">data-remote=</span><span class="s">"true"</span> <span class="na">method=</span><span class="s">"post"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;div&gt;&lt;input</span> <span class="na">type=</span><span class="s">"submit"</span> <span class="na">value=</span><span class="s">"A post"</span><span class="nt">&gt;&lt;/div&gt;</span>
+<span class="nt">&lt;/form&gt;</span>
+</pre>
+
+</div>
+<p>Since it’s just a <code>&lt;form&gt;</code>, all of the information on <code>form_for</code> also applies.</p>
+
+<h2>Server-Side Concerns</h2>
+
+<p>Ajax isn’t just client-side, you also need to do some work on the server
+side to support it. Often, people like their Ajax requests to return JSON
+rather than HTML. Let’s discuss what it takes to make that happen.</p>
+
+<h3>A Simple Example</h3>
+
+<p>Imagine you have a series of users that you would like to display and provide a
+form on that same page to create a new user. The index action of your
+controller looks like this:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">UsersController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">index</span>
+    <span class="vi">@users</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">all</span>
+    <span class="vi">@user</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">new</span>
+  <span class="k">end</span>
+  <span class="c1"># ...</span>
+</pre>
+
+</div>
+<p>The index view (<code>app/views/users/index.html.erb</code>) contains:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="nt">&lt;b&gt;</span>Users<span class="nt">&lt;/b&gt;</span>
+
+<span class="nt">&lt;ul</span> <span class="na">id=</span><span class="s">"users"</span><span class="nt">&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">render</span> <span class="vi">@users</span> <span class="cp">%&gt;</span>
+<span class="nt">&lt;/ul&gt;</span>
+
+<span class="nt">&lt;br&gt;</span>
+
+<span class="cp">&lt;%=</span> <span class="n">form_for</span><span class="p">(</span><span class="vi">@user</span><span class="p">,</span> <span class="ss">remote: </span><span class="kp">true</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">f</span><span class="p">.</span><span class="nf">label</span> <span class="ss">:name</span> <span class="cp">%&gt;</span><span class="nt">&lt;br&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">f</span><span class="p">.</span><span class="nf">text_field</span> <span class="ss">:name</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">f</span><span class="p">.</span><span class="nf">submit</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>The <code>app/views/users/_user.html.erb</code> partial contains the following:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="nt">&lt;li&gt;</span><span class="cp">&lt;%=</span> <span class="n">user</span><span class="p">.</span><span class="nf">name</span> <span class="cp">%&gt;</span><span class="nt">&lt;/li&gt;</span>
+</pre>
+
+</div>
+<p>The top portion of the index page displays the users. The bottom portion
+provides a form to create a new user.</p>
+
+<p>The bottom form will call the <code>create</code> action on the <code>UsersController</code>. Because
+the form’s remote option is set to true, the request will be posted to the
+<code>UsersController</code> as an Ajax request, looking for JavaScript. In order to
+serve that request, the <code>create</code> action of your controller would look like
+this:</p>
+
+<div class="codeblock ruby"><pre class="highlight">  <span class="c1"># app/controllers/users_controller.rb</span>
+  <span class="c1"># ......</span>
+  <span class="k">def</span> <span class="nf">create</span>
+    <span class="vi">@user</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">params</span><span class="o">[</span><span class="ss">:user</span><span class="o">]</span><span class="p">)</span>
+
+    <span class="n">respond_to</span> <span class="k">do</span> <span class="o">|</span><span class="nb">format</span><span class="o">|</span>
+      <span class="k">if</span> <span class="vi">@user</span><span class="p">.</span><span class="nf">save</span>
+        <span class="nb">format</span><span class="p">.</span><span class="nf">html</span> <span class="p">{</span> <span class="n">redirect_to</span> <span class="vi">@user</span><span class="p">,</span> <span class="ss">notice: </span><span class="s1">'User was successfully created.'</span> <span class="p">}</span>
+        <span class="nb">format</span><span class="p">.</span><span class="nf">js</span>   <span class="p">{}</span>
+        <span class="nb">format</span><span class="p">.</span><span class="nf">json</span> <span class="p">{</span> <span class="n">render</span> <span class="ss">json: </span><span class="vi">@user</span><span class="p">,</span> <span class="ss">status: :created</span><span class="p">,</span> <span class="ss">location: </span><span class="vi">@user</span> <span class="p">}</span>
+      <span class="k">else</span>
+        <span class="nb">format</span><span class="p">.</span><span class="nf">html</span> <span class="p">{</span> <span class="n">render</span> <span class="ss">action: </span><span class="s2">"new"</span> <span class="p">}</span>
+        <span class="nb">format</span><span class="p">.</span><span class="nf">json</span> <span class="p">{</span> <span class="n">render</span> <span class="ss">json: </span><span class="vi">@user</span><span class="p">.</span><span class="nf">errors</span><span class="p">,</span> <span class="ss">status: :unprocessable_entity</span> <span class="p">}</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+</pre>
+
+</div>
+<p>Notice the format.js in the <code>respond_to</code> block; that allows the controller to
+respond to your Ajax request. You then have a corresponding
+<code>app/views/users/create.js.erb</code> view file that generates the actual JavaScript
+code that will be sent and executed on the client side.</p>
+
+<div class="codeblock erb"><pre class="highlight">$("<span class="cp">&lt;%=</span> <span class="n">escape_javascript</span><span class="p">(</span><span class="n">render</span> <span class="vi">@user</span><span class="p">)</span> <span class="cp">%&gt;</span>").appendTo("#users");
+</pre>
+
+</div>
+<h2>Turbolinks</h2>
+
+<p>Rails 4 ships with the <a href="https://github.com/rails/turbolinks">Turbolinks gem</a>.
+This gem uses Ajax to speed up page rendering in most applications.</p>
+
+<h3>How Turbolinks Works</h3>
+
+<p>Turbolinks attaches a click handler to all <code>&lt;a&gt;</code> on the page. If your browser
+supports
+<a href="https://developer.mozilla.org/en-US/docs/DOM/Manipulating_the_browser_history#The_pushState(\).C2.A0method">PushState</a>,
+Turbolinks will make an Ajax request for the page, parse the response, and
+replace the entire <code>&lt;body&gt;</code> of the page with the <code>&lt;body&gt;</code> of the response. It
+will then use PushState to change the URL to the correct one, preserving
+refresh semantics and giving you pretty URLs.</p>
+
+<p>The only thing you have to do to enable Turbolinks is have it in your Gemfile,
+and put <code>//= require turbolinks</code> in your CoffeeScript manifest, which is usually
+<code>app/assets/javascripts/application.js</code>.</p>
+
+<p>If you want to disable Turbolinks for certain links, add a <code>data-no-turbolink</code>
+attribute to the tag:</p>
+
+<div class="codeblock html"><pre class="highlight"><span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"..."</span> <span class="na">data-no-turbolink</span><span class="nt">&gt;</span>No turbolinks here<span class="nt">&lt;/a&gt;</span>.
+</pre>
+
+</div>
+<h3>Page Change Events</h3>
+
+<p>When writing CoffeeScript, you’ll often want to do some sort of processing upon
+page load. With jQuery, you’d write something like this:</p>
+
+<div class="codeblock coffeescript"><pre class="highlight"><span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="na">ready</span> <span class="o">-&gt;</span>
+  <span class="nx">alert</span> <span class="s">"page has loaded!"</span>
+</pre>
+
+</div>
+<p>However, because Turbolinks overrides the normal page loading process, the
+event that this relies on will not be fired. If you have code that looks like
+this, you must change your code to do this instead:</p>
+
+<div class="codeblock coffeescript"><pre class="highlight"><span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="na">on</span> <span class="s">"page:change"</span><span class="p">,</span> <span class="o">-&gt;</span>
+  <span class="nx">alert</span> <span class="s">"page has loaded!"</span>
+</pre>
+
+</div>
+<p>For more details, including other events you can bind to, check out <a href="https://github.com/rails/turbolinks/blob/master/README.md">the
+Turbolinks
+README</a>.</p>
+
+<h2>Other Resources</h2>
+
+<p>Here are some helpful links to help you learn even more:</p>
+
+<ul>
+  <li><a href="https://github.com/rails/jquery-ujs/wiki">jquery-ujs wiki</a></li>
+  <li><a href="https://github.com/rails/jquery-ujs/wiki/External-articles">jquery-ujs list of external articles</a></li>
+  <li><a href="http://www.alfajango.com/blog/rails-3-remote-links-and-forms/">Rails 3 Remote Links and Forms: A Definitive Guide</a></li>
+  <li><a href="http://railscasts.com/episodes/205-unobtrusive-javascript">Railscasts: Unobtrusive JavaScript</a></li>
+  <li><a href="http://railscasts.com/episodes/390-turbolinks">Railscasts: Turbolinks</a></li>
+</ul>
+
+                    </article>
+                    <div class="section-nav clearfix">
+  <div class="pull-left">
+    
+      <a href="http://docs-china.com/rails//asset_pipeline.html" class="prev">
+        &laquo;前一篇
+      </a>
+    
+  </div>
+  <div class="pull-right">
+    
+      <a href="http://docs-china.com/rails//engines.html" class="next">
+        后一篇&raquo;
+      </a>
+    
+  </div>
+</div>
+
+                </main>
+                <div class="sidebar col-sm-3 col-md-3 hidden-xs">
+                    <aside>
+    
+    <h4>起跑</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//getting_started.html">Rails 入门</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+    <h4>模型</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//active_record_basics.html">Active Record Basics</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//migrations.html">Active Record Migrations</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//active_record_validations.html">Active Record Validations</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//active_record_callbacks.html">Active Record Callbacks</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//association_basics.html">Active Record Associations</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+    <h4>视图</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//action_view_overview.html">Action View Overview</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//layouts_and_rendering.html">Layouts and Rendering in Rails</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//form_helpers.html">Form Helpers</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+    <h4>控制器</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//action_controller_overview.html">Action Controller 简介</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//routing.html">Rails 路由全解</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+    <h4>深入</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//active_support_core_extensions.html">Active Support Core Extensions</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//i18n.html">Rails Internationalization (I18n) API</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//action_mailer_basics.html">Action Mailer Basics</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//testing.html">A Guide to Testing Rails Applications</a></li>
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//security.html">Ruby on Rails Security Guide</a></li>
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//debugging_rails_applications.html">Debugging Rails Applications</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//configuring.html">Configuring Rails Applications</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//command_line.html">The Rails Command Line</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//caching_with_rails.html">Caching with Rails An overview</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//asset_pipeline.html">The Asset Pipeline</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class="current"><a href="http://docs-china.com/rails//working_with_javascript_in_rails.html">Working with JavaScript in Rails</a></li>
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//engines.html">Getting Started with Engines</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//initialization.html">The Rails Initialization Process</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+    <h4>扩展</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//plugins.html">The Basics of Creating Rails Plugins</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//rails_on_rack.html">Rails on Rack</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//generators.html">Creating and Customizing Rails Generators & Templates</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+</aside>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer" role="contentinfo">
+        <div class="container">
+            <div>
+                <ul class="social">
+                    <li class="github">
+                        <a href="https://github.com/docs-china/rails/" title="在 GitHub 上关注我们">Github</a>
+                    </li>
+                    <li class="weibo">
+                        <a href="http://weibo.com/docschina" title="关注我们的微博">@DocsChina</a>
+                    </li>
+                </ul>
+            </div>
+
+            <p>本文档授权协议：<a href="http://creativecommons.org/licenses/by-sa/4.0/deed.zh" title="CC BY-SA 4.0">CC BY-SA 4.0</a></p>
+        </div>
+    </footer>
+</body>
+</html>

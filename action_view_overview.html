@@ -1,0 +1,3667 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <title>Action View Overview - Rails 指南</title>
+    <meta name="viewport" content="width=device-width" />
+
+    <link rel="stylesheet" href="http://cdn.staticfile.org/twitter-bootstrap/3.1.1/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="http://docs-china.com/rails//styles/docs.css" />
+</head>
+<body>
+    <a class="sr-only" href="#content">跳到正文</a>
+
+    <nav class="navbar navbar-static-top docs-nav" id="top">
+        <div class="container">
+            <div class="navbar-header">
+                <a href="http://docs-china.com" class="navbar-brand" title="回到首页">&larr; Docs China</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="header" role="banner">
+        <div class="container">
+            <h1 class="logo"><a href="http://docs-china.com/rails//" title="Rails 指南">Rails 指南</a></h1>
+            
+            <iframe src="http://ghbtns.com/github-btn.html?user=docs-china&repo=rails&type=fork&count=false"
+  allowtransparency="true" frameborder="0" scrolling="0" width="62" height="20"></iframe>
+            
+        </div>
+    </header>
+
+    <div id="content" class="content" role="main">
+        <div class="container">
+            <div class="row">
+                <main class="main col-sm-9 col-md-9">
+                    <article class="entry">
+                        <h1>Action View Overview</h1>
+                        <h1>Action View Overview</h1>
+
+<p>After reading this guide, you will know:</p>
+
+<ul>
+  <li>What Action View is and how to use it with Rails.</li>
+  <li>How best to use templates, partials, and layouts.</li>
+  <li>What helpers are provided by Action View and how to make your own.</li>
+  <li>How to use localized views.</li>
+  <li>How to use Action View outside of Rails.</li>
+</ul>
+
+<hr />
+
+<h2>What is Action View?</h2>
+
+<p>Action View and Action Controller are the two major components of Action Pack. In Rails, web requests are handled by Action Pack, which splits the work into a controller part (performing the logic) and a view part (rendering a template). Typically, Action Controller will be concerned with communicating with the database and performing CRUD actions where necessary. Action View is then responsible for compiling the response.</p>
+
+<p>Action View templates are written using embedded Ruby in tags mingled with HTML. To avoid cluttering the templates with boilerplate code, a number of helper classes provide common behavior for forms, dates, and strings. It’s also easy to add new helpers to your application as it evolves.</p>
+
+<p>NOTE: Some features of Action View are tied to Active Record, but that doesn’t mean Action View depends on Active Record. Action View is an independent package that can be used with any sort of Ruby libraries.</p>
+
+<h2>Using Action View with Rails</h2>
+
+<p>For each controller there is an associated directory in the <code>app/views</code> directory which holds the template files that make up the views associated with that controller. These files are used to display the view that results from each controller action.</p>
+
+<p>Let’s take a look at what Rails does by default when creating a new resource using the scaffold generator:</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails generate scaffold post
+      <span class="o">[</span>...]
+      invoke  scaffold_controller
+      create    app/controllers/posts_controller.rb
+      invoke    erb
+      create      app/views/posts
+      create      app/views/posts/index.html.erb
+      create      app/views/posts/edit.html.erb
+      create      app/views/posts/show.html.erb
+      create      app/views/posts/new.html.erb
+      create      app/views/posts/_form.html.erb
+      <span class="o">[</span>...]
+</pre>
+
+</div>
+<p>There is a naming convention for views in Rails. Typically, the views share their name with the associated controller action, as you can see above.
+For example, the index controller action of the <code>posts_controller.rb</code> will use the <code>index.html.erb</code> view file in the <code>app/views/posts</code> directory.
+The complete HTML returned to the client is composed of a combination of this ERB file, a layout template that wraps it, and all the partials that the view may reference. Later on this guide you can find a more detailed documentation of each one of these three components.</p>
+
+<h2>Templates, Partials and Layouts</h2>
+
+<p>As mentioned before, the final HTML output is a composition of three Rails elements: <code>Templates</code>, <code>Partials</code> and <code>Layouts</code>.
+Below is a brief overview of each one of them.</p>
+
+<h3>Templates</h3>
+
+<p>Action View templates can be written in several ways. If the template file has a <code>.erb</code> extension then it uses a mixture of ERB (included in Ruby) and HTML. If the template file has a <code>.builder</code> extension then a fresh instance of <code>Builder::XmlMarkup</code> library is used.</p>
+
+<p>Rails supports multiple template systems and uses a file extension to distinguish amongst them. For example, an HTML file using the ERB template system will have <code>.html.erb</code> as a file extension.</p>
+
+<h4>ERB</h4>
+
+<p>Within an ERB template, Ruby code can be included using both <code>&lt;% %&gt;</code> and <code>&lt;%= %&gt;</code> tags. The <code>&lt;% %&gt;</code> tags are used to execute Ruby code that does not return anything, such as conditions, loops or blocks, and the <code>&lt;%= %&gt;</code> tags are used when you want output.</p>
+
+<p>Consider the following loop for names:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="nt">&lt;h1&gt;</span>Names of all the people<span class="nt">&lt;/h1&gt;</span>
+<span class="cp">&lt;%</span> <span class="vi">@people</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">person</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  Name: <span class="cp">&lt;%=</span> <span class="n">person</span><span class="p">.</span><span class="nf">name</span> <span class="cp">%&gt;</span><span class="nt">&lt;br&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>The loop is set up in regular embedding tags (<code>&lt;% %&gt;</code>) and the name is written using the output embedding tags (<code>&lt;%= %&gt;</code>). Note that this is not just a usage suggestion, for regular output functions like <code>print</code> or <code>puts</code> won’t work with ERB templates. So this would be wrong:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="c">&lt;%# WRONG %&gt;
+Hi, Mr. &lt;% puts "Frodo" %&gt;</span>
+</pre>
+
+</div>
+<p>To suppress leading and trailing whitespaces, you can use <code>&lt;%-</code> <code>-%&gt;</code> interchangeably with <code>&lt;%</code> and <code>%&gt;</code>.</p>
+
+<h4>Builder</h4>
+
+<p>Builder templates are a more programmatic alternative to ERB. They are especially useful for generating XML content. An XmlMarkup object named <code>xml</code> is automatically made available to templates with a <code>.builder</code> extension.</p>
+
+<p>Here are some basic examples:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">xml</span><span class="p">.</span><span class="nf">em</span><span class="p">(</span><span class="s2">"emphasized"</span><span class="p">)</span>
+<span class="n">xml</span><span class="p">.</span><span class="nf">em</span> <span class="p">{</span> <span class="n">xml</span><span class="p">.</span><span class="nf">b</span><span class="p">(</span><span class="s2">"emph &amp; bold"</span><span class="p">)</span> <span class="p">}</span>
+<span class="n">xml</span><span class="p">.</span><span class="nf">a</span><span class="p">(</span><span class="s2">"A Link"</span><span class="p">,</span> <span class="s2">"href"</span> <span class="o">=&gt;</span> <span class="s2">"http://rubyonrails.org"</span><span class="p">)</span>
+<span class="n">xml</span><span class="p">.</span><span class="nf">target</span><span class="p">(</span><span class="s2">"name"</span> <span class="o">=&gt;</span> <span class="s2">"compile"</span><span class="p">,</span> <span class="s2">"option"</span> <span class="o">=&gt;</span> <span class="s2">"fast"</span><span class="p">)</span>
+</pre>
+
+</div>
+<p>which would produce:</p>
+
+<div class="codeblock html"><pre class="highlight"><span class="nt">&lt;em&gt;</span>emphasized<span class="nt">&lt;/em&gt;</span>
+<span class="nt">&lt;em&gt;&lt;b&gt;</span>emph <span class="ni">&amp;amp;</span> bold<span class="nt">&lt;/b&gt;&lt;/em&gt;</span>
+<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"http://rubyonrails.org"</span><span class="nt">&gt;</span>A link<span class="nt">&lt;/a&gt;</span>
+<span class="nt">&lt;target</span> <span class="na">option=</span><span class="s">"fast"</span> <span class="na">name=</span><span class="s">"compile"</span> <span class="nt">/&gt;</span>
+</pre>
+
+</div>
+<p>Any method with a block will be treated as an XML markup tag with nested markup in the block. For example, the following:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">xml</span><span class="p">.</span><span class="nf">div</span> <span class="p">{</span>
+  <span class="n">xml</span><span class="p">.</span><span class="nf">h1</span><span class="p">(</span><span class="vi">@person</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span>
+  <span class="n">xml</span><span class="p">.</span><span class="nf">p</span><span class="p">(</span><span class="vi">@person</span><span class="p">.</span><span class="nf">bio</span><span class="p">)</span>
+<span class="p">}</span>
+</pre>
+
+</div>
+<p>would produce something like:</p>
+
+<div class="codeblock html"><pre class="highlight"><span class="nt">&lt;div&gt;</span>
+  <span class="nt">&lt;h1&gt;</span>David Heinemeier Hansson<span class="nt">&lt;/h1&gt;</span>
+  <span class="nt">&lt;p&gt;</span>A product of Danish Design during the Winter of '79...<span class="nt">&lt;/p&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
+</pre>
+
+</div>
+<p>Below is a full-length RSS example actually used on Basecamp:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">xml</span><span class="p">.</span><span class="nf">rss</span><span class="p">(</span><span class="s2">"version"</span> <span class="o">=&gt;</span> <span class="s2">"2.0"</span><span class="p">,</span> <span class="s2">"xmlns:dc"</span> <span class="o">=&gt;</span> <span class="s2">"http://purl.org/dc/elements/1.1/"</span><span class="p">)</span> <span class="k">do</span>
+  <span class="n">xml</span><span class="p">.</span><span class="nf">channel</span> <span class="k">do</span>
+    <span class="n">xml</span><span class="p">.</span><span class="nf">title</span><span class="p">(</span><span class="vi">@feed_title</span><span class="p">)</span>
+    <span class="n">xml</span><span class="p">.</span><span class="nf">link</span><span class="p">(</span><span class="vi">@url</span><span class="p">)</span>
+    <span class="n">xml</span><span class="p">.</span><span class="nf">description</span> <span class="s2">"Basecamp: Recent items"</span>
+    <span class="n">xml</span><span class="p">.</span><span class="nf">language</span> <span class="s2">"en-us"</span>
+    <span class="n">xml</span><span class="p">.</span><span class="nf">ttl</span> <span class="s2">"40"</span>
+
+    <span class="k">for</span> <span class="n">item</span> <span class="k">in</span> <span class="vi">@recent_items</span>
+      <span class="n">xml</span><span class="p">.</span><span class="nf">item</span> <span class="k">do</span>
+        <span class="n">xml</span><span class="p">.</span><span class="nf">title</span><span class="p">(</span><span class="n">item_title</span><span class="p">(</span><span class="n">item</span><span class="p">))</span>
+        <span class="n">xml</span><span class="p">.</span><span class="nf">description</span><span class="p">(</span><span class="n">item_description</span><span class="p">(</span><span class="n">item</span><span class="p">))</span> <span class="k">if</span> <span class="n">item_description</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+        <span class="n">xml</span><span class="p">.</span><span class="nf">pubDate</span><span class="p">(</span><span class="n">item_pubDate</span><span class="p">(</span><span class="n">item</span><span class="p">))</span>
+        <span class="n">xml</span><span class="p">.</span><span class="nf">guid</span><span class="p">(</span><span class="vi">@person</span><span class="p">.</span><span class="nf">firm</span><span class="p">.</span><span class="nf">account</span><span class="p">.</span><span class="nf">url</span> <span class="o">+</span> <span class="vi">@recent_items</span><span class="p">.</span><span class="nf">url</span><span class="p">(</span><span class="n">item</span><span class="p">))</span>
+        <span class="n">xml</span><span class="p">.</span><span class="nf">link</span><span class="p">(</span><span class="vi">@person</span><span class="p">.</span><span class="nf">firm</span><span class="p">.</span><span class="nf">account</span><span class="p">.</span><span class="nf">url</span> <span class="o">+</span> <span class="vi">@recent_items</span><span class="p">.</span><span class="nf">url</span><span class="p">(</span><span class="n">item</span><span class="p">))</span>
+        <span class="n">xml</span><span class="p">.</span><span class="nf">tag!</span><span class="p">(</span><span class="s2">"dc:creator"</span><span class="p">,</span> <span class="n">item</span><span class="p">.</span><span class="nf">author_name</span><span class="p">)</span> <span class="k">if</span> <span class="n">item_has_creator?</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<h4>Template Caching</h4>
+
+<p>By default, Rails will compile each template to a method in order to render it. When you alter a template, Rails will check the file’s modification time and recompile it in development mode.</p>
+
+<h3>Partials</h3>
+
+<p>Partial templates - usually just called “partials” - are another device for breaking the rendering process into more manageable chunks. With partials, you can extract pieces of code from your templates to separate files and also reuse them throughout your templates.</p>
+
+<h4>Naming Partials</h4>
+
+<p>To render a partial as part of a view, you use the <code>render</code> method within the view:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">render</span> <span class="s2">"menu"</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>This will render a file named <code>_menu.html.erb</code> at that point within the view that is being rendered. Note the leading underscore character: partials are named with a leading underscore to distinguish them from regular views, even though they are referred to without the underscore. This holds true even when you’re pulling in a partial from another folder:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">render</span> <span class="s2">"shared/menu"</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>That code will pull in the partial from <code>app/views/shared/_menu.html.erb</code>.</p>
+
+<h4>Using Partials to simplify Views</h4>
+
+<p>One way to use partials is to treat them as the equivalent of subroutines; a way to move details out of a view so that you can grasp what’s going on more easily. For example, you might have a view that looks like this:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">render</span> <span class="s2">"shared/ad_banner"</span> <span class="cp">%&gt;</span>
+
+<span class="nt">&lt;h1&gt;</span>Products<span class="nt">&lt;/h1&gt;</span>
+
+<span class="nt">&lt;p&gt;</span>Here are a few of our fine products:<span class="nt">&lt;/p&gt;</span>
+<span class="cp">&lt;%</span> <span class="vi">@products</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">product</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">render</span> <span class="ss">partial: </span><span class="s2">"product"</span><span class="p">,</span> <span class="ss">locals: </span><span class="p">{</span><span class="ss">product: </span><span class="n">product</span><span class="p">}</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+
+<span class="cp">&lt;%=</span> <span class="n">render</span> <span class="s2">"shared/footer"</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>Here, the <code>_ad_banner.html.erb</code> and <code>_footer.html.erb</code> partials could contain content that is shared among many pages in your application. You don’t need to see the details of these sections when you’re concentrating on a particular page.</p>
+
+<h4>The <code>as</code> and <code>object</code> options</h4>
+
+<p>By default <code>ActionView::Partials::PartialRenderer</code> has its object in a local variable with the same name as the template. So, given:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">render</span> <span class="ss">partial: </span><span class="s2">"product"</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>within product we’ll get <code>@product</code> in the local variable <code>product</code>, as if we had written:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">render</span> <span class="ss">partial: </span><span class="s2">"product"</span><span class="p">,</span> <span class="ss">locals: </span><span class="p">{</span><span class="ss">product: </span><span class="vi">@product</span><span class="p">}</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>With the <code>as</code> option we can specify a different name for the local variable. For example, if we wanted it to be <code>item</code> instead of <code>product</code> we would do:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">render</span> <span class="ss">partial: </span><span class="s2">"product"</span><span class="p">,</span> <span class="ss">as: </span><span class="s2">"item"</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>The <code>object</code> option can be used to directly specify which object is rendered into the partial; useful when the template’s object is elsewhere (eg. in a different instance variable or in a local variable).</p>
+
+<p>For example, instead of:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">render</span> <span class="ss">partial: </span><span class="s2">"product"</span><span class="p">,</span> <span class="ss">locals: </span><span class="p">{</span><span class="ss">product: </span><span class="vi">@item</span><span class="p">}</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>we would do:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">render</span> <span class="ss">partial: </span><span class="s2">"product"</span><span class="p">,</span> <span class="ss">object: </span><span class="vi">@item</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>The <code>object</code> and <code>as</code> options can also be used together:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">render</span> <span class="ss">partial: </span><span class="s2">"product"</span><span class="p">,</span> <span class="ss">object: </span><span class="vi">@item</span><span class="p">,</span> <span class="ss">as: </span><span class="s2">"item"</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<h4>Rendering Collections</h4>
+
+<p>It is very common that a template needs to iterate over a collection and render a sub-template for each of the elements. This pattern has been implemented as a single method that accepts an array and renders a partial for each one of the elements in the array.</p>
+
+<p>So this example for rendering all the products:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%</span> <span class="vi">@products</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">product</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">render</span> <span class="ss">partial: </span><span class="s2">"product"</span><span class="p">,</span> <span class="ss">locals: </span><span class="p">{</span> <span class="ss">product: </span><span class="n">product</span> <span class="p">}</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>can be rewritten in a single line:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">render</span> <span class="ss">partial: </span><span class="s2">"product"</span><span class="p">,</span> <span class="ss">collection: </span><span class="vi">@products</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>When a partial is called like this (eg. with a collection), the individual instances of the partial have access to the member of the collection being rendered via a variable named after the partial. In this case, the partial is <code>_product</code>, and within it you can refer to <code>product</code> to get the instance that is being rendered.</p>
+
+<p>You can use a shorthand syntax for rendering collections. Assuming <code>@products</code> is a collection of <code>Product</code> instances, you can simply write the following to produce the same result:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">render</span> <span class="vi">@products</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>Rails determines the name of the partial to use by looking at the model name in the collection, <code>Product</code> in this case. In fact, you can even create a heterogeneous collection and render it this way, and Rails will choose the proper partial for each member of the collection.</p>
+
+<h4>Spacer Templates</h4>
+
+<p>You can also specify a second partial to be rendered between instances of the main partial by using the <code>:spacer_template</code> option:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">render</span> <span class="ss">partial: </span><span class="vi">@products</span><span class="p">,</span> <span class="ss">spacer_template: </span><span class="s2">"product_ruler"</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>Rails will render the <code>_product_ruler</code> partial (with no data passed to it) between each pair of <code>_product</code> partials.</p>
+
+<h3>Layouts</h3>
+
+<p>Layouts can be used to render a common view template around the results of Rails controller actions. Typically, every Rails application has a couple of overall layouts that most pages are rendered within. For example, a site might have a layout for a logged in user, and a layout for the marketing or sales side of the site. The logged in user layout might include top-level navigation that should be present across many controller actions. The sales layout for a SaaS app might include top-level navigation for things like “Pricing” and “Contact Us.” You would expect each layout to have a different look and feel. You can read more details about Layouts in the <a href="layouts_and_rendering.html">Layouts and Rendering in Rails</a> guide.</p>
+
+<h2>Partial Layouts</h2>
+
+<p>Partials can have their own layouts applied to them. These layouts are different than the ones that are specified globally for the entire action, but they work in a similar fashion.</p>
+
+<p>Let’s say we’re displaying a post on a page, that should be wrapped in a <code>div</code> for display purposes. First, we’ll create a new <code>Post</code>:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="no">Post</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">body: </span><span class="s1">'Partial Layouts are cool!'</span><span class="p">)</span>
+</pre>
+
+</div>
+<p>In the <code>show</code> template, we’ll render the <code>_post</code> partial wrapped in the <code>box</code> layout:</p>
+
+<p><strong>posts/show.html.erb</strong></p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">render</span> <span class="ss">partial: </span><span class="s1">'post'</span><span class="p">,</span> <span class="ss">layout: </span><span class="s1">'box'</span><span class="p">,</span> <span class="ss">locals: </span><span class="p">{</span><span class="ss">post: </span><span class="vi">@post</span><span class="p">}</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>The <code>box</code> layout simply wraps the <code>_post</code> partial in a <code>div</code>:</p>
+
+<p><strong>posts/_box.html.erb</strong></p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">'box'</span><span class="nt">&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="k">yield</span> <span class="cp">%&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
+</pre>
+
+</div>
+<p>The <code>_post</code> partial wraps the post’s <code>body</code> in a <code>div</code> with the <code>id</code> of the post using the <code>div_for</code> helper:</p>
+
+<p><strong>posts/_post.html.erb</strong></p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">div_for</span><span class="p">(</span><span class="n">post</span><span class="p">)</span> <span class="k">do</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;p&gt;</span><span class="cp">&lt;%=</span> <span class="n">post</span><span class="p">.</span><span class="nf">body</span> <span class="cp">%&gt;</span><span class="nt">&lt;/p&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>this would output the following:</p>
+
+<div class="codeblock html"><pre class="highlight"><span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">'box'</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">'post_1'</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;p&gt;</span>Partial Layouts are cool!<span class="nt">&lt;/p&gt;</span>
+  <span class="nt">&lt;/div&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
+</pre>
+
+</div>
+<p>Note that the partial layout has access to the local <code>post</code> variable that was passed into the <code>render</code> call. However, unlike application-wide layouts, partial layouts still have the underscore prefix.</p>
+
+<p>You can also render a block of code within a partial layout instead of calling <code>yield</code>. For example, if we didn’t have the <code>_post</code> partial, we could do this instead:</p>
+
+<p><strong>posts/show.html.erb</strong></p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%</span> <span class="n">render</span><span class="p">(</span><span class="ss">layout: </span><span class="s1">'box'</span><span class="p">,</span> <span class="ss">locals: </span><span class="p">{</span><span class="ss">post: </span><span class="vi">@post</span><span class="p">})</span> <span class="k">do</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">div_for</span><span class="p">(</span><span class="n">post</span><span class="p">)</span> <span class="k">do</span> <span class="cp">%&gt;</span>
+    <span class="nt">&lt;p&gt;</span><span class="cp">&lt;%=</span> <span class="n">post</span><span class="p">.</span><span class="nf">body</span> <span class="cp">%&gt;</span><span class="nt">&lt;/p&gt;</span>
+  <span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>Supposing we use the same <code>_box</code> partial from above, this would produce the same output as the previous example.</p>
+
+<h2>View Paths</h2>
+
+<p>TODO…</p>
+
+<h2>Overview of helpers provided by Action View</h2>
+
+<p>WIP: Not all the helpers are listed here. For a full list see the <a href="http://api.rubyonrails.org/classes/ActionView/Helpers.html">API documentation</a></p>
+
+<p>The following is only a brief overview summary of the helpers available in Action View. It’s recommended that you review the <a href="http://api.rubyonrails.org/classes/ActionView/Helpers.html">API Documentation</a>, which covers all of the helpers in more detail, but this should serve as a good starting point.</p>
+
+<h3>RecordTagHelper</h3>
+
+<p>This module provides methods for generating container tags, such as <code>div</code>, for your record. This is the recommended way of creating a container for render your Active Record object, as it adds an appropriate class and id attributes to that container. You can then refer to those containers easily by following the convention, instead of having to think about which class or id attribute you should use.</p>
+
+<h4>content_tag_for</h4>
+
+<p>Renders a container tag that relates to your Active Record Object.</p>
+
+<p>For example, given <code>@post</code> is the object of <code>Post</code> class, you can do:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">content_tag_for</span><span class="p">(</span><span class="ss">:tr</span><span class="p">,</span> <span class="vi">@post</span><span class="p">)</span> <span class="k">do</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;td&gt;</span><span class="cp">&lt;%=</span> <span class="vi">@post</span><span class="p">.</span><span class="nf">title</span> <span class="cp">%&gt;</span><span class="nt">&lt;/td&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>This will generate this HTML output:</p>
+
+<div class="codeblock html"><pre class="highlight"><span class="nt">&lt;tr</span> <span class="na">id=</span><span class="s">"post_1234"</span> <span class="na">class=</span><span class="s">"post"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;td&gt;</span>Hello World!<span class="nt">&lt;/td&gt;</span>
+<span class="nt">&lt;/tr&gt;</span>
+</pre>
+
+</div>
+<p>You can also supply HTML attributes as an additional option hash. For example:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">content_tag_for</span><span class="p">(</span><span class="ss">:tr</span><span class="p">,</span> <span class="vi">@post</span><span class="p">,</span> <span class="k">class</span><span class="p">:</span> <span class="s2">"frontpage"</span><span class="p">)</span> <span class="k">do</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;td&gt;</span><span class="cp">&lt;%=</span> <span class="vi">@post</span><span class="p">.</span><span class="nf">title</span> <span class="cp">%&gt;</span><span class="nt">&lt;/td&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>Will generate this HTML output:</p>
+
+<div class="codeblock html"><pre class="highlight"><span class="nt">&lt;tr</span> <span class="na">id=</span><span class="s">"post_1234"</span> <span class="na">class=</span><span class="s">"post frontpage"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;td&gt;</span>Hello World!<span class="nt">&lt;/td&gt;</span>
+<span class="nt">&lt;/tr&gt;</span>
+</pre>
+
+</div>
+<p>You can pass a collection of Active Record objects. This method will loop through your objects and create a container for each of them. For example, given <code>@posts</code> is an array of two <code>Post</code> objects:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">content_tag_for</span><span class="p">(</span><span class="ss">:tr</span><span class="p">,</span> <span class="vi">@posts</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">post</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;td&gt;</span><span class="cp">&lt;%=</span> <span class="n">post</span><span class="p">.</span><span class="nf">title</span> <span class="cp">%&gt;</span><span class="nt">&lt;/td&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>Will generate this HTML output:</p>
+
+<div class="codeblock html"><pre class="highlight"><span class="nt">&lt;tr</span> <span class="na">id=</span><span class="s">"post_1234"</span> <span class="na">class=</span><span class="s">"post"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;td&gt;</span>Hello World!<span class="nt">&lt;/td&gt;</span>
+<span class="nt">&lt;/tr&gt;</span>
+<span class="nt">&lt;tr</span> <span class="na">id=</span><span class="s">"post_1235"</span> <span class="na">class=</span><span class="s">"post"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;td&gt;</span>Ruby on Rails Rocks!<span class="nt">&lt;/td&gt;</span>
+<span class="nt">&lt;/tr&gt;</span>
+</pre>
+
+</div>
+<h4>div_for</h4>
+
+<p>This is actually a convenient method which calls <code>content_tag_for</code> internally with <code>:div</code> as the tag name. You can pass either an Active Record object or a collection of objects. For example:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">div_for</span><span class="p">(</span><span class="vi">@post</span><span class="p">,</span> <span class="k">class</span><span class="p">:</span> <span class="s2">"frontpage"</span><span class="p">)</span> <span class="k">do</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;td&gt;</span><span class="cp">&lt;%=</span> <span class="vi">@post</span><span class="p">.</span><span class="nf">title</span> <span class="cp">%&gt;</span><span class="nt">&lt;/td&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>Will generate this HTML output:</p>
+
+<div class="codeblock html"><pre class="highlight"><span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">"post_1234"</span> <span class="na">class=</span><span class="s">"post frontpage"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;td&gt;</span>Hello World!<span class="nt">&lt;/td&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
+</pre>
+
+</div>
+<h3>AssetTagHelper</h3>
+
+<p>This module provides methods for generating HTML that links views to assets such as images, JavaScript files, stylesheets, and feeds.</p>
+
+<p>By default, Rails links to these assets on the current host in the public folder, but you can direct Rails to link to assets from a dedicated assets server by setting <code>config.action_controller.asset_host</code> in the application configuration, typically in <code>config/environments/production.rb</code>. For example, let’s say your asset host is <code>assets.example.com</code>:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">config</span><span class="p">.</span><span class="nf">action_controller</span><span class="p">.</span><span class="nf">asset_host</span> <span class="o">=</span> <span class="s2">"assets.example.com"</span>
+<span class="n">image_tag</span><span class="p">(</span><span class="s2">"rails.png"</span><span class="p">)</span> <span class="c1"># =&gt; &lt;img src="http://assets.example.com/images/rails.png" alt="Rails" /&gt;</span>
+</pre>
+
+</div>
+<h4>register_javascript_expansion</h4>
+
+<p>Register one or more JavaScript files to be included when symbol is passed to javascript_include_tag. This method is typically intended to be called from plugin initialization to register JavaScript files that the plugin installed in <code>vendor/assets/javascripts</code>.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="no">ActionView</span><span class="o">::</span><span class="no">Helpers</span><span class="o">::</span><span class="no">AssetTagHelper</span><span class="p">.</span><span class="nf">register_javascript_expansion</span> <span class="ss">monkey: </span><span class="o">[</span><span class="s2">"head"</span><span class="p">,</span> <span class="s2">"body"</span><span class="p">,</span> <span class="s2">"tail"</span><span class="o">]</span>
+
+<span class="n">javascript_include_tag</span> <span class="ss">:monkey</span> <span class="c1"># =&gt;</span>
+  <span class="o">&lt;</span><span class="n">script</span> <span class="n">src</span><span class="o">=</span><span class="s2">"/assets/head.js"</span><span class="o">&gt;&lt;</span><span class="sr">/script&gt;
+  &lt;script src="/</span><span class="n">assets</span><span class="o">/</span><span class="n">body</span><span class="p">.</span><span class="nf">js</span><span class="s2">"&gt;&lt;/script&gt;
+  &lt;script src="</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">tail</span><span class="p">.</span><span class="nf">js</span><span class="s2">"&gt;&lt;/script&gt;
+</span></pre>
+
+</div>
+<h4>register_stylesheet_expansion</h4>
+
+<p>Register one or more stylesheet files to be included when symbol is passed to <code>stylesheet_link_tag</code>. This method is typically intended to be called from plugin initialization to register stylesheet files that the plugin installed in <code>vendor/assets/stylesheets</code>.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="no">ActionView</span><span class="o">::</span><span class="no">Helpers</span><span class="o">::</span><span class="no">AssetTagHelper</span><span class="p">.</span><span class="nf">register_stylesheet_expansion</span> <span class="ss">monkey: </span><span class="o">[</span><span class="s2">"head"</span><span class="p">,</span> <span class="s2">"body"</span><span class="p">,</span> <span class="s2">"tail"</span><span class="o">]</span>
+
+<span class="n">stylesheet_link_tag</span> <span class="ss">:monkey</span> <span class="c1"># =&gt;</span>
+  <span class="o">&lt;</span><span class="n">link</span> <span class="n">href</span><span class="o">=</span><span class="s2">"/assets/head.css"</span> <span class="n">media</span><span class="o">=</span><span class="s2">"screen"</span> <span class="n">rel</span><span class="o">=</span><span class="s2">"stylesheet"</span> <span class="o">/&gt;</span>
+  <span class="o">&lt;</span><span class="n">link</span> <span class="n">href</span><span class="o">=</span><span class="s2">"/assets/body.css"</span> <span class="n">media</span><span class="o">=</span><span class="s2">"screen"</span> <span class="n">rel</span><span class="o">=</span><span class="s2">"stylesheet"</span> <span class="o">/&gt;</span>
+  <span class="o">&lt;</span><span class="n">link</span> <span class="n">href</span><span class="o">=</span><span class="s2">"/assets/tail.css"</span> <span class="n">media</span><span class="o">=</span><span class="s2">"screen"</span> <span class="n">rel</span><span class="o">=</span><span class="s2">"stylesheet"</span> <span class="o">/&gt;</span>
+</pre>
+
+</div>
+<h4>auto_discovery_link_tag</h4>
+
+<p>Returns a link tag that browsers and feed readers can use to auto-detect an RSS or Atom feed.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">auto_discovery_link_tag</span><span class="p">(</span><span class="ss">:rss</span><span class="p">,</span> <span class="s2">"http://www.example.com/feed.rss"</span><span class="p">,</span> <span class="p">{</span><span class="ss">title: </span><span class="s2">"RSS Feed"</span><span class="p">})</span> <span class="c1"># =&gt;</span>
+  <span class="o">&lt;</span><span class="n">link</span> <span class="n">rel</span><span class="o">=</span><span class="s2">"alternate"</span> <span class="n">type</span><span class="o">=</span><span class="s2">"application/rss+xml"</span> <span class="n">title</span><span class="o">=</span><span class="s2">"RSS Feed"</span> <span class="n">href</span><span class="o">=</span><span class="s2">"http://www.example.com/feed"</span> <span class="o">/&gt;</span>
+</pre>
+
+</div>
+<h4>image_path</h4>
+
+<p>Computes the path to an image asset in the <code>app/assets/images</code> directory. Full paths from the document root will be passed through. Used internally by <code>image_tag</code> to build the image path.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">image_path</span><span class="p">(</span><span class="s2">"edit.png"</span><span class="p">)</span> <span class="c1"># =&gt; /assets/edit.png</span>
+</pre>
+
+</div>
+<p>Fingerprint will be added to the filename if config.assets.digest is set to true.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">image_path</span><span class="p">(</span><span class="s2">"edit.png"</span><span class="p">)</span> <span class="c1"># =&gt; /assets/edit-2d1a2db63fc738690021fedb5a65b68e.png</span>
+</pre>
+
+</div>
+<h4>image_url</h4>
+
+<p>Computes the url to an image asset in the <code>app/assets/images</code> directory. This will call <code>image_path</code> internally and merge with your current host or your asset host.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">image_url</span><span class="p">(</span><span class="s2">"edit.png"</span><span class="p">)</span> <span class="c1"># =&gt; http://www.example.com/assets/edit.png</span>
+</pre>
+
+</div>
+<h4>image_tag</h4>
+
+<p>Returns an html image tag for the source. The source can be a full path or a file that exists in your <code>app/assets/images</code> directory.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">image_tag</span><span class="p">(</span><span class="s2">"icon.png"</span><span class="p">)</span> <span class="c1"># =&gt; &lt;img src="/assets/icon.png" alt="Icon" /&gt;</span>
+</pre>
+
+</div>
+<h4>javascript_include_tag</h4>
+
+<p>Returns an html script tag for each of the sources provided. You can pass in the filename (<code>.js</code> extension is optional) of JavaScript files that exist in your <code>app/assets/javascripts</code> directory for inclusion into the current page or you can pass the full path relative to your document root.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">javascript_include_tag</span> <span class="s2">"common"</span> <span class="c1"># =&gt; &lt;script src="/assets/common.js"&gt;&lt;/script&gt;</span>
+</pre>
+
+</div>
+<p>If the application does not use the asset pipeline, to include the jQuery JavaScript library in your application, pass <code>:defaults</code> as the source. When using <code>:defaults</code>, if an <code>application.js</code> file exists in your <code>app/assets/javascripts</code> directory, it will be included as well.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">javascript_include_tag</span> <span class="ss">:defaults</span>
+</pre>
+
+</div>
+<p>You can also include all JavaScript files in the <code>app/assets/javascripts</code> directory using <code>:all</code> as the source.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">javascript_include_tag</span> <span class="ss">:all</span>
+</pre>
+
+</div>
+<p>You can also cache multiple JavaScript files into one file, which requires less HTTP connections to download and can better be compressed by gzip (leading to faster transfers). Caching will only happen if <code>ActionController::Base.perform_caching</code> is set to true (which is the case by default for the Rails production environment, but not for the development environment).</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">javascript_include_tag</span> <span class="ss">:all</span><span class="p">,</span> <span class="ss">cache: </span><span class="kp">true</span> <span class="c1"># =&gt;</span>
+  <span class="o">&lt;</span><span class="n">script</span> <span class="n">src</span><span class="o">=</span><span class="s2">"/javascripts/all.js"</span><span class="o">&gt;&lt;</span><span class="sr">/script&gt;
+</span></pre>
+
+</div>
+<h4>javascript_path</h4>
+
+<p>Computes the path to a JavaScript asset in the <code>app/assets/javascripts</code> directory. If the source filename has no extension, <code>.js</code> will be appended. Full paths from the document root will be passed through. Used internally by <code>javascript_include_tag</code> to build the script path.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">javascript_path</span> <span class="s2">"common"</span> <span class="c1"># =&gt; /assets/common.js</span>
+</pre>
+
+</div>
+<h4>javascript_url</h4>
+
+<p>Computes the url to a JavaScript asset in the <code>app/assets/javascripts</code> directory. This will call <code>javascript_path</code> internally and merge with your current host or your asset host.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">javascript_url</span> <span class="s2">"common"</span> <span class="c1"># =&gt; http://www.example.com/assets/common.js</span>
+</pre>
+
+</div>
+<h4>stylesheet_link_tag</h4>
+
+<p>Returns a stylesheet link tag for the sources specified as arguments. If you don’t specify an extension, <code>.css</code> will be appended automatically.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">stylesheet_link_tag</span> <span class="s2">"application"</span> <span class="c1"># =&gt; &lt;link href="/assets/application.css" media="screen" rel="stylesheet" /&gt;</span>
+</pre>
+
+</div>
+<p>You can also include all styles in the stylesheet directory using :all as the source:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">stylesheet_link_tag</span> <span class="ss">:all</span>
+</pre>
+
+</div>
+<p>You can also cache multiple stylesheets into one file, which requires less HTTP connections and can better be compressed by gzip (leading to faster transfers). Caching will only happen if ActionController::Base.perform_caching is set to true (which is the case by default for the Rails production environment, but not for the development environment).</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">stylesheet_link_tag</span> <span class="ss">:all</span><span class="p">,</span> <span class="ss">cache: </span><span class="kp">true</span>
+<span class="c1"># =&gt; &lt;link href="/assets/all.css" media="screen" rel="stylesheet" /&gt;</span>
+</pre>
+
+</div>
+<h4>stylesheet_path</h4>
+
+<p>Computes the path to a stylesheet asset in the <code>app/assets/stylesheets</code> directory. If the source filename has no extension, .css will be appended. Full paths from the document root will be passed through. Used internally by stylesheet_link_tag to build the stylesheet path.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">stylesheet_path</span> <span class="s2">"application"</span> <span class="c1"># =&gt; /assets/application.css</span>
+</pre>
+
+</div>
+<h4>stylesheet_url</h4>
+
+<p>Computes the url to a stylesheet asset in the <code>app/assets/stylesheets</code> directory. This will call <code>stylesheet_path</code> internally and merge with your current host or your asset host.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">stylesheet_url</span> <span class="s2">"application"</span> <span class="c1"># =&gt; http://www.example.com/assets/application.css</span>
+</pre>
+
+</div>
+<h3>AtomFeedHelper</h3>
+
+<h4>atom_feed</h4>
+
+<p>This helper makes building an Atom feed easy. Here’s a full usage example:</p>
+
+<p><strong>config/routes.rb</strong></p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">resources</span> <span class="ss">:posts</span>
+</pre>
+
+</div>
+<p><strong>app/controllers/posts_controller.rb</strong></p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">def</span> <span class="nf">index</span>
+  <span class="vi">@posts</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">all</span>
+
+  <span class="n">respond_to</span> <span class="k">do</span> <span class="o">|</span><span class="nb">format</span><span class="o">|</span>
+    <span class="nb">format</span><span class="p">.</span><span class="nf">html</span>
+    <span class="nb">format</span><span class="p">.</span><span class="nf">atom</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p><strong>app/views/posts/index.atom.builder</strong></p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">atom_feed</span> <span class="k">do</span> <span class="o">|</span><span class="n">feed</span><span class="o">|</span>
+  <span class="n">feed</span><span class="p">.</span><span class="nf">title</span><span class="p">(</span><span class="s2">"Posts Index"</span><span class="p">)</span>
+  <span class="n">feed</span><span class="p">.</span><span class="nf">updated</span><span class="p">((</span><span class="vi">@posts</span><span class="p">.</span><span class="nf">first</span><span class="p">.</span><span class="nf">created_at</span><span class="p">))</span>
+
+  <span class="vi">@posts</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">post</span><span class="o">|</span>
+    <span class="n">feed</span><span class="p">.</span><span class="nf">entry</span><span class="p">(</span><span class="n">post</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">entry</span><span class="o">|</span>
+      <span class="n">entry</span><span class="p">.</span><span class="nf">title</span><span class="p">(</span><span class="n">post</span><span class="p">.</span><span class="nf">title</span><span class="p">)</span>
+      <span class="n">entry</span><span class="p">.</span><span class="nf">content</span><span class="p">(</span><span class="n">post</span><span class="p">.</span><span class="nf">body</span><span class="p">,</span> <span class="ss">type: </span><span class="s1">'html'</span><span class="p">)</span>
+
+      <span class="n">entry</span><span class="p">.</span><span class="nf">author</span> <span class="k">do</span> <span class="o">|</span><span class="n">author</span><span class="o">|</span>
+        <span class="n">author</span><span class="p">.</span><span class="nf">name</span><span class="p">(</span><span class="n">post</span><span class="p">.</span><span class="nf">author_name</span><span class="p">)</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<h3>BenchmarkHelper</h3>
+
+<h4>benchmark</h4>
+
+<p>Allows you to measure the execution time of a block in a template and records the result to the log. Wrap this block around expensive operations or possible bottlenecks to get a time reading for the operation.</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%</span> <span class="n">benchmark</span> <span class="s2">"Process data files"</span> <span class="k">do</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">expensive_files_operation</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>This would add something like “Process data files (0.34523)” to the log, which you can then use to compare timings when optimizing your code.</p>
+
+<h3>CacheHelper</h3>
+
+<h4>cache</h4>
+
+<p>A method for caching fragments of a view rather than an entire action or page. This technique is useful caching pieces like menus, lists of news topics, static HTML fragments, and so on. This method takes a block that contains the content you wish to cache. See <code>ActionController::Caching::Fragments</code> for more information.</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%</span> <span class="n">cache</span> <span class="k">do</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">render</span> <span class="s2">"shared/footer"</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<h3>CaptureHelper</h3>
+
+<h4>capture</h4>
+
+<p>The <code>capture</code> method allows you to extract part of a template into a variable. You can then use this variable anywhere in your templates or layout.</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%</span> <span class="vi">@greeting</span> <span class="o">=</span> <span class="n">capture</span> <span class="k">do</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;p&gt;</span>Welcome! The date and time is <span class="cp">&lt;%=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">now</span> <span class="cp">%&gt;</span><span class="nt">&lt;/p&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>The captured variable can then be used anywhere else.</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="nt">&lt;html&gt;</span>
+  <span class="nt">&lt;head&gt;</span>
+    <span class="nt">&lt;title&gt;</span>Welcome!<span class="nt">&lt;/title&gt;</span>
+  <span class="nt">&lt;/head&gt;</span>
+  <span class="nt">&lt;body&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="vi">@greeting</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</pre>
+
+</div>
+<h4>content_for</h4>
+
+<p>Calling <code>content_for</code> stores a block of markup in an identifier for later use. You can make subsequent calls to the stored content in other templates or the layout by passing the identifier as an argument to <code>yield</code>.</p>
+
+<p>For example, let’s say we have a standard application layout, but also a special page that requires certain JavaScript that the rest of the site doesn’t need. We can use <code>content_for</code> to include this JavaScript on our special page without fattening up the rest of the site.</p>
+
+<p><strong>app/views/layouts/application.html.erb</strong></p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="nt">&lt;html&gt;</span>
+  <span class="nt">&lt;head&gt;</span>
+    <span class="nt">&lt;title&gt;</span>Welcome!<span class="nt">&lt;/title&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="k">yield</span> <span class="ss">:special_script</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;/head&gt;</span>
+  <span class="nt">&lt;body&gt;</span>
+    <span class="nt">&lt;p&gt;</span>Welcome! The date and time is <span class="cp">&lt;%=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">now</span> <span class="cp">%&gt;</span><span class="nt">&lt;/p&gt;</span>
+  <span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</pre>
+
+</div>
+<p><strong>app/views/posts/special.html.erb</strong></p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="nt">&lt;p&gt;</span>This is a special page.<span class="nt">&lt;/p&gt;</span>
+
+<span class="cp">&lt;%</span> <span class="n">content_for</span> <span class="ss">:special_script</span> <span class="k">do</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;script&gt;</span><span class="nx">alert</span><span class="p">(</span><span class="s1">'Hello!'</span><span class="p">)</span><span class="nt">&lt;/script&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<h3>DateHelper</h3>
+
+<h4>date_select</h4>
+
+<p>Returns a set of select tags (one for year, month, and day) pre-selected for accessing a specified date-based attribute.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">date_select</span><span class="p">(</span><span class="s2">"post"</span><span class="p">,</span> <span class="s2">"published_on"</span><span class="p">)</span>
+</pre>
+
+</div>
+<h4>datetime_select</h4>
+
+<p>Returns a set of select tags (one for year, month, day, hour, and minute) pre-selected for accessing a specified datetime-based attribute.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">datetime_select</span><span class="p">(</span><span class="s2">"post"</span><span class="p">,</span> <span class="s2">"published_on"</span><span class="p">)</span>
+</pre>
+
+</div>
+<h4>distance_of_time_in_words</h4>
+
+<p>Reports the approximate distance in time between two Time or Date objects or integers as seconds. Set <code>include_seconds</code> to true if you want more detailed approximations.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">distance_of_time_in_words</span><span class="p">(</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">,</span> <span class="no">Time</span><span class="p">.</span><span class="nf">now</span> <span class="o">+</span> <span class="mi">15</span><span class="p">.</span><span class="nf">seconds</span><span class="p">)</span>        <span class="c1"># =&gt; less than a minute</span>
+<span class="n">distance_of_time_in_words</span><span class="p">(</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">,</span> <span class="no">Time</span><span class="p">.</span><span class="nf">now</span> <span class="o">+</span> <span class="mi">15</span><span class="p">.</span><span class="nf">seconds</span><span class="p">,</span> <span class="ss">include_seconds: </span><span class="kp">true</span><span class="p">)</span>  <span class="c1"># =&gt; less than 20 seconds</span>
+</pre>
+
+</div>
+<h4>select_date</h4>
+
+<p>Returns a set of html select-tags (one for year, month, and day) pre-selected with the <code>date</code> provided.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="c1"># Generates a date select that defaults to the date provided (six days after today)</span>
+<span class="n">select_date</span><span class="p">(</span><span class="no">Time</span><span class="p">.</span><span class="nf">today</span> <span class="o">+</span> <span class="mi">6</span><span class="p">.</span><span class="nf">days</span><span class="p">)</span>
+
+<span class="c1"># Generates a date select that defaults to today (no specified date)</span>
+<span class="n">select_date</span><span class="p">()</span>
+</pre>
+
+</div>
+<h4>select_datetime</h4>
+
+<p>Returns a set of html select-tags (one for year, month, day, hour, and minute) pre-selected with the <code>datetime</code> provided.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="c1"># Generates a datetime select that defaults to the datetime provided (four days after today)</span>
+<span class="n">select_datetime</span><span class="p">(</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span> <span class="o">+</span> <span class="mi">4</span><span class="p">.</span><span class="nf">days</span><span class="p">)</span>
+
+<span class="c1"># Generates a datetime select that defaults to today (no specified datetime)</span>
+<span class="n">select_datetime</span><span class="p">()</span>
+</pre>
+
+</div>
+<h4>select_day</h4>
+
+<p>Returns a select tag with options for each of the days 1 through 31 with the current day selected.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="c1"># Generates a select field for days that defaults to the day for the date provided</span>
+<span class="n">select_day</span><span class="p">(</span><span class="no">Time</span><span class="p">.</span><span class="nf">today</span> <span class="o">+</span> <span class="mi">2</span><span class="p">.</span><span class="nf">days</span><span class="p">)</span>
+
+<span class="c1"># Generates a select field for days that defaults to the number given</span>
+<span class="n">select_day</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</pre>
+
+</div>
+<h4>select_hour</h4>
+
+<p>Returns a select tag with options for each of the hours 0 through 23 with the current hour selected.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="c1"># Generates a select field for hours that defaults to the hours for the time provided</span>
+<span class="n">select_hour</span><span class="p">(</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span> <span class="o">+</span> <span class="mi">6</span><span class="p">.</span><span class="nf">hours</span><span class="p">)</span>
+</pre>
+
+</div>
+<h4>select_minute</h4>
+
+<p>Returns a select tag with options for each of the minutes 0 through 59 with the current minute selected.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="c1"># Generates a select field for minutes that defaults to the minutes for the time provided.</span>
+<span class="n">select_minute</span><span class="p">(</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span> <span class="o">+</span> <span class="mi">6</span><span class="p">.</span><span class="nf">hours</span><span class="p">)</span>
+</pre>
+
+</div>
+<h4>select_month</h4>
+
+<p>Returns a select tag with options for each of the months January through December with the current month selected.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="c1"># Generates a select field for months that defaults to the current month</span>
+<span class="n">select_month</span><span class="p">(</span><span class="no">Date</span><span class="p">.</span><span class="nf">today</span><span class="p">)</span>
+</pre>
+
+</div>
+<h4>select_second</h4>
+
+<p>Returns a select tag with options for each of the seconds 0 through 59 with the current second selected.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="c1"># Generates a select field for seconds that defaults to the seconds for the time provided</span>
+<span class="n">select_second</span><span class="p">(</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span> <span class="o">+</span> <span class="mi">16</span><span class="p">.</span><span class="nf">minutes</span><span class="p">)</span>
+</pre>
+
+</div>
+<h4>select_time</h4>
+
+<p>Returns a set of html select-tags (one for hour and minute).</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="c1"># Generates a time select that defaults to the time provided</span>
+<span class="n">select_time</span><span class="p">(</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">)</span>
+</pre>
+
+</div>
+<h4>select_year</h4>
+
+<p>Returns a select tag with options for each of the five years on each side of the current, which is selected. The five year radius can be changed using the <code>:start_year</code> and <code>:end_year</code> keys in the <code>options</code>.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="c1"># Generates a select field for five years on either side of Date.today that defaults to the current year</span>
+<span class="n">select_year</span><span class="p">(</span><span class="no">Date</span><span class="p">.</span><span class="nf">today</span><span class="p">)</span>
+
+<span class="c1"># Generates a select field from 1900 to 2009 that defaults to the current year</span>
+<span class="n">select_year</span><span class="p">(</span><span class="no">Date</span><span class="p">.</span><span class="nf">today</span><span class="p">,</span> <span class="ss">start_year: </span><span class="mi">1900</span><span class="p">,</span> <span class="ss">end_year: </span><span class="mi">2009</span><span class="p">)</span>
+</pre>
+
+</div>
+<h4>time_ago_in_words</h4>
+
+<p>Like <code>distance_of_time_in_words</code>, but where <code>to_time</code> is fixed to <code>Time.now</code>.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">time_ago_in_words</span><span class="p">(</span><span class="mi">3</span><span class="p">.</span><span class="nf">minutes</span><span class="p">.</span><span class="nf">from_now</span><span class="p">)</span>  <span class="c1"># =&gt; 3 minutes</span>
+</pre>
+
+</div>
+<h4>time_select</h4>
+
+<p>Returns a set of select tags (one for hour, minute and optionally second) pre-selected for accessing a specified time-based attribute. The selects are prepared for multi-parameter assignment to an Active Record object.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="c1"># Creates a time select tag that, when POSTed, will be stored in the order variable in the submitted attribute</span>
+<span class="n">time_select</span><span class="p">(</span><span class="s2">"order"</span><span class="p">,</span> <span class="s2">"submitted"</span><span class="p">)</span>
+</pre>
+
+</div>
+<h3>DebugHelper</h3>
+
+<p>Returns a <code>pre</code> tag that has object dumped by YAML. This creates a very readable way to inspect an object.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">my_hash</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'first'</span> <span class="o">=&gt;</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'second'</span> <span class="o">=&gt;</span> <span class="s1">'two'</span><span class="p">,</span> <span class="s1">'third'</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="o">]</span><span class="p">}</span>
+<span class="n">debug</span><span class="p">(</span><span class="n">my_hash</span><span class="p">)</span>
+</pre>
+
+</div>
+<div class="codeblock html"><pre class="highlight"><span class="nt">&lt;pre</span> <span class="na">class=</span><span class="s">'debug_dump'</span><span class="nt">&gt;</span>---
+first: 1
+second: two
+third:
+- 1
+- 2
+- 3
+<span class="nt">&lt;/pre&gt;</span>
+</pre>
+
+</div>
+<h3>FormHelper</h3>
+
+<p>Form helpers are designed to make working with models much easier compared to using just standard HTML elements by providing a set of methods for creating forms based on your models. This helper generates the HTML for forms, providing a method for each sort of input (e.g., text, password, select, and so on). When the form is submitted (i.e., when the user hits the submit button or form.submit is called via JavaScript), the form inputs will be bundled into the params object and passed back to the controller.</p>
+
+<p>There are two types of form helpers: those that specifically work with model attributes and those that don’t. This helper deals with those that work with model attributes; to see an example of form helpers that don’t work with model attributes, check the ActionView::Helpers::FormTagHelper documentation.</p>
+
+<p>The core method of this helper, form_for, gives you the ability to create a form for a model instance; for example, let’s say that you have a model Person and want to create a new instance of it:</p>
+
+<div class="codeblock erb"><pre class="highlight"># Note: a @person variable will have been created in the controller (e.g. @person = Person.new)
+<span class="cp">&lt;%=</span> <span class="n">form_for</span> <span class="vi">@person</span><span class="p">,</span> <span class="ss">url: </span><span class="p">{</span><span class="ss">action: </span><span class="s2">"create"</span><span class="p">}</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">f</span><span class="p">.</span><span class="nf">text_field</span> <span class="ss">:first_name</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">f</span><span class="p">.</span><span class="nf">text_field</span> <span class="ss">:last_name</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">submit_tag</span> <span class="s1">'Create'</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>The HTML generated for this would be:</p>
+
+<div class="codeblock html"><pre class="highlight"><span class="nt">&lt;form</span> <span class="na">action=</span><span class="s">"/people/create"</span> <span class="na">method=</span><span class="s">"post"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;input</span> <span class="na">id=</span><span class="s">"person_first_name"</span> <span class="na">name=</span><span class="s">"person[first_name]"</span> <span class="na">type=</span><span class="s">"text"</span> <span class="nt">/&gt;</span>
+  <span class="nt">&lt;input</span> <span class="na">id=</span><span class="s">"person_last_name"</span> <span class="na">name=</span><span class="s">"person[last_name]"</span> <span class="na">type=</span><span class="s">"text"</span> <span class="nt">/&gt;</span>
+  <span class="nt">&lt;input</span> <span class="na">name=</span><span class="s">"commit"</span> <span class="na">type=</span><span class="s">"submit"</span> <span class="na">value=</span><span class="s">"Create"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;/form&gt;</span>
+</pre>
+
+</div>
+<p>The params object created when this form is submitted would look like:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="p">{</span><span class="s2">"action"</span> <span class="o">=&gt;</span> <span class="s2">"create"</span><span class="p">,</span> <span class="s2">"controller"</span> <span class="o">=&gt;</span> <span class="s2">"people"</span><span class="p">,</span> <span class="s2">"person"</span> <span class="o">=&gt;</span> <span class="p">{</span><span class="s2">"first_name"</span> <span class="o">=&gt;</span> <span class="s2">"William"</span><span class="p">,</span> <span class="s2">"last_name"</span> <span class="o">=&gt;</span> <span class="s2">"Smith"</span><span class="p">}}</span>
+</pre>
+
+</div>
+<p>The params hash has a nested person value, which can therefore be accessed with params[:person] in the controller.</p>
+
+<h4>check_box</h4>
+
+<p>Returns a checkbox tag tailored for accessing a specified attribute.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="c1"># Let's say that @post.validated? is 1:</span>
+<span class="n">check_box</span><span class="p">(</span><span class="s2">"post"</span><span class="p">,</span> <span class="s2">"validated"</span><span class="p">)</span>
+<span class="c1"># =&gt; &lt;input type="checkbox" id="post_validated" name="post[validated]" value="1" /&gt;</span>
+<span class="c1">#    &lt;input name="post[validated]" type="hidden" value="0" /&gt;</span>
+</pre>
+
+</div>
+<h4>fields_for</h4>
+
+<p>Creates a scope around a specific model object like form_for, but doesn’t create the form tags themselves. This makes fields_for suitable for specifying additional model objects in the same form:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">form_for</span> <span class="vi">@person</span><span class="p">,</span> <span class="ss">url: </span><span class="p">{</span><span class="ss">action: </span><span class="s2">"update"</span><span class="p">}</span> <span class="k">do</span> <span class="o">|</span><span class="n">person_form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  First name: <span class="cp">&lt;%=</span> <span class="n">person_form</span><span class="p">.</span><span class="nf">text_field</span> <span class="ss">:first_name</span> <span class="cp">%&gt;</span>
+  Last name : <span class="cp">&lt;%=</span> <span class="n">person_form</span><span class="p">.</span><span class="nf">text_field</span> <span class="ss">:last_name</span> <span class="cp">%&gt;</span>
+
+  <span class="cp">&lt;%=</span> <span class="n">fields_for</span> <span class="vi">@person</span><span class="p">.</span><span class="nf">permission</span> <span class="k">do</span> <span class="o">|</span><span class="n">permission_fields</span><span class="o">|</span> <span class="cp">%&gt;</span>
+    Admin?  : <span class="cp">&lt;%=</span> <span class="n">permission_fields</span><span class="p">.</span><span class="nf">check_box</span> <span class="ss">:admin</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<h4>file_field</h4>
+
+<p>Returns a file upload input tag tailored for accessing a specified attribute.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">file_field</span><span class="p">(</span><span class="ss">:user</span><span class="p">,</span> <span class="ss">:avatar</span><span class="p">)</span>
+<span class="c1"># =&gt; &lt;input type="file" id="user_avatar" name="user[avatar]" /&gt;</span>
+</pre>
+
+</div>
+<h4>form_for</h4>
+
+<p>Creates a form and a scope around a specific model object that is used as a base for questioning about values for the fields.</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">form_for</span> <span class="vi">@post</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">f</span><span class="p">.</span><span class="nf">label</span> <span class="ss">:title</span><span class="p">,</span> <span class="s1">'Title'</span> <span class="cp">%&gt;</span>:
+  <span class="cp">&lt;%=</span> <span class="n">f</span><span class="p">.</span><span class="nf">text_field</span> <span class="ss">:title</span> <span class="cp">%&gt;</span><span class="nt">&lt;br&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">f</span><span class="p">.</span><span class="nf">label</span> <span class="ss">:body</span><span class="p">,</span> <span class="s1">'Body'</span> <span class="cp">%&gt;</span>:
+  <span class="cp">&lt;%=</span> <span class="n">f</span><span class="p">.</span><span class="nf">text_area</span> <span class="ss">:body</span> <span class="cp">%&gt;</span><span class="nt">&lt;br&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<h4>hidden_field</h4>
+
+<p>Returns a hidden input tag tailored for accessing a specified attribute.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">hidden_field</span><span class="p">(</span><span class="ss">:user</span><span class="p">,</span> <span class="ss">:token</span><span class="p">)</span>
+<span class="c1"># =&gt; &lt;input type="hidden" id="user_token" name="user[token]" value="#{@user.token}" /&gt;</span>
+</pre>
+
+</div>
+<h4>label</h4>
+
+<p>Returns a label tag tailored for labelling an input field for a specified attribute.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">label</span><span class="p">(</span><span class="ss">:post</span><span class="p">,</span> <span class="ss">:title</span><span class="p">)</span>
+<span class="c1"># =&gt; &lt;label for="post_title"&gt;Title&lt;/label&gt;</span>
+</pre>
+
+</div>
+<h4>password_field</h4>
+
+<p>Returns an input tag of the “password” type tailored for accessing a specified attribute.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">password_field</span><span class="p">(</span><span class="ss">:login</span><span class="p">,</span> <span class="ss">:pass</span><span class="p">)</span>
+<span class="c1"># =&gt; &lt;input type="text" id="login_pass" name="login[pass]" value="#{@login.pass}" /&gt;</span>
+</pre>
+
+</div>
+<h4>radio_button</h4>
+
+<p>Returns a radio button tag for accessing a specified attribute.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="c1"># Let's say that @post.category returns "rails":</span>
+<span class="n">radio_button</span><span class="p">(</span><span class="s2">"post"</span><span class="p">,</span> <span class="s2">"category"</span><span class="p">,</span> <span class="s2">"rails"</span><span class="p">)</span>
+<span class="n">radio_button</span><span class="p">(</span><span class="s2">"post"</span><span class="p">,</span> <span class="s2">"category"</span><span class="p">,</span> <span class="s2">"java"</span><span class="p">)</span>
+<span class="c1"># =&gt; &lt;input type="radio" id="post_category_rails" name="post[category]" value="rails" checked="checked" /&gt;</span>
+<span class="c1">#    &lt;input type="radio" id="post_category_java" name="post[category]" value="java" /&gt;</span>
+</pre>
+
+</div>
+<h4>text_area</h4>
+
+<p>Returns a textarea opening and closing tag set tailored for accessing a specified attribute.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">text_area</span><span class="p">(</span><span class="ss">:comment</span><span class="p">,</span> <span class="ss">:text</span><span class="p">,</span> <span class="ss">size: </span><span class="s2">"20x30"</span><span class="p">)</span>
+<span class="c1"># =&gt; &lt;textarea cols="20" rows="30" id="comment_text" name="comment[text]"&gt;</span>
+<span class="c1">#      #{@comment.text}</span>
+<span class="c1">#    &lt;/textarea&gt;</span>
+</pre>
+
+</div>
+<h4>text_field</h4>
+
+<p>Returns an input tag of the “text” type tailored for accessing a specified attribute.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">text_field</span><span class="p">(</span><span class="ss">:post</span><span class="p">,</span> <span class="ss">:title</span><span class="p">)</span>
+<span class="c1"># =&gt; &lt;input type="text" id="post_title" name="post[title]" value="#{@post.title}" /&gt;</span>
+</pre>
+
+</div>
+<h4>email_field</h4>
+
+<p>Returns an input tag of the “email” type tailored for accessing a specified attribute.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">email_field</span><span class="p">(</span><span class="ss">:user</span><span class="p">,</span> <span class="ss">:email</span><span class="p">)</span>
+<span class="c1"># =&gt; &lt;input type="email" id="user_email" name="user[email]" value="#{@user.email}" /&gt;</span>
+</pre>
+
+</div>
+<h4>url_field</h4>
+
+<p>Returns an input tag of the “url” type tailored for accessing a specified attribute.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">url_field</span><span class="p">(</span><span class="ss">:user</span><span class="p">,</span> <span class="ss">:url</span><span class="p">)</span>
+<span class="c1"># =&gt; &lt;input type="url" id="user_url" name="user[url]" value="#{@user.url}" /&gt;</span>
+</pre>
+
+</div>
+<h3>FormOptionsHelper</h3>
+
+<p>Provides a number of methods for turning different kinds of containers into a set of option tags.</p>
+
+<h4>collection_select</h4>
+
+<p>Returns <code>select</code> and <code>option</code> tags for the collection of existing return values of <code>method</code> for <code>object</code>’s class.</p>
+
+<p>Example object structure for use with this method:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">belongs_to</span> <span class="ss">:author</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">has_many</span> <span class="ss">:posts</span>
+  <span class="k">def</span> <span class="nf">name_with_initial</span>
+    <span class="s2">"</span><span class="si">#{</span><span class="n">first_name</span><span class="p">.</span><span class="nf">first</span><span class="si">}</span><span class="s2">. </span><span class="si">#{</span><span class="n">last_name</span><span class="si">}</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>Sample usage (selecting the associated Author for an instance of Post, <code>@post</code>):</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">collection_select</span><span class="p">(</span><span class="ss">:post</span><span class="p">,</span> <span class="ss">:author_id</span><span class="p">,</span> <span class="no">Author</span><span class="p">.</span><span class="nf">all</span><span class="p">,</span> <span class="ss">:id</span><span class="p">,</span> <span class="ss">:name_with_initial</span><span class="p">,</span> <span class="p">{</span><span class="ss">prompt: </span><span class="kp">true</span><span class="p">})</span>
+</pre>
+
+</div>
+<p>If <code>@post.author_id</code> is 1, this would return:</p>
+
+<div class="codeblock html"><pre class="highlight"><span class="nt">&lt;select</span> <span class="na">name=</span><span class="s">"post[author_id]"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">""</span><span class="nt">&gt;</span>Please select<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"1"</span> <span class="na">selected=</span><span class="s">"selected"</span><span class="nt">&gt;</span>D. Heinemeier Hansson<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"2"</span><span class="nt">&gt;</span>D. Thomas<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"3"</span><span class="nt">&gt;</span>M. Clark<span class="nt">&lt;/option&gt;</span>
+<span class="nt">&lt;/select&gt;</span>
+</pre>
+
+</div>
+<h4>collection_radio_buttons</h4>
+
+<p>Returns <code>radio_button</code> tags for the collection of existing return values of <code>method</code> for <code>object</code>’s class.</p>
+
+<p>Example object structure for use with this method:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">belongs_to</span> <span class="ss">:author</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">has_many</span> <span class="ss">:posts</span>
+  <span class="k">def</span> <span class="nf">name_with_initial</span>
+    <span class="s2">"</span><span class="si">#{</span><span class="n">first_name</span><span class="p">.</span><span class="nf">first</span><span class="si">}</span><span class="s2">. </span><span class="si">#{</span><span class="n">last_name</span><span class="si">}</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>Sample usage (selecting the associated Author for an instance of Post, <code>@post</code>):</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">collection_radio_buttons</span><span class="p">(</span><span class="ss">:post</span><span class="p">,</span> <span class="ss">:author_id</span><span class="p">,</span> <span class="no">Author</span><span class="p">.</span><span class="nf">all</span><span class="p">,</span> <span class="ss">:id</span><span class="p">,</span> <span class="ss">:name_with_initial</span><span class="p">)</span>
+</pre>
+
+</div>
+<p>If <code>@post.author_id</code> is 1, this would return:</p>
+
+<div class="codeblock html"><pre class="highlight"><span class="nt">&lt;input</span> <span class="na">id=</span><span class="s">"post_author_id_1"</span> <span class="na">name=</span><span class="s">"post[author_id]"</span> <span class="na">type=</span><span class="s">"radio"</span> <span class="na">value=</span><span class="s">"1"</span> <span class="na">checked=</span><span class="s">"checked"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;label</span> <span class="na">for=</span><span class="s">"post_author_id_1"</span><span class="nt">&gt;</span>D. Heinemeier Hansson<span class="nt">&lt;/label&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">id=</span><span class="s">"post_author_id_2"</span> <span class="na">name=</span><span class="s">"post[author_id]"</span> <span class="na">type=</span><span class="s">"radio"</span> <span class="na">value=</span><span class="s">"2"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;label</span> <span class="na">for=</span><span class="s">"post_author_id_2"</span><span class="nt">&gt;</span>D. Thomas<span class="nt">&lt;/label&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">id=</span><span class="s">"post_author_id_3"</span> <span class="na">name=</span><span class="s">"post[author_id]"</span> <span class="na">type=</span><span class="s">"radio"</span> <span class="na">value=</span><span class="s">"3"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;label</span> <span class="na">for=</span><span class="s">"post_author_id_3"</span><span class="nt">&gt;</span>M. Clark<span class="nt">&lt;/label&gt;</span>
+</pre>
+
+</div>
+<h4>collection_check_boxes</h4>
+
+<p>Returns <code>check_box</code> tags for the collection of existing return values of <code>method</code> for <code>object</code>’s class.</p>
+
+<p>Example object structure for use with this method:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">has_and_belongs_to_many</span> <span class="ss">:authors</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">has_and_belongs_to_many</span> <span class="ss">:posts</span>
+  <span class="k">def</span> <span class="nf">name_with_initial</span>
+    <span class="s2">"</span><span class="si">#{</span><span class="n">first_name</span><span class="p">.</span><span class="nf">first</span><span class="si">}</span><span class="s2">. </span><span class="si">#{</span><span class="n">last_name</span><span class="si">}</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>Sample usage (selecting the associated Authors for an instance of Post, <code>@post</code>):</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">collection_check_boxes</span><span class="p">(</span><span class="ss">:post</span><span class="p">,</span> <span class="ss">:author_ids</span><span class="p">,</span> <span class="no">Author</span><span class="p">.</span><span class="nf">all</span><span class="p">,</span> <span class="ss">:id</span><span class="p">,</span> <span class="ss">:name_with_initial</span><span class="p">)</span>
+</pre>
+
+</div>
+<p>If <code>@post.author_ids</code> is [1], this would return:</p>
+
+<div class="codeblock html"><pre class="highlight"><span class="nt">&lt;input</span> <span class="na">id=</span><span class="s">"post_author_ids_1"</span> <span class="na">name=</span><span class="s">"post[author_ids][]"</span> <span class="na">type=</span><span class="s">"checkbox"</span> <span class="na">value=</span><span class="s">"1"</span> <span class="na">checked=</span><span class="s">"checked"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;label</span> <span class="na">for=</span><span class="s">"post_author_ids_1"</span><span class="nt">&gt;</span>D. Heinemeier Hansson<span class="nt">&lt;/label&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">id=</span><span class="s">"post_author_ids_2"</span> <span class="na">name=</span><span class="s">"post[author_ids][]"</span> <span class="na">type=</span><span class="s">"checkbox"</span> <span class="na">value=</span><span class="s">"2"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;label</span> <span class="na">for=</span><span class="s">"post_author_ids_2"</span><span class="nt">&gt;</span>D. Thomas<span class="nt">&lt;/label&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">id=</span><span class="s">"post_author_ids_3"</span> <span class="na">name=</span><span class="s">"post[author_ids][]"</span> <span class="na">type=</span><span class="s">"checkbox"</span> <span class="na">value=</span><span class="s">"3"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;label</span> <span class="na">for=</span><span class="s">"post_author_ids_3"</span><span class="nt">&gt;</span>M. Clark<span class="nt">&lt;/label&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">name=</span><span class="s">"post[author_ids][]"</span> <span class="na">type=</span><span class="s">"hidden"</span> <span class="na">value=</span><span class="s">""</span> <span class="nt">/&gt;</span>
+</pre>
+
+</div>
+<h4>country_options_for_select</h4>
+
+<p>Returns a string of option tags for pretty much any country in the world.</p>
+
+<h4>country_select</h4>
+
+<p>Returns select and option tags for the given object and method, using country_options_for_select to generate the list of option tags.</p>
+
+<h4>option_groups_from_collection_for_select</h4>
+
+<p>Returns a string of <code>option</code> tags, like <code>options_from_collection_for_select</code>, but groups them by <code>optgroup</code> tags based on the object relationships of the arguments.</p>
+
+<p>Example object structure for use with this method:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Continent</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">has_many</span> <span class="ss">:countries</span>
+  <span class="c1"># attribs: id, name</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Country</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">belongs_to</span> <span class="ss">:continent</span>
+  <span class="c1"># attribs: id, name, continent_id</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>Sample usage:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">option_groups_from_collection_for_select</span><span class="p">(</span><span class="vi">@continents</span><span class="p">,</span> <span class="ss">:countries</span><span class="p">,</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">:id</span><span class="p">,</span> <span class="ss">:name</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+</pre>
+
+</div>
+<p>Possible output:</p>
+
+<div class="codeblock html"><pre class="highlight"><span class="nt">&lt;optgroup</span> <span class="na">label=</span><span class="s">"Africa"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"1"</span><span class="nt">&gt;</span>Egypt<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"4"</span><span class="nt">&gt;</span>Rwanda<span class="nt">&lt;/option&gt;</span>
+  ...
+<span class="nt">&lt;/optgroup&gt;</span>
+<span class="nt">&lt;optgroup</span> <span class="na">label=</span><span class="s">"Asia"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"3"</span> <span class="na">selected=</span><span class="s">"selected"</span><span class="nt">&gt;</span>China<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"12"</span><span class="nt">&gt;</span>India<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"5"</span><span class="nt">&gt;</span>Japan<span class="nt">&lt;/option&gt;</span>
+  ...
+<span class="nt">&lt;/optgroup&gt;</span>
+</pre>
+
+</div>
+<p>Note: Only the <code>optgroup</code> and <code>option</code> tags are returned, so you still have to wrap the output in an appropriate <code>select</code> tag.</p>
+
+<h4>options_for_select</h4>
+
+<p>Accepts a container (hash, array, enumerable, your type) and returns a string of option tags.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">options_for_select</span><span class="p">(</span><span class="o">[</span> <span class="s2">"VISA"</span><span class="p">,</span> <span class="s2">"MasterCard"</span> <span class="o">]</span><span class="p">)</span>
+<span class="c1"># =&gt; &lt;option&gt;VISA&lt;/option&gt; &lt;option&gt;MasterCard&lt;/option&gt;</span>
+</pre>
+
+</div>
+<p>Note: Only the <code>option</code> tags are returned, you have to wrap this call in a regular HTML <code>select</code> tag.</p>
+
+<h4>options_from_collection_for_select</h4>
+
+<p>Returns a string of option tags that have been compiled by iterating over the <code>collection</code> and assigning the result of a call to the <code>value_method</code> as the option value and the <code>text_method</code> as the option text.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="c1"># options_from_collection_for_select(collection, value_method, text_method, selected = nil)</span>
+</pre>
+
+</div>
+<p>For example, imagine a loop iterating over each person in @project.people to generate an input tag:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">options_from_collection_for_select</span><span class="p">(</span><span class="vi">@project</span><span class="p">.</span><span class="nf">people</span><span class="p">,</span> <span class="s2">"id"</span><span class="p">,</span> <span class="s2">"name"</span><span class="p">)</span>
+<span class="c1"># =&gt; &lt;option value="#{person.id}"&gt;#{person.name}&lt;/option&gt;</span>
+</pre>
+
+</div>
+<p>Note: Only the <code>option</code> tags are returned, you have to wrap this call in a regular HTML <code>select</code> tag.</p>
+
+<h4>select</h4>
+
+<p>Create a select tag and a series of contained option tags for the provided object and method.</p>
+
+<p>Example:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="nb">select</span><span class="p">(</span><span class="s2">"post"</span><span class="p">,</span> <span class="s2">"person_id"</span><span class="p">,</span> <span class="no">Person</span><span class="p">.</span><span class="nf">all</span><span class="p">.</span><span class="nf">collect</span> <span class="p">{</span><span class="o">|</span><span class="nb">p</span><span class="o">|</span> <span class="o">[</span> <span class="nb">p</span><span class="p">.</span><span class="nf">name</span><span class="p">,</span> <span class="nb">p</span><span class="p">.</span><span class="nf">id</span> <span class="o">]</span> <span class="p">},</span> <span class="p">{</span><span class="ss">include_blank: </span><span class="kp">true</span><span class="p">})</span>
+</pre>
+
+</div>
+<p>If <code>@post.person_id</code> is 1, this would become:</p>
+
+<div class="codeblock html"><pre class="highlight"><span class="nt">&lt;select</span> <span class="na">name=</span><span class="s">"post[person_id]"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">""</span><span class="nt">&gt;&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"1"</span> <span class="na">selected=</span><span class="s">"selected"</span><span class="nt">&gt;</span>David<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"2"</span><span class="nt">&gt;</span>Sam<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"3"</span><span class="nt">&gt;</span>Tobias<span class="nt">&lt;/option&gt;</span>
+<span class="nt">&lt;/select&gt;</span>
+</pre>
+
+</div>
+<h4>time_zone_options_for_select</h4>
+
+<p>Returns a string of option tags for pretty much any time zone in the world.</p>
+
+<h4>time_zone_select</h4>
+
+<p>Returns select and option tags for the given object and method, using <code>time_zone_options_for_select</code> to generate the list of option tags.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">time_zone_select</span><span class="p">(</span> <span class="s2">"user"</span><span class="p">,</span> <span class="s2">"time_zone"</span><span class="p">)</span>
+</pre>
+
+</div>
+<h4>date_field</h4>
+
+<p>Returns an input tag of the “date” type tailored for accessing a specified attribute.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">date_field</span><span class="p">(</span><span class="s2">"user"</span><span class="p">,</span> <span class="s2">"dob"</span><span class="p">)</span>
+</pre>
+
+</div>
+<h3>FormTagHelper</h3>
+
+<p>Provides a number of methods for creating form tags that don’t rely on an Active Record object assigned to the template like FormHelper does. Instead, you provide the names and values manually.</p>
+
+<h4>check_box_tag</h4>
+
+<p>Creates a check box form input tag.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">check_box_tag</span> <span class="s1">'accept'</span>
+<span class="c1"># =&gt; &lt;input id="accept" name="accept" type="checkbox" value="1" /&gt;</span>
+</pre>
+
+</div>
+<h4>field_set_tag</h4>
+
+<p>Creates a field set for grouping HTML form elements.</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">field_set_tag</span> <span class="k">do</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;p&gt;</span><span class="cp">&lt;%=</span> <span class="n">text_field_tag</span> <span class="s1">'name'</span> <span class="cp">%&gt;</span><span class="nt">&lt;/p&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+# =&gt; <span class="nt">&lt;fieldset&gt;&lt;p&gt;&lt;input</span> <span class="na">id=</span><span class="s">"name"</span> <span class="na">name=</span><span class="s">"name"</span> <span class="na">type=</span><span class="s">"text"</span> <span class="nt">/&gt;&lt;/p&gt;&lt;/fieldset&gt;</span>
+</pre>
+
+</div>
+<h4>file_field_tag</h4>
+
+<p>Creates a file upload field.</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">form_tag</span><span class="p">({</span><span class="n">action</span><span class="ss">:"post"</span><span class="p">},</span> <span class="ss">multipart: </span><span class="kp">true</span><span class="p">)</span> <span class="k">do</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;label</span> <span class="na">for=</span><span class="s">"file"</span><span class="nt">&gt;</span>File to Upload<span class="nt">&lt;/label&gt;</span> <span class="cp">&lt;%=</span> <span class="n">file_field_tag</span> <span class="s2">"file"</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">submit_tag</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<p>Example output:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">file_field_tag</span> <span class="s1">'attachment'</span>
+<span class="c1"># =&gt; &lt;input id="attachment" name="attachment" type="file" /&gt;</span>
+</pre>
+
+</div>
+<h4>form_tag</h4>
+
+<p>Starts a form tag that points the action to an url configured with <code>url_for_options</code> just like <code>ActionController::Base#url_for</code>.</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">form_tag</span> <span class="s1">'/posts'</span> <span class="k">do</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;div&gt;</span><span class="cp">&lt;%=</span> <span class="n">submit_tag</span> <span class="s1">'Save'</span> <span class="cp">%&gt;</span><span class="nt">&lt;/div&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+# =&gt; <span class="nt">&lt;form</span> <span class="na">action=</span><span class="s">"/posts"</span> <span class="na">method=</span><span class="s">"post"</span><span class="nt">&gt;&lt;div&gt;&lt;input</span> <span class="na">type=</span><span class="s">"submit"</span> <span class="na">name=</span><span class="s">"submit"</span> <span class="na">value=</span><span class="s">"Save"</span> <span class="nt">/&gt;&lt;/div&gt;&lt;/form&gt;</span>
+</pre>
+
+</div>
+<h4>hidden_field_tag</h4>
+
+<p>Creates a hidden form input field used to transmit data that would be lost due to HTTP’s statelessness or data that should be hidden from the user.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">hidden_field_tag</span> <span class="s1">'token'</span><span class="p">,</span> <span class="s1">'VUBJKB23UIVI1UU1VOBVI@'</span>
+<span class="c1"># =&gt; &lt;input id="token" name="token" type="hidden" value="VUBJKB23UIVI1UU1VOBVI@" /&gt;</span>
+</pre>
+
+</div>
+<h4>image_submit_tag</h4>
+
+<p>Displays an image which when clicked will submit the form.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">image_submit_tag</span><span class="p">(</span><span class="s2">"login.png"</span><span class="p">)</span>
+<span class="c1"># =&gt; &lt;input src="/images/login.png" type="image" /&gt;</span>
+</pre>
+
+</div>
+<h4>label_tag</h4>
+
+<p>Creates a label field.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">label_tag</span> <span class="s1">'name'</span>
+<span class="c1"># =&gt; &lt;label for="name"&gt;Name&lt;/label&gt;</span>
+</pre>
+
+</div>
+<h4>password_field_tag</h4>
+
+<p>Creates a password field, a masked text field that will hide the users input behind a mask character.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">password_field_tag</span> <span class="s1">'pass'</span>
+<span class="c1"># =&gt; &lt;input id="pass" name="pass" type="password" /&gt;</span>
+</pre>
+
+</div>
+<h4>radio_button_tag</h4>
+
+<p>Creates a radio button; use groups of radio buttons named the same to allow users to select from a group of options.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">radio_button_tag</span> <span class="s1">'gender'</span><span class="p">,</span> <span class="s1">'male'</span>
+<span class="c1"># =&gt; &lt;input id="gender_male" name="gender" type="radio" value="male" /&gt;</span>
+</pre>
+
+</div>
+<h4>select_tag</h4>
+
+<p>Creates a dropdown selection box.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">select_tag</span> <span class="s2">"people"</span><span class="p">,</span> <span class="s2">"&lt;option&gt;David&lt;/option&gt;"</span>
+<span class="c1"># =&gt; &lt;select id="people" name="people"&gt;&lt;option&gt;David&lt;/option&gt;&lt;/select&gt;</span>
+</pre>
+
+</div>
+<h4>submit_tag</h4>
+
+<p>Creates a submit button with the text provided as the caption.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">submit_tag</span> <span class="s2">"Publish this post"</span>
+<span class="c1"># =&gt; &lt;input name="commit" type="submit" value="Publish this post" /&gt;</span>
+</pre>
+
+</div>
+<h4>text_area_tag</h4>
+
+<p>Creates a text input area; use a textarea for longer text inputs such as blog posts or descriptions.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">text_area_tag</span> <span class="s1">'post'</span>
+<span class="c1"># =&gt; &lt;textarea id="post" name="post"&gt;&lt;/textarea&gt;</span>
+</pre>
+
+</div>
+<h4>text_field_tag</h4>
+
+<p>Creates a standard text field; use these text fields to input smaller chunks of text like a username or a search query.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">text_field_tag</span> <span class="s1">'name'</span>
+<span class="c1"># =&gt; &lt;input id="name" name="name" type="text" /&gt;</span>
+</pre>
+
+</div>
+<h4>email_field_tag</h4>
+
+<p>Creates a standard input field of email type.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">email_field_tag</span> <span class="s1">'email'</span>
+<span class="c1"># =&gt; &lt;input id="email" name="email" type="email" /&gt;</span>
+</pre>
+
+</div>
+<h4>url_field_tag</h4>
+
+<p>Creates a standard input field of url type.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">url_field_tag</span> <span class="s1">'url'</span>
+<span class="c1"># =&gt; &lt;input id="url" name="url" type="url" /&gt;</span>
+</pre>
+
+</div>
+<h4>date_field_tag</h4>
+
+<p>Creates a standard input field of date type.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">date_field_tag</span> <span class="s2">"dob"</span>
+<span class="c1"># =&gt; &lt;input id="dob" name="dob" type="date" /&gt;</span>
+</pre>
+
+</div>
+<h3>JavaScriptHelper</h3>
+
+<p>Provides functionality for working with JavaScript in your views.</p>
+
+<h4>button_to_function</h4>
+
+<p>Returns a button that’ll trigger a JavaScript function using the onclick handler. Examples:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">button_to_function</span> <span class="s2">"Greeting"</span><span class="p">,</span> <span class="s2">"alert('Hello world!')"</span>
+<span class="n">button_to_function</span> <span class="s2">"Delete"</span><span class="p">,</span> <span class="s2">"if (confirm('Really?')) do_delete()"</span>
+<span class="n">button_to_function</span> <span class="s2">"Details"</span> <span class="k">do</span> <span class="o">|</span><span class="n">page</span><span class="o">|</span>
+  <span class="n">page</span><span class="o">[</span><span class="ss">:details</span><span class="o">]</span><span class="p">.</span><span class="nf">visual_effect</span> <span class="ss">:toggle_slide</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<h4>define_javascript_functions</h4>
+
+<p>Includes the Action Pack JavaScript libraries inside a single <code>script</code> tag.</p>
+
+<h4>escape_javascript</h4>
+
+<p>Escape carrier returns and single and double quotes for JavaScript segments.</p>
+
+<h4>javascript_tag</h4>
+
+<p>Returns a JavaScript tag wrapping the provided code.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">javascript_tag</span> <span class="s2">"alert('All is good')"</span>
+</pre>
+
+</div>
+<div class="codeblock html"><pre class="highlight"><span class="nt">&lt;script&gt;</span>
+<span class="c1">//&lt;![CDATA[
+</span><span class="nx">alert</span><span class="p">(</span><span class="s1">'All is good'</span><span class="p">)</span>
+<span class="c1">//]]&gt;
+</span><span class="nt">&lt;/script&gt;</span>
+</pre>
+
+</div>
+<h4>link_to_function</h4>
+
+<p>Returns a link that will trigger a JavaScript function using the onclick handler and return false after the fact.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">link_to_function</span> <span class="s2">"Greeting"</span><span class="p">,</span> <span class="s2">"alert('Hello world!')"</span>
+<span class="c1"># =&gt; &lt;a onclick="alert('Hello world!'); return false;" href="#"&gt;Greeting&lt;/a&gt;</span>
+</pre>
+
+</div>
+<h3>NumberHelper</h3>
+
+<p>Provides methods for converting numbers into formatted strings. Methods are provided for phone numbers, currency, percentage, precision, positional notation, and file size.</p>
+
+<h4>number_to_currency</h4>
+
+<p>Formats a number into a currency string (e.g., $13.65).</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">number_to_currency</span><span class="p">(</span><span class="mi">1234567890</span><span class="o">.</span><span class="mi">50</span><span class="p">)</span> <span class="c1"># =&gt; $1,234,567,890.50</span>
+</pre>
+
+</div>
+<h4>number_to_human_size</h4>
+
+<p>Formats the bytes in size into a more understandable representation; useful for reporting file sizes to users.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">number_to_human_size</span><span class="p">(</span><span class="mi">1234</span><span class="p">)</span>          <span class="c1"># =&gt; 1.2 KB</span>
+<span class="n">number_to_human_size</span><span class="p">(</span><span class="mi">1234567</span><span class="p">)</span>       <span class="c1"># =&gt; 1.2 MB</span>
+</pre>
+
+</div>
+<h4>number_to_percentage</h4>
+
+<p>Formats a number as a percentage string.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">number_to_percentage</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="ss">precision: </span><span class="mi">0</span><span class="p">)</span>        <span class="c1"># =&gt; 100%</span>
+</pre>
+
+</div>
+<h4>number_to_phone</h4>
+
+<p>Formats a number into a US phone number.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">number_to_phone</span><span class="p">(</span><span class="mi">1235551234</span><span class="p">)</span> <span class="c1"># =&gt; 123-555-1234</span>
+</pre>
+
+</div>
+<h4>number_with_delimiter</h4>
+
+<p>Formats a number with grouped thousands using a delimiter.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">number_with_delimiter</span><span class="p">(</span><span class="mi">12345678</span><span class="p">)</span> <span class="c1"># =&gt; 12,345,678</span>
+</pre>
+
+</div>
+<h4>number_with_precision</h4>
+
+<p>Formats a number with the specified level of <code>precision</code>, which defaults to 3.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">number_with_precision</span><span class="p">(</span><span class="mi">111</span><span class="o">.</span><span class="mi">2345</span><span class="p">)</span>     <span class="c1"># =&gt; 111.235</span>
+<span class="n">number_with_precision</span><span class="p">(</span><span class="mi">111</span><span class="o">.</span><span class="mi">2345</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># =&gt; 111.23</span>
+</pre>
+
+</div>
+<h3>SanitizeHelper</h3>
+
+<p>The SanitizeHelper module provides a set of methods for scrubbing text of undesired HTML elements.</p>
+
+<h4>sanitize</h4>
+
+<p>This sanitize helper will html encode all tags and strip all attributes that aren’t specifically allowed.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">sanitize</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">body</span>
+</pre>
+
+</div>
+<p>If either the :attributes or :tags options are passed, only the mentioned tags and attributes are allowed and nothing else.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">sanitize</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">body</span><span class="p">,</span> <span class="ss">tags: </span><span class="sx">%w(table tr td)</span><span class="p">,</span> <span class="ss">attributes: </span><span class="sx">%w(id class style)</span>
+</pre>
+
+</div>
+<p>To change defaults for multiple uses, for example adding table tags to the default:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Application</span> <span class="o">&lt;</span> <span class="no">Rails</span><span class="o">::</span><span class="no">Application</span>
+  <span class="n">config</span><span class="p">.</span><span class="nf">action_view</span><span class="p">.</span><span class="nf">sanitized_allowed_tags</span> <span class="o">=</span> <span class="s1">'table'</span><span class="p">,</span> <span class="s1">'tr'</span><span class="p">,</span> <span class="s1">'td'</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<h4>sanitize_css(style)</h4>
+
+<p>Sanitizes a block of CSS code.</p>
+
+<h4>strip_links(html)</h4>
+<p>Strips all link tags from text leaving just the link text.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">strip_links</span><span class="p">(</span><span class="s2">"&lt;a href="</span><span class="n">http</span><span class="ss">:/</span><span class="o">/</span><span class="n">rubyonrails</span><span class="p">.</span><span class="nf">org</span><span class="s2">"&gt;Ruby on Rails&lt;/a&gt;"</span><span class="p">)</span>
+<span class="c1"># =&gt; Ruby on Rails</span>
+</pre>
+
+</div>
+<div class="codeblock ruby"><pre class="highlight"><span class="n">strip_links</span><span class="p">(</span><span class="s2">"emails to &lt;a href="</span><span class="n">mailto</span><span class="ss">:me</span><span class="vi">@email</span><span class="p">.</span><span class="nf">com</span><span class="s2">"&gt;me@email.com&lt;/a&gt;."</span><span class="p">)</span>
+<span class="c1"># =&gt; emails to me@email.com.</span>
+</pre>
+
+</div>
+<div class="codeblock ruby"><pre class="highlight"><span class="n">strip_links</span><span class="p">(</span><span class="s1">'Blog: &lt;a href="http://myblog.com/"&gt;Visit&lt;/a&gt;.'</span><span class="p">)</span>
+<span class="c1"># =&gt; Blog: Visit.</span>
+</pre>
+
+</div>
+<h4>strip_tags(html)</h4>
+
+<p>Strips all HTML tags from the html, including comments.
+This uses the html-scanner tokenizer and so its HTML parsing ability is limited by that of html-scanner.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">strip_tags</span><span class="p">(</span><span class="s2">"Strip &lt;i&gt;these&lt;/i&gt; tags!"</span><span class="p">)</span>
+<span class="c1"># =&gt; Strip these tags!</span>
+</pre>
+
+</div>
+<div class="codeblock ruby"><pre class="highlight"><span class="n">strip_tags</span><span class="p">(</span><span class="s2">"&lt;b&gt;Bold&lt;/b&gt; no more!  &lt;a href='more.html'&gt;See more&lt;/a&gt;"</span><span class="p">)</span>
+<span class="c1"># =&gt; Bold no more!  See more</span>
+</pre>
+
+</div>
+<p>NB: The output may still contain unescaped ‘&lt;’, ‘&gt;’, ‘&amp;’ characters and confuse browsers.</p>
+
+<h2>Localized Views</h2>
+
+<p>Action View has the ability render different templates depending on the current locale.</p>
+
+<p>For example, suppose you have a <code>PostsController</code> with a show action. By default, calling this action will render <code>app/views/posts/show.html.erb</code>. But if you set <code>I18n.locale = :de</code>, then <code>app/views/posts/show.de.html.erb</code> will be rendered instead. If the localized template isn’t present, the undecorated version will be used. This means you’re not required to provide localized views for all cases, but they will be preferred and used if available.</p>
+
+<p>You can use the same technique to localize the rescue files in your public directory. For example, setting <code>I18n.locale = :de</code> and creating <code>public/500.de.html</code> and <code>public/404.de.html</code> would allow you to have localized rescue pages.</p>
+
+<p>Since Rails doesn’t restrict the symbols that you use to set I18n.locale, you can leverage this system to display different content depending on anything you like. For example, suppose you have some “expert” users that should see different pages from “normal” users. You could add the following to <code>app/controllers/application.rb</code>:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">before_action</span> <span class="ss">:set_expert_locale</span>
+
+<span class="k">def</span> <span class="nf">set_expert_locale</span>
+  <span class="no">I18n</span><span class="p">.</span><span class="nf">locale</span> <span class="o">=</span> <span class="ss">:expert</span> <span class="k">if</span> <span class="n">current_user</span><span class="p">.</span><span class="nf">expert?</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>Then you could create special views like <code>app/views/posts/show.expert.html.erb</code> that would only be displayed to expert users.</p>
+
+<p>You can read more about the Rails Internationalization (I18n) API <a href="i18n.html">here</a>.</p>
+
+                    </article>
+                    <div class="section-nav clearfix">
+  <div class="pull-left">
+    
+      <a href="http://docs-china.com/rails//active_record_quering.html" class="prev">
+        &laquo;前一篇
+      </a>
+    
+  </div>
+  <div class="pull-right">
+    
+      <a href="http://docs-china.com/rails//layouts_and_rendering.html" class="next">
+        后一篇&raquo;
+      </a>
+    
+  </div>
+</div>
+
+                </main>
+                <div class="sidebar col-sm-3 col-md-3 hidden-xs">
+                    <aside>
+    
+    <h4>起跑</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//getting_started.html">Rails 入门</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+    <h4>模型</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//active_record_basics.html">Active Record Basics</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//migrations.html">Active Record Migrations</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//active_record_validations.html">Active Record Validations</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//active_record_callbacks.html">Active Record Callbacks</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//association_basics.html">Active Record Associations</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+    <h4>视图</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class="current"><a href="http://docs-china.com/rails//action_view_overview.html">Action View Overview</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//layouts_and_rendering.html">Layouts and Rendering in Rails</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//form_helpers.html">Form Helpers</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+    <h4>控制器</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//action_controller_overview.html">Action Controller 简介</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//routing.html">Rails 路由全解</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+    <h4>深入</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//active_support_core_extensions.html">Active Support Core Extensions</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//i18n.html">Rails Internationalization (I18n) API</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//action_mailer_basics.html">Action Mailer Basics</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//testing.html">A Guide to Testing Rails Applications</a></li>
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//security.html">Ruby on Rails Security Guide</a></li>
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//debugging_rails_applications.html">Debugging Rails Applications</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//configuring.html">Configuring Rails Applications</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//command_line.html">The Rails Command Line</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//caching_with_rails.html">Caching with Rails An overview</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//asset_pipeline.html">The Asset Pipeline</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//working_with_javascript_in_rails.html">Working with JavaScript in Rails</a></li>
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//engines.html">Getting Started with Engines</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//initialization.html">The Rails Initialization Process</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+    <h4>扩展</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//plugins.html">The Basics of Creating Rails Plugins</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//rails_on_rack.html">Rails on Rack</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//generators.html">Creating and Customizing Rails Generators & Templates</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+</aside>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer" role="contentinfo">
+        <div class="container">
+            <div>
+                <ul class="social">
+                    <li class="github">
+                        <a href="https://github.com/docs-china/rails/" title="在 GitHub 上关注我们">Github</a>
+                    </li>
+                    <li class="weibo">
+                        <a href="http://weibo.com/docschina" title="关注我们的微博">@DocsChina</a>
+                    </li>
+                </ul>
+            </div>
+
+            <p>本文档授权协议：<a href="http://creativecommons.org/licenses/by-sa/4.0/deed.zh" title="CC BY-SA 4.0">CC BY-SA 4.0</a></p>
+        </div>
+    </footer>
+</body>
+</html>

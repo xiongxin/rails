@@ -1,0 +1,2465 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <title>Rails on Rack - Rails 指南</title>
+    <meta name="viewport" content="width=device-width" />
+
+    <link rel="stylesheet" href="http://cdn.staticfile.org/twitter-bootstrap/3.1.1/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="http://docs-china.com/rails//styles/docs.css" />
+</head>
+<body>
+    <a class="sr-only" href="#content">跳到正文</a>
+
+    <nav class="navbar navbar-static-top docs-nav" id="top">
+        <div class="container">
+            <div class="navbar-header">
+                <a href="http://docs-china.com" class="navbar-brand" title="回到首页">&larr; Docs China</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="header" role="banner">
+        <div class="container">
+            <h1 class="logo"><a href="http://docs-china.com/rails//" title="Rails 指南">Rails 指南</a></h1>
+            
+            <iframe src="http://ghbtns.com/github-btn.html?user=docs-china&repo=rails&type=fork&count=false"
+  allowtransparency="true" frameborder="0" scrolling="0" width="62" height="20"></iframe>
+            
+        </div>
+    </header>
+
+    <div id="content" class="content" role="main">
+        <div class="container">
+            <div class="row">
+                <main class="main col-sm-9 col-md-9">
+                    <article class="entry">
+                        <h1>Rails on Rack</h1>
+                        <p>This guide covers Rails integration with Rack and interfacing with other Rack components.</p>
+
+<p>After reading this guide, you will know:</p>
+
+<ul>
+  <li>How to use Rack Middlewares in your Rails applications.</li>
+  <li>Action Pack’s internal Middleware stack.</li>
+  <li>How to define a custom Middleware stack.</li>
+</ul>
+
+<hr />
+
+<p>WARNING: This guide assumes a working knowledge of Rack protocol and Rack concepts such as middlewares, url maps and <code>Rack::Builder</code>.</p>
+
+<h2>Introduction to Rack</h2>
+
+<p>Rack provides a minimal, modular and adaptable interface for developing web applications in Ruby. By wrapping HTTP requests and responses in the simplest way possible, it unifies and distills the API for web servers, web frameworks, and software in between (the so-called middleware) into a single method call.</p>
+
+<ul>
+  <li><a href="http://rack.rubyforge.org/doc/">Rack API Documentation</a></li>
+</ul>
+
+<p>Explaining Rack is not really in the scope of this guide. In case you are not familiar with Rack’s basics, you should check out the <a href="#resources">Resources</a> section below.</p>
+
+<h2>Rails on Rack</h2>
+
+<h3>Rails Application’s Rack Object</h3>
+
+<p><code>ApplicationName::Application</code> is the primary Rack application object of a Rails
+application. Any Rack compliant web server should be using
+<code>ApplicationName::Application</code> object to serve a Rails
+application. <code>Rails.application</code> refers to the same application object.</p>
+
+<h3><code>rails server</code></h3>
+
+<p><code>rails server</code> does the basic job of creating a <code>Rack::Server</code> object and starting the webserver.</p>
+
+<p>Here’s how <code>rails server</code> creates an instance of <code>Rack::Server</code></p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="no">Rails</span><span class="o">::</span><span class="no">Server</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">tap</span> <span class="k">do</span> <span class="o">|</span><span class="n">server</span><span class="o">|</span>
+  <span class="nb">require</span> <span class="no">APP_PATH</span>
+  <span class="no">Dir</span><span class="p">.</span><span class="nf">chdir</span><span class="p">(</span><span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">root</span><span class="p">)</span>
+  <span class="n">server</span><span class="p">.</span><span class="nf">start</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>The <code>Rails::Server</code> inherits from <code>Rack::Server</code> and calls the <code>Rack::Server#start</code> method this way:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Server</span> <span class="o">&lt;</span> <span class="o">::</span><span class="no">Rack</span><span class="o">::</span><span class="no">Server</span>
+  <span class="k">def</span> <span class="nf">start</span>
+    <span class="p">.</span><span class="nf">.</span><span class="o">.</span>
+    <span class="k">super</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>Here’s how it loads the middlewares:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">def</span> <span class="nf">middleware</span>
+  <span class="n">middlewares</span> <span class="o">=</span> <span class="o">[]</span>
+  <span class="n">middlewares</span> <span class="o">&lt;&lt;</span> <span class="o">[</span><span class="no">Rails</span><span class="o">::</span><span class="no">Rack</span><span class="o">::</span><span class="no">Debugger</span><span class="o">]</span> <span class="k">if</span> <span class="n">options</span><span class="o">[</span><span class="ss">:debugger</span><span class="o">]</span>
+  <span class="n">middlewares</span> <span class="o">&lt;&lt;</span> <span class="o">[::</span><span class="no">Rack</span><span class="o">::</span><span class="no">ContentLength</span><span class="o">]</span>
+  <span class="no">Hash</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">middlewares</span><span class="p">)</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p><code>Rails::Rack::Debugger</code> is primarily useful only in the development environment. The following table explains the usage of the loaded middlewares:</p>
+
+<div class="table"><table>
+  <thead>
+    <tr>
+      <th>Middleware</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Rails::Rack::Debugger</code></td>
+      <td>Starts Debugger</td>
+    </tr>
+    <tr>
+      <td><code>Rack::ContentLength</code></td>
+      <td>Counts the number of bytes in the response and set the HTTP Content-Length header</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<h3><code>rackup</code></h3>
+
+<p>To use <code>rackup</code> instead of Rails’ <code>rails server</code>, you can put the following inside <code>config.ru</code> of your Rails application’s root directory:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="c1"># Rails.root/config.ru</span>
+<span class="nb">require</span> <span class="o">::</span><span class="no">File</span><span class="p">.</span><span class="nf">expand_path</span><span class="p">(</span><span class="s1">'../config/environment'</span><span class="p">,</span> <span class="kp">__FILE__</span><span class="p">)</span>
+
+<span class="n">use</span> <span class="no">Rails</span><span class="o">::</span><span class="no">Rack</span><span class="o">::</span><span class="no">Debugger</span>
+<span class="n">use</span> <span class="no">Rack</span><span class="o">::</span><span class="no">ContentLength</span>
+<span class="n">run</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">application</span>
+</pre>
+
+</div>
+<p>And start the server:</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rackup config.ru
+</pre>
+
+</div>
+<p>To find out more about different <code>rackup</code> options:</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rackup --help
+</pre>
+
+</div>
+<h2>Action Dispatcher Middleware Stack</h2>
+
+<p>Many of Action Dispatcher’s internal components are implemented as Rack middlewares. <code>Rails::Application</code> uses <code>ActionDispatch::MiddlewareStack</code> to combine various internal and external middlewares to form a complete Rails Rack application.</p>
+
+<p>NOTE: <code>ActionDispatch::MiddlewareStack</code> is Rails equivalent of <code>Rack::Builder</code>, but built for better flexibility and more features to meet Rails’ requirements.</p>
+
+<h3>Inspecting Middleware Stack</h3>
+
+<p>Rails has a handy rake task for inspecting the middleware stack in use:</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rake middleware
+</pre>
+
+</div>
+<p>For a freshly generated Rails application, this might produce something like:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">use</span> <span class="no">Rack</span><span class="o">::</span><span class="no">Sendfile</span>
+<span class="n">use</span> <span class="no">ActionDispatch</span><span class="o">::</span><span class="no">Static</span>
+<span class="n">use</span> <span class="no">Rack</span><span class="o">::</span><span class="no">Lock</span>
+<span class="n">use</span> <span class="c1">#&lt;ActiveSupport::Cache::Strategy::LocalCache::Middleware:0x000000029a0838&gt;</span>
+<span class="n">use</span> <span class="no">Rack</span><span class="o">::</span><span class="no">Runtime</span>
+<span class="n">use</span> <span class="no">Rack</span><span class="o">::</span><span class="no">MethodOverride</span>
+<span class="n">use</span> <span class="no">ActionDispatch</span><span class="o">::</span><span class="no">RequestId</span>
+<span class="n">use</span> <span class="no">Rails</span><span class="o">::</span><span class="no">Rack</span><span class="o">::</span><span class="no">Logger</span>
+<span class="n">use</span> <span class="no">ActionDispatch</span><span class="o">::</span><span class="no">ShowExceptions</span>
+<span class="n">use</span> <span class="no">ActionDispatch</span><span class="o">::</span><span class="no">DebugExceptions</span>
+<span class="n">use</span> <span class="no">ActionDispatch</span><span class="o">::</span><span class="no">RemoteIp</span>
+<span class="n">use</span> <span class="no">ActionDispatch</span><span class="o">::</span><span class="no">Reloader</span>
+<span class="n">use</span> <span class="no">ActionDispatch</span><span class="o">::</span><span class="no">Callbacks</span>
+<span class="n">use</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="o">::</span><span class="no">CheckPending</span>
+<span class="n">use</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">ConnectionAdapters</span><span class="o">::</span><span class="no">ConnectionManagement</span>
+<span class="n">use</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">QueryCache</span>
+<span class="n">use</span> <span class="no">ActionDispatch</span><span class="o">::</span><span class="no">Cookies</span>
+<span class="n">use</span> <span class="no">ActionDispatch</span><span class="o">::</span><span class="no">Session</span><span class="o">::</span><span class="no">CookieStore</span>
+<span class="n">use</span> <span class="no">ActionDispatch</span><span class="o">::</span><span class="no">Flash</span>
+<span class="n">use</span> <span class="no">ActionDispatch</span><span class="o">::</span><span class="no">ParamsParser</span>
+<span class="n">use</span> <span class="no">Rack</span><span class="o">::</span><span class="no">Head</span>
+<span class="n">use</span> <span class="no">Rack</span><span class="o">::</span><span class="no">ConditionalGet</span>
+<span class="n">use</span> <span class="no">Rack</span><span class="o">::</span><span class="no">ETag</span>
+<span class="n">run</span> <span class="no">MyApp</span><span class="o">::</span><span class="no">Application</span><span class="p">.</span><span class="nf">routes</span>
+</pre>
+
+</div>
+<p>The default middlewares shown here (and some others) are each summarized in the <a href="#internal-middleware-stack">Internal Middlewares</a> section, below.</p>
+
+<h3>Configuring Middleware Stack</h3>
+
+<p>Rails provides a simple configuration interface <code>config.middleware</code> for adding, removing and modifying the middlewares in the middleware stack via <code>application.rb</code> or the environment specific configuration file <code>environments/&lt;environment&gt;.rb</code>.</p>
+
+<h4>Adding a Middleware</h4>
+
+<p>You can add a new middleware to the middleware stack using any of the following methods:</p>
+
+<ul>
+  <li>
+    <p><code>config.middleware.use(new_middleware, args)</code> - Adds the new middleware at the bottom of the middleware stack.</p>
+  </li>
+  <li>
+    <p><code>config.middleware.insert_before(existing_middleware, new_middleware, args)</code> - Adds the new middleware before the specified existing middleware in the middleware stack.</p>
+  </li>
+  <li>
+    <p><code>config.middleware.insert_after(existing_middleware, new_middleware, args)</code> - Adds the new middleware after the specified existing middleware in the middleware stack.</p>
+  </li>
+</ul>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="c1"># config/application.rb</span>
+
+<span class="c1"># Push Rack::BounceFavicon at the bottom</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">middleware</span><span class="p">.</span><span class="nf">use</span> <span class="no">Rack</span><span class="o">::</span><span class="no">BounceFavicon</span>
+
+<span class="c1"># Add Lifo::Cache after ActiveRecord::QueryCache.</span>
+<span class="c1"># Pass { page_cache: false } argument to Lifo::Cache.</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">middleware</span><span class="p">.</span><span class="nf">insert_after</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">QueryCache</span><span class="p">,</span> <span class="no">Lifo</span><span class="o">::</span><span class="no">Cache</span><span class="p">,</span> <span class="ss">page_cache: </span><span class="kp">false</span>
+</pre>
+
+</div>
+<h4>Swapping a Middleware</h4>
+
+<p>You can swap an existing middleware in the middleware stack using <code>config.middleware.swap</code>.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="c1"># config/application.rb</span>
+
+<span class="c1"># Replace ActionDispatch::ShowExceptions with Lifo::ShowExceptions</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">middleware</span><span class="p">.</span><span class="nf">swap</span> <span class="no">ActionDispatch</span><span class="o">::</span><span class="no">ShowExceptions</span><span class="p">,</span> <span class="no">Lifo</span><span class="o">::</span><span class="no">ShowExceptions</span>
+</pre>
+
+</div>
+<h4>Deleting a Middleware</h4>
+
+<p>Add the following lines to your application configuration:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="c1"># config/application.rb</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">middleware</span><span class="p">.</span><span class="nf">delete</span> <span class="s2">"Rack::Lock"</span>
+</pre>
+
+</div>
+<p>And now if you inspect the middleware stack, you’ll find that <code>Rack::Lock</code> is
+not a part of it.</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rake middleware
+<span class="o">(</span><span class="k">in</span> /Users/lifo/Rails/blog<span class="o">)</span>
+use ActionDispatch::Static
+use <span class="c">#&lt;ActiveSupport::Cache::Strategy::LocalCache::Middleware:0x00000001c304c8&gt;</span>
+use Rack::Runtime
+...
+run Blog::Application.routes
+</pre>
+
+</div>
+<p>If you want to remove session related middleware, do the following:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="c1"># config/application.rb</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">middleware</span><span class="p">.</span><span class="nf">delete</span> <span class="s2">"ActionDispatch::Cookies"</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">middleware</span><span class="p">.</span><span class="nf">delete</span> <span class="s2">"ActionDispatch::Session::CookieStore"</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">middleware</span><span class="p">.</span><span class="nf">delete</span> <span class="s2">"ActionDispatch::Flash"</span>
+</pre>
+
+</div>
+<p>And to remove browser related middleware,</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="c1"># config/application.rb</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">middleware</span><span class="p">.</span><span class="nf">delete</span> <span class="s2">"Rack::MethodOverride"</span>
+</pre>
+
+</div>
+<h3>Internal Middleware Stack</h3>
+
+<p>Much of Action Controller’s functionality is implemented as Middlewares. The following list explains the purpose of each of them:</p>
+
+<p><strong><code>Rack::Sendfile</code></strong></p>
+
+<ul>
+  <li>Sets server specific X-Sendfile header. Configure this via <code>config.action_dispatch.x_sendfile_header</code> option.</li>
+</ul>
+
+<p><strong><code>ActionDispatch::Static</code></strong></p>
+
+<ul>
+  <li>Used to serve static assets. Disabled if <code>config.serve_static_assets</code> is <code>false</code>.</li>
+</ul>
+
+<p><strong><code>Rack::Lock</code></strong></p>
+
+<ul>
+  <li>Sets <code>env["rack.multithread"]</code> flag to <code>false</code> and wraps the application within a Mutex.</li>
+</ul>
+
+<p><strong><code>ActiveSupport::Cache::Strategy::LocalCache::Middleware</code></strong></p>
+
+<ul>
+  <li>Used for memory caching. This cache is not thread safe.</li>
+</ul>
+
+<p><strong><code>Rack::Runtime</code></strong></p>
+
+<ul>
+  <li>Sets an X-Runtime header, containing the time (in seconds) taken to execute the request.</li>
+</ul>
+
+<p><strong><code>Rack::MethodOverride</code></strong></p>
+
+<ul>
+  <li>Allows the method to be overridden if <code>params[:_method]</code> is set. This is the middleware which supports the PUT and DELETE HTTP method types.</li>
+</ul>
+
+<p><strong><code>ActionDispatch::RequestId</code></strong></p>
+
+<ul>
+  <li>Makes a unique <code>X-Request-Id</code> header available to the response and enables the <code>ActionDispatch::Request#uuid</code> method.</li>
+</ul>
+
+<p><strong><code>Rails::Rack::Logger</code></strong></p>
+
+<ul>
+  <li>Notifies the logs that the request has began. After request is complete, flushes all the logs.</li>
+</ul>
+
+<p><strong><code>ActionDispatch::ShowExceptions</code></strong></p>
+
+<ul>
+  <li>Rescues any exception returned by the application and calls an exceptions app that will wrap it in a format for the end user.</li>
+</ul>
+
+<p><strong><code>ActionDispatch::DebugExceptions</code></strong></p>
+
+<ul>
+  <li>Responsible for logging exceptions and showing a debugging page in case the request is local.</li>
+</ul>
+
+<p><strong><code>ActionDispatch::RemoteIp</code></strong></p>
+
+<ul>
+  <li>Checks for IP spoofing attacks.</li>
+</ul>
+
+<p><strong><code>ActionDispatch::Reloader</code></strong></p>
+
+<ul>
+  <li>Provides prepare and cleanup callbacks, intended to assist with code reloading during development.</li>
+</ul>
+
+<p><strong><code>ActionDispatch::Callbacks</code></strong></p>
+
+<ul>
+  <li>Runs the prepare callbacks before serving the request.</li>
+</ul>
+
+<p><strong><code>ActiveRecord::Migration::CheckPending</code></strong></p>
+
+<ul>
+  <li>Checks pending migrations and raises <code>ActiveRecord::PendingMigrationError</code> if any migrations are pending.</li>
+</ul>
+
+<p><strong><code>ActiveRecord::ConnectionAdapters::ConnectionManagement</code></strong></p>
+
+<ul>
+  <li>Cleans active connections after each request, unless the <code>rack.test</code> key in the request environment is set to <code>true</code>.</li>
+</ul>
+
+<p><strong><code>ActiveRecord::QueryCache</code></strong></p>
+
+<ul>
+  <li>Enables the Active Record query cache.</li>
+</ul>
+
+<p><strong><code>ActionDispatch::Cookies</code></strong></p>
+
+<ul>
+  <li>Sets cookies for the request.</li>
+</ul>
+
+<p><strong><code>ActionDispatch::Session::CookieStore</code></strong></p>
+
+<ul>
+  <li>Responsible for storing the session in cookies.</li>
+</ul>
+
+<p><strong><code>ActionDispatch::Flash</code></strong></p>
+
+<ul>
+  <li>Sets up the flash keys. Only available if <code>config.action_controller.session_store</code> is set to a value.</li>
+</ul>
+
+<p><strong><code>ActionDispatch::ParamsParser</code></strong></p>
+
+<ul>
+  <li>Parses out parameters from the request into <code>params</code>.</li>
+</ul>
+
+<p><strong><code>ActionDispatch::Head</code></strong></p>
+
+<ul>
+  <li>Converts HEAD requests to <code>GET</code> requests and serves them as so.</li>
+</ul>
+
+<p><strong><code>Rack::ConditionalGet</code></strong></p>
+
+<ul>
+  <li>Adds support for “Conditional <code>GET</code>” so that server responds with nothing if page wasn’t changed.</li>
+</ul>
+
+<p><strong><code>Rack::ETag</code></strong></p>
+
+<ul>
+  <li>Adds ETag header on all String bodies. ETags are used to validate cache.</li>
+</ul>
+
+<p>TIP: It’s possible to use any of the above middlewares in your custom Rack stack.</p>
+
+<h2>Resources</h2>
+
+<h3>Learning Rack</h3>
+
+<ul>
+  <li><a href="http://rack.github.io">Official Rack Website</a></li>
+  <li><a href="http://chneukirchen.org/blog/archive/2007/02/introducing-rack.html">Introducing Rack</a></li>
+  <li><a href="http://m.onkey.org/ruby-on-rack-1-hello-rack">Ruby on Rack #1 - Hello Rack!</a></li>
+  <li><a href="http://m.onkey.org/ruby-on-rack-2-the-builder">Ruby on Rack #2 - The Builder</a></li>
+</ul>
+
+<h3>Understanding Middlewares</h3>
+
+<ul>
+  <li><a href="http://railscasts.com/episodes/151-rack-middleware">Railscast on Rack Middlewares</a></li>
+</ul>
+
+                    </article>
+                    <div class="section-nav clearfix">
+  <div class="pull-left">
+    
+      <a href="http://docs-china.com/rails//plugins.html" class="prev">
+        &laquo;前一篇
+      </a>
+    
+  </div>
+  <div class="pull-right">
+    
+      <a href="http://docs-china.com/rails//generators.html" class="next">
+        后一篇&raquo;
+      </a>
+    
+  </div>
+</div>
+
+                </main>
+                <div class="sidebar col-sm-3 col-md-3 hidden-xs">
+                    <aside>
+    
+    <h4>起跑</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//getting_started.html">Rails 入门</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+    <h4>模型</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//active_record_basics.html">Active Record Basics</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//migrations.html">Active Record Migrations</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//active_record_validations.html">Active Record Validations</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//active_record_callbacks.html">Active Record Callbacks</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//association_basics.html">Active Record Associations</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+    <h4>视图</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//action_view_overview.html">Action View Overview</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//layouts_and_rendering.html">Layouts and Rendering in Rails</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//form_helpers.html">Form Helpers</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+    <h4>控制器</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//action_controller_overview.html">Action Controller 简介</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//routing.html">Rails 路由全解</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+    <h4>深入</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//active_support_core_extensions.html">Active Support Core Extensions</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//i18n.html">Rails Internationalization (I18n) API</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//action_mailer_basics.html">Action Mailer Basics</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//testing.html">A Guide to Testing Rails Applications</a></li>
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//security.html">Ruby on Rails Security Guide</a></li>
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//debugging_rails_applications.html">Debugging Rails Applications</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//configuring.html">Configuring Rails Applications</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//command_line.html">The Rails Command Line</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//caching_with_rails.html">Caching with Rails An overview</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//asset_pipeline.html">The Asset Pipeline</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//working_with_javascript_in_rails.html">Working with JavaScript in Rails</a></li>
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//engines.html">Getting Started with Engines</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//initialization.html">The Rails Initialization Process</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+    <h4>扩展</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//plugins.html">The Basics of Creating Rails Plugins</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class="current"><a href="http://docs-china.com/rails//rails_on_rack.html">Rails on Rack</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//generators.html">Creating and Customizing Rails Generators & Templates</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+</aside>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer" role="contentinfo">
+        <div class="container">
+            <div>
+                <ul class="social">
+                    <li class="github">
+                        <a href="https://github.com/docs-china/rails/" title="在 GitHub 上关注我们">Github</a>
+                    </li>
+                    <li class="weibo">
+                        <a href="http://weibo.com/docschina" title="关注我们的微博">@DocsChina</a>
+                    </li>
+                </ul>
+            </div>
+
+            <p>本文档授权协议：<a href="http://creativecommons.org/licenses/by-sa/4.0/deed.zh" title="CC BY-SA 4.0">CC BY-SA 4.0</a></p>
+        </div>
+    </footer>
+</body>
+</html>

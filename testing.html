@@ -1,0 +1,3339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <title>A Guide to Testing Rails Applications - Rails 指南</title>
+    <meta name="viewport" content="width=device-width" />
+
+    <link rel="stylesheet" href="http://cdn.staticfile.org/twitter-bootstrap/3.1.1/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="http://docs-china.com/rails//styles/docs.css" />
+</head>
+<body>
+    <a class="sr-only" href="#content">跳到正文</a>
+
+    <nav class="navbar navbar-static-top docs-nav" id="top">
+        <div class="container">
+            <div class="navbar-header">
+                <a href="http://docs-china.com" class="navbar-brand" title="回到首页">&larr; Docs China</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="header" role="banner">
+        <div class="container">
+            <h1 class="logo"><a href="http://docs-china.com/rails//" title="Rails 指南">Rails 指南</a></h1>
+            
+            <iframe src="http://ghbtns.com/github-btn.html?user=docs-china&repo=rails&type=fork&count=false"
+  allowtransparency="true" frameborder="0" scrolling="0" width="62" height="20"></iframe>
+            
+        </div>
+    </header>
+
+    <div id="content" class="content" role="main">
+        <div class="container">
+            <div class="row">
+                <main class="main col-sm-9 col-md-9">
+                    <article class="entry">
+                        <h1>A Guide to Testing Rails Applications</h1>
+                        <p>This guide covers built-in mechanisms in Rails for testing your application.</p>
+
+<p>After reading this guide, you will know:</p>
+
+<ul>
+  <li>Rails testing terminology.</li>
+  <li>How to write unit, functional, and integration tests for your application.</li>
+  <li>Other popular testing approaches and plugins.</li>
+</ul>
+
+<hr />
+
+<h2>Why Write Tests for your Rails Applications?</h2>
+
+<p>Rails makes it super easy to write your tests. It starts by producing skeleton test code while you are creating your models and controllers.</p>
+
+<p>By simply running your Rails tests you can ensure your code adheres to the desired functionality even after some major code refactoring.</p>
+
+<p>Rails tests can also simulate browser requests and thus you can test your application’s response without having to test it through your browser.</p>
+
+<h2>Introduction to Testing</h2>
+
+<p>Testing support was woven into the Rails fabric from the beginning. It wasn’t an “oh! let’s bolt on support for running tests because they’re new and cool” epiphany. Just about every Rails application interacts heavily with a database and, as a result, your tests will need a database to interact with as well. To write efficient tests, you’ll need to understand how to set up this database and populate it with sample data.</p>
+
+<h3>The Test Environment</h3>
+
+<p>By default, every Rails application has three environments: development, test, and production. The database for each one of them is configured in <code>config/database.yml</code>.</p>
+
+<p>A dedicated test database allows you to set up and interact with test data in isolation. Tests can mangle test data with confidence, that won’t touch the data in the development or production databases.</p>
+
+<h3>Rails Sets up for Testing from the Word Go</h3>
+
+<p>Rails creates a <code>test</code> folder for you as soon as you create a Rails project using <code>rails new</code> <em>application_name</em>. If you list the contents of this folder then you shall see:</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>ls -F <span class="nb">test
+</span>controllers/    helpers/        mailers/        test_helper.rb
+fixtures/       integration/    models/
+</pre>
+
+</div>
+<p>The <code>models</code> directory is meant to hold tests for your models, the <code>controllers</code> directory is meant to hold tests for your controllers and the <code>integration</code> directory is meant to hold tests that involve any number of controllers interacting.</p>
+
+<p>Fixtures are a way of organizing test data; they reside in the <code>fixtures</code> folder.</p>
+
+<p>The <code>test_helper.rb</code> file holds the default configuration for your tests.</p>
+
+<h3>The Low-Down on Fixtures</h3>
+
+<p>For good tests, you’ll need to give some thought to setting up test data. In Rails, you can handle this by defining and customizing fixtures.</p>
+
+<h4>What Are Fixtures?</h4>
+
+<p><em>Fixtures</em> is a fancy word for sample data. Fixtures allow you to populate your testing database with predefined data before your tests run. Fixtures are database independent written in YAML. There is one file per model.</p>
+
+<p>You’ll find fixtures under your <code>test/fixtures</code> directory. When you run <code>rails generate model</code> to create a new model fixture stubs will be automatically created and placed in this directory.</p>
+
+<h4>YAML</h4>
+
+<p>YAML-formatted fixtures are a very human-friendly way to describe your sample data. These types of fixtures have the <strong>.yml</strong> file extension (as in <code>users.yml</code>).</p>
+
+<p>Here’s a sample YAML fixture file:</p>
+
+<div class="codeblock yaml"><pre class="highlight"><span class="c1"># lo &amp; behold! I am a YAML comment!</span>
+<span class="s">david</span><span class="pi">:</span>
+  <span class="s">name</span><span class="pi">:</span> <span class="s">David Heinemeier Hansson</span>
+  <span class="s">birthday</span><span class="pi">:</span> <span class="s">1979-10-15</span>
+  <span class="s">profession</span><span class="pi">:</span> <span class="s">Systems development</span>
+
+<span class="s">steve</span><span class="pi">:</span>
+  <span class="s">name</span><span class="pi">:</span> <span class="s">Steve Ross Kellock</span>
+  <span class="s">birthday</span><span class="pi">:</span> <span class="s">1974-09-27</span>
+  <span class="s">profession</span><span class="pi">:</span> <span class="s">guy with keyboard</span>
+</pre>
+
+</div>
+<p>Each fixture is given a name followed by an indented list of colon-separated key/value pairs. Records are typically separated by a blank space. You can place comments in a fixture file by using the # character in the first column. Keys which resemble YAML keywords such as ‘yes’ and ‘no’ are quoted so that the YAML Parser correctly interprets them.</p>
+
+<p>If you are working with <a href="/association_basics.html">associations</a>, you can simply
+define a reference node between two different fixtures. Here’s an example with
+a belongs_to/has_many association:</p>
+
+<div class="codeblock yaml"><pre class="highlight"><span class="c1"># In fixtures/categories.yml</span>
+<span class="s">about</span><span class="pi">:</span>
+  <span class="s">name</span><span class="pi">:</span> <span class="s">About</span>
+
+<span class="c1"># In fixtures/articles.yml</span>
+<span class="s">one</span><span class="pi">:</span>
+  <span class="s">title</span><span class="pi">:</span> <span class="s">Welcome to Rails!</span>
+  <span class="s">body</span><span class="pi">:</span> <span class="s">Hello world!</span>
+  <span class="s">category</span><span class="pi">:</span> <span class="s">about</span>
+</pre>
+
+</div>
+<h4>ERB’in It Up</h4>
+
+<p>ERB allows you to embed Ruby code within templates. The YAML fixture format is pre-processed with ERB when Rails loads fixtures. This allows you to use Ruby to help you generate some sample data. For example, the following code generates a thousand users:</p>
+
+<div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%</span> <span class="mi">1000</span><span class="p">.</span><span class="nf">times</span> <span class="k">do</span> <span class="o">|</span><span class="n">n</span><span class="o">|</span> <span class="cp">%&gt;</span>
+user_<span class="cp">&lt;%=</span> <span class="n">n</span> <span class="cp">%&gt;</span>:
+  username: <span class="cp">&lt;%=</span> <span class="s2">"user</span><span class="si">#{</span><span class="n">n</span><span class="si">}</span><span class="s2">"</span> <span class="cp">%&gt;</span>
+  email: <span class="cp">&lt;%=</span> <span class="s2">"user</span><span class="si">#{</span><span class="n">n</span><span class="si">}</span><span class="s2">@example.com"</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</pre>
+
+</div>
+<h4>Fixtures in Action</h4>
+
+<p>Rails by default automatically loads all fixtures from the <code>test/fixtures</code> folder for your models and controllers test. Loading involves three steps:</p>
+
+<ul>
+  <li>Remove any existing data from the table corresponding to the fixture</li>
+  <li>Load the fixture data into the table</li>
+  <li>Dump the fixture data into a variable in case you want to access it directly</li>
+</ul>
+
+<h4>Fixtures are Active Record objects</h4>
+
+<p>Fixtures are instances of Active Record. As mentioned in point #3 above, you can access the object directly because it is automatically setup as a local variable of the test case. For example:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="c1"># this will return the User object for the fixture named david</span>
+<span class="n">users</span><span class="p">(</span><span class="ss">:david</span><span class="p">)</span>
+
+<span class="c1"># this will return the property for david called id</span>
+<span class="n">users</span><span class="p">(</span><span class="ss">:david</span><span class="p">).</span><span class="nf">id</span>
+
+<span class="c1"># one can also access methods available on the User class</span>
+<span class="n">email</span><span class="p">(</span><span class="n">david</span><span class="p">.</span><span class="nf">girlfriend</span><span class="p">.</span><span class="nf">email</span><span class="p">,</span> <span class="n">david</span><span class="p">.</span><span class="nf">location_tonight</span><span class="p">)</span>
+</pre>
+
+</div>
+<h2>Unit Testing your Models</h2>
+
+<p>In Rails, models tests are what you write to test your models.</p>
+
+<p>For this guide we will be using Rails <em>scaffolding</em>. It will create the model, a migration, controller and views for the new resource in a single operation. It will also create a full test suite following Rails best practices. I will be using examples from this generated code and will be supplementing it with additional examples where necessary.</p>
+
+<p>NOTE: For more information on Rails <i>scaffolding</i>, refer to <a href="getting_started.html">Getting Started with Rails</a></p>
+
+<p>When you use <code>rails generate scaffold</code>, for a resource among other things it creates a test stub in the <code>test/models</code> folder:</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails generate scaffold post title:string body:text
+...
+create  app/models/post.rb
+create  <span class="nb">test</span>/models/post_test.rb
+create  <span class="nb">test</span>/fixtures/posts.yml
+...
+</pre>
+
+</div>
+<p>The default test stub in <code>test/models/post_test.rb</code> looks like this:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="nb">require</span> <span class="s1">'test_helper'</span>
+
+<span class="k">class</span> <span class="nc">PostTest</span> <span class="o">&lt;</span> <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">TestCase</span>
+  <span class="c1"># test "the truth" do</span>
+  <span class="c1">#   assert true</span>
+  <span class="c1"># end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>A line by line examination of this file will help get you oriented to Rails testing code and terminology.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="nb">require</span> <span class="s1">'test_helper'</span>
+</pre>
+
+</div>
+<p>As you know by now, <code>test_helper.rb</code> specifies the default configuration to run our tests. This is included with all the tests, so any methods added to this file are available to all your tests.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">PostTest</span> <span class="o">&lt;</span> <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">TestCase</span>
+</pre>
+
+</div>
+<p>The <code>PostTest</code> class defines a <em>test case</em> because it inherits from <code>ActiveSupport::TestCase</code>. <code>PostTest</code> thus has all the methods available from <code>ActiveSupport::TestCase</code>. You’ll see those methods a little later in this guide.</p>
+
+<p>Any method defined within a class inherited from <code>MiniTest::Unit::TestCase</code>
+(which is the superclass of <code>ActiveSupport::TestCase</code>) that begins with <code>test</code> (case sensitive) is simply called a test. So, <code>test_password</code>, <code>test_valid_password</code> and <code>testValidPassword</code> all are legal test names and are run automatically when the test case is run.</p>
+
+<p>Rails adds a <code>test</code> method that takes a test name and a block. It generates a normal <code>MiniTest::Unit</code> test with method names prefixed with <code>test_</code>. So,</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="nb">test</span> <span class="s2">"the truth"</span> <span class="k">do</span>
+  <span class="n">assert</span> <span class="kp">true</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>acts as if you had written</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">def</span> <span class="nf">test_the_truth</span>
+  <span class="n">assert</span> <span class="kp">true</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>only the <code>test</code> macro allows a more readable test name. You can still use regular method definitions though.</p>
+
+<p>NOTE: The method name is generated by replacing spaces with underscores. The result does not need to be a valid Ruby identifier though, the name may contain punctuation characters etc. That’s because in Ruby technically any string may be a method name. Odd ones need <code>define_method</code> and <code>send</code> calls, but formally there’s no restriction.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">assert</span> <span class="kp">true</span>
+</pre>
+
+</div>
+<p>This line of code is called an <em>assertion</em>. An assertion is a line of code that evaluates an object (or expression) for expected results. For example, an assertion can check:</p>
+
+<ul>
+  <li>does this value = that value?</li>
+  <li>is this object nil?</li>
+  <li>does this line of code throw an exception?</li>
+  <li>is the user’s password greater than 5 characters?</li>
+</ul>
+
+<p>Every test contains one or more assertions. Only when all the assertions are successful will the test pass.</p>
+
+<h3>Maintaining the test database schema</h3>
+
+<p>In order to run your tests, your test database will need to have the current structure. The test helper checks whether your test database has any pending migrations. If so, it will try to load your <code>db/schema.rb</code> or <code>db/structure.sql</code> into the test database. If migrations are still pending, an error will be raised.</p>
+
+<h3>Running Tests</h3>
+
+<p>Running a test is as simple as invoking the file containing the test cases through <code>rake test</code> command.</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rake <span class="nb">test test</span>/models/post_test.rb
+.
+
+Finished tests <span class="k">in </span>0.009262s, 107.9680 tests/s, 107.9680 assertions/s.
+
+1 tests, 1 assertions, 0 failures, 0 errors, 0 skips
+</pre>
+
+</div>
+<p>You can also run a particular test method from the test case by running the test and providing the <code>test method name</code>.</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rake <span class="nb">test test</span>/models/post_test.rb test_the_truth
+.
+
+Finished tests <span class="k">in </span>0.009064s, 110.3266 tests/s, 110.3266 assertions/s.
+
+1 tests, 1 assertions, 0 failures, 0 errors, 0 skips
+</pre>
+
+</div>
+<p>This will run all test methods from the test case. Note that <code>test_helper.rb</code> is in the <code>test</code> directory, hence this directory needs to be added to the load path using the <code>-I</code> switch.</p>
+
+<p>The <code>.</code> (dot) above indicates a passing test. When a test fails you see an <code>F</code>; when a test throws an error you see an <code>E</code> in its place. The last line of the output is the summary.</p>
+
+<p>To see how a test failure is reported, you can add a failing test to the <code>post_test.rb</code> test case.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="nb">test</span> <span class="s2">"should not save post without title"</span> <span class="k">do</span>
+  <span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">new</span>
+  <span class="n">assert_not</span> <span class="n">post</span><span class="p">.</span><span class="nf">save</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>Let us run this newly added test.</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rake <span class="nb">test test</span>/models/post_test.rb test_should_not_save_post_without_title
+F
+
+Finished tests <span class="k">in </span>0.044632s, 22.4054 tests/s, 22.4054 assertions/s.
+
+  1<span class="o">)</span> Failure:
+test_should_not_save_post_without_title<span class="o">(</span>PostTest<span class="o">)</span> <span class="o">[</span><span class="nb">test</span>/models/post_test.rb:6]:
+Failed assertion, no message given.
+
+1 tests, 1 assertions, 1 failures, 0 errors, 0 skips
+</pre>
+
+</div>
+<p>In the output, <code>F</code> denotes a failure. You can see the corresponding trace shown under <code>1)</code> along with the name of the failing test. The next few lines contain the stack trace followed by a message which mentions the actual value and the expected value by the assertion. The default assertion messages provide just enough information to help pinpoint the error. To make the assertion failure message more readable, every assertion provides an optional message parameter, as shown here:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="nb">test</span> <span class="s2">"should not save post without title"</span> <span class="k">do</span>
+  <span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">new</span>
+  <span class="n">assert_not</span> <span class="n">post</span><span class="p">.</span><span class="nf">save</span><span class="p">,</span> <span class="s2">"Saved the post without a title"</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>Running this test shows the friendlier assertion message:</p>
+
+<div class="codeblock bash"><pre class="highlight">  1<span class="o">)</span> Failure:
+test_should_not_save_post_without_title<span class="o">(</span>PostTest<span class="o">)</span> <span class="o">[</span><span class="nb">test</span>/models/post_test.rb:6]:
+Saved the post without a title
+</pre>
+
+</div>
+<p>Now to get this test to pass we can add a model level validation for the <em>title</em> field.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">validates</span> <span class="ss">:title</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>Now the test should pass. Let us verify by running the test again:</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rake <span class="nb">test test</span>/models/post_test.rb test_should_not_save_post_without_title
+.
+
+Finished tests <span class="k">in </span>0.047721s, 20.9551 tests/s, 20.9551 assertions/s.
+
+1 tests, 1 assertions, 0 failures, 0 errors, 0 skips
+</pre>
+
+</div>
+<p>Now, if you noticed, we first wrote a test which fails for a desired functionality, then we wrote some code which adds the functionality and finally we ensured that our test passes. This approach to software development is referred to as <em>Test-Driven Development</em> (TDD).</p>
+
+<p>TIP: Many Rails developers practice <em>Test-Driven Development</em> (TDD). This is an excellent way to build up a test suite that exercises every part of your application. TDD is beyond the scope of this guide, but one place to start is with <a href="http://andrzejonsoftware.blogspot.com/2007/05/15-tdd-steps-to-create-rails.html">15 TDD steps to create a Rails application</a>.</p>
+
+<p>To see how an error gets reported, here’s a test containing an error:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="nb">test</span> <span class="s2">"should report error"</span> <span class="k">do</span>
+  <span class="c1"># some_undefined_variable is not defined elsewhere in the test case</span>
+  <span class="n">some_undefined_variable</span>
+  <span class="n">assert</span> <span class="kp">true</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>Now you can see even more output in the console from running the tests:</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rake <span class="nb">test test</span>/models/post_test.rb test_should_report_error
+E
+
+Finished tests <span class="k">in </span>0.030974s, 32.2851 tests/s, 0.0000 assertions/s.
+
+  1<span class="o">)</span> Error:
+test_should_report_error<span class="o">(</span>PostTest<span class="o">)</span>:
+NameError: undefined <span class="nb">local </span>variable or method <span class="sb">`</span>some_undefined_variable<span class="s1">' for #&lt;PostTest:0x007fe32e24afe0&gt;
+    test/models/post_test.rb:10:in `block in &lt;class:PostTest&gt;'</span>
+
+1 tests, 0 assertions, 0 failures, 1 errors, 0 skips
+</pre>
+
+</div>
+<p>Notice the ‘E’ in the output. It denotes a test with error.</p>
+
+<p>NOTE: The execution of each test method stops as soon as any error or an assertion failure is encountered, and the test suite continues with the next method. All test methods are executed in alphabetical order.</p>
+
+<p>When a test fails you are presented with the corresponding backtrace. By default
+Rails filters that backtrace and will only print lines relevant to your
+application. This eliminates the framework noise and helps to focus on your
+code. However there are situations when you want to see the full
+backtrace. simply set the <code>BACKTRACE</code> environment variable to enable this
+behavior:</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span><span class="nv">BACKTRACE</span><span class="o">=</span>1 rake <span class="nb">test test</span>/models/post_test.rb
+</pre>
+
+</div>
+<h3>What to Include in Your Unit Tests</h3>
+
+<p>Ideally, you would like to include a test for everything which could possibly break. It’s a good practice to have at least one test for each of your validations and at least one test for every method in your model.</p>
+
+<h3>Available Assertions</h3>
+
+<p>By now you’ve caught a glimpse of some of the assertions that are available. Assertions are the worker bees of testing. They are the ones that actually perform the checks to ensure that things are going as planned.</p>
+
+<p>There are a bunch of different types of assertions you can use.
+Here’s an extract of the assertions you can use with <code>minitest</code>, the default testing library used by Rails. The <code>[msg]</code> parameter is an optional string message you can specify to make your test failure messages clearer. It’s not required.</p>
+
+<div class="table"><table>
+  <thead>
+    <tr>
+      <th>Assertion</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>assert( test, [msg] )</code></td>
+      <td>Ensures that <code>test</code> is true.</td>
+    </tr>
+    <tr>
+      <td><code>assert_not( test, [msg] )</code></td>
+      <td>Ensures that <code>test</code> is false.</td>
+    </tr>
+    <tr>
+      <td><code>assert_equal( expected, actual, [msg] )</code></td>
+      <td>Ensures that <code>expected == actual</code> is true.</td>
+    </tr>
+    <tr>
+      <td><code>assert_not_equal( expected, actual, [msg] )</code></td>
+      <td>Ensures that <code>expected != actual</code> is true.</td>
+    </tr>
+    <tr>
+      <td><code>assert_same( expected, actual, [msg] )</code></td>
+      <td>Ensures that <code>expected.equal?(actual)</code> is true.</td>
+    </tr>
+    <tr>
+      <td><code>assert_not_same( expected, actual, [msg] )</code></td>
+      <td>Ensures that <code>expected.equal?(actual)</code> is false.</td>
+    </tr>
+    <tr>
+      <td><code>assert_nil( obj, [msg] )</code></td>
+      <td>Ensures that <code>obj.nil?</code> is true.</td>
+    </tr>
+    <tr>
+      <td><code>assert_not_nil( obj, [msg] )</code></td>
+      <td>Ensures that <code>obj.nil?</code> is false.</td>
+    </tr>
+    <tr>
+      <td><code>assert_match( regexp, string, [msg] )</code></td>
+      <td>Ensures that a string matches the regular expression.</td>
+    </tr>
+    <tr>
+      <td><code>assert_no_match( regexp, string, [msg] )</code></td>
+      <td>Ensures that a string doesn’t match the regular expression.</td>
+    </tr>
+    <tr>
+      <td><code>assert_in_delta( expecting, actual, [delta], [msg] )</code></td>
+      <td>Ensures that the numbers <code>expected</code> and <code>actual</code> are within <code>delta</code> of each other.</td>
+    </tr>
+    <tr>
+      <td><code>assert_not_in_delta( expecting, actual, [delta], [msg] )</code></td>
+      <td>Ensures that the numbers <code>expected</code> and <code>actual</code> are not within <code>delta</code> of each other.</td>
+    </tr>
+    <tr>
+      <td><code>assert_throws( symbol, [msg] ) { block }</code></td>
+      <td>Ensures that the given block throws the symbol.</td>
+    </tr>
+    <tr>
+      <td><code>assert_raises( exception1, exception2, ... ) { block }</code></td>
+      <td>Ensures that the given block raises one of the given exceptions.</td>
+    </tr>
+    <tr>
+      <td><code>assert_nothing_raised( exception1, exception2, ... ) { block }</code></td>
+      <td>Ensures that the given block doesn’t raise one of the given exceptions.</td>
+    </tr>
+    <tr>
+      <td><code>assert_instance_of( class, obj, [msg] )</code></td>
+      <td>Ensures that <code>obj</code> is an instance of <code>class</code>.</td>
+    </tr>
+    <tr>
+      <td><code>assert_not_instance_of( class, obj, [msg] )</code></td>
+      <td>Ensures that <code>obj</code> is not an instance of <code>class</code>.</td>
+    </tr>
+    <tr>
+      <td><code>assert_kind_of( class, obj, [msg] )</code></td>
+      <td>Ensures that <code>obj</code> is or descends from <code>class</code>.</td>
+    </tr>
+    <tr>
+      <td><code>assert_not_kind_of( class, obj, [msg] )</code></td>
+      <td>Ensures that <code>obj</code> is not an instance of <code>class</code> and is not descending from it.</td>
+    </tr>
+    <tr>
+      <td><code>assert_respond_to( obj, symbol, [msg] )</code></td>
+      <td>Ensures that <code>obj</code> responds to <code>symbol</code>.</td>
+    </tr>
+    <tr>
+      <td><code>assert_not_respond_to( obj, symbol, [msg] )</code></td>
+      <td>Ensures that <code>obj</code> does not respond to <code>symbol</code>.</td>
+    </tr>
+    <tr>
+      <td><code>assert_operator( obj1, operator, [obj2], [msg] )</code></td>
+      <td>Ensures that <code>obj1.operator(obj2)</code> is true.</td>
+    </tr>
+    <tr>
+      <td><code>assert_not_operator( obj1, operator, [obj2], [msg] )</code></td>
+      <td>Ensures that <code>obj1.operator(obj2)</code> is false.</td>
+    </tr>
+    <tr>
+      <td><code>assert_send( array, [msg] )</code></td>
+      <td>Ensures that executing the method listed in <code>array[1]</code> on the object in <code>array[0]</code> with the parameters of <code>array[2 and up]</code> is true. This one is weird eh?</td>
+    </tr>
+    <tr>
+      <td><code>flunk( [msg] )</code></td>
+      <td>Ensures failure. This is useful to explicitly mark a test that isn’t finished yet.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>Because of the modular nature of the testing framework, it is possible to create your own assertions. In fact, that’s exactly what Rails does. It includes some specialized assertions to make your life easier.</p>
+
+<p>NOTE: Creating your own assertions is an advanced topic that we won’t cover in this tutorial.</p>
+
+<h3>Rails Specific Assertions</h3>
+
+<p>Rails adds some custom assertions of its own to the <code>test/unit</code> framework:</p>
+
+<div class="table"><table>
+  <thead>
+    <tr>
+      <th>Assertion</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>assert_difference(expressions, difference = 1, message = nil) {...}</code></td>
+      <td>Test numeric difference between the return value of an expression as a result of what is evaluated in the yielded block.</td>
+    </tr>
+    <tr>
+      <td><code>assert_no_difference(expressions, message = nil, &amp;amp;block)</code></td>
+      <td>Asserts that the numeric result of evaluating an expression is not changed before and after invoking the passed in block.</td>
+    </tr>
+    <tr>
+      <td><code>assert_recognizes(expected_options, path, extras={}, message=nil)</code></td>
+      <td>Asserts that the routing of the given path was handled correctly and that the parsed options (given in the expected_options hash) match path. Basically, it asserts that Rails recognizes the route given by expected_options.</td>
+    </tr>
+    <tr>
+      <td><code>assert_generates(expected_path, options, defaults={}, extras = {}, message=nil)</code></td>
+      <td>Asserts that the provided options can be used to generate the provided path. This is the inverse of assert_recognizes. The extras parameter is used to tell the request the names and values of additional request parameters that would be in a query string. The message parameter allows you to specify a custom error message for assertion failures.</td>
+    </tr>
+    <tr>
+      <td><code>assert_response(type, message = nil)</code></td>
+      <td>Asserts that the response comes with a specific status code. You can specify <code>:success</code> to indicate 200-299, <code>:redirect</code> to indicate 300-399, <code>:missing</code> to indicate 404, or <code>:error</code> to match the 500-599 range. You can also pass an explicit status number or its symbolic equivalent. For more information, see <a href="http://rubydoc.info/github/rack/rack/master/Rack/Utils#HTTP_STATUS_CODES-constant">full list of status codes</a> and how their <a href="http://rubydoc.info/github/rack/rack/master/Rack/Utils#SYMBOL_TO_STATUS_CODE-constant">mapping</a> works.</td>
+    </tr>
+    <tr>
+      <td><code>assert_redirected_to(options = {}, message=nil)</code></td>
+      <td>Assert that the redirection options passed in match those of the redirect called in the latest action. This match can be partial, such that <code>assert_redirected_to(controller: "weblog")</code> will also match the redirection of <code>redirect_to(controller: "weblog", action: "show")</code> and so on. You can also pass named routes such as <code>assert_redirected_to root_path</code> and Active Record objects such as <code>assert_redirected_to @article</code>.</td>
+    </tr>
+    <tr>
+      <td><code>assert_template(expected = nil, message=nil)</code></td>
+      <td>Asserts that the request was rendered with the appropriate template file.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>You’ll see the usage of some of these assertions in the next chapter.</p>
+
+<h2>Functional Tests for Your Controllers</h2>
+
+<p>In Rails, testing the various actions of a single controller is called writing functional tests for that controller. Controllers handle the incoming web requests to your application and eventually respond with a rendered view.</p>
+
+<h3>What to Include in your Functional Tests</h3>
+
+<p>You should test for things such as:</p>
+
+<ul>
+  <li>was the web request successful?</li>
+  <li>was the user redirected to the right page?</li>
+  <li>was the user successfully authenticated?</li>
+  <li>was the correct object stored in the response template?</li>
+  <li>was the appropriate message displayed to the user in the view?</li>
+</ul>
+
+<p>Now that we have used Rails scaffold generator for our <code>Post</code> resource, it has already created the controller code and tests. You can take look at the file <code>posts_controller_test.rb</code> in the <code>test/controllers</code> directory.</p>
+
+<p>Let me take you through one such test, <code>test_should_get_index</code> from the file <code>posts_controller_test.rb</code>.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">PostsControllerTest</span> <span class="o">&lt;</span> <span class="no">ActionController</span><span class="o">::</span><span class="no">TestCase</span>
+  <span class="nb">test</span> <span class="s2">"should get index"</span> <span class="k">do</span>
+    <span class="n">get</span> <span class="ss">:index</span>
+    <span class="n">assert_response</span> <span class="ss">:success</span>
+    <span class="n">assert_not_nil</span> <span class="n">assigns</span><span class="p">(</span><span class="ss">:posts</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>In the <code>test_should_get_index</code> test, Rails simulates a request on the action called <code>index</code>, making sure the request was successful and also ensuring that it assigns a valid <code>posts</code> instance variable.</p>
+
+<p>The <code>get</code> method kicks off the web request and populates the results into the response. It accepts 4 arguments:</p>
+
+<ul>
+  <li>The action of the controller you are requesting. This can be in the form of a string or a symbol.</li>
+  <li>An optional hash of request parameters to pass into the action (eg. query string parameters or post variables).</li>
+  <li>An optional hash of session variables to pass along with the request.</li>
+  <li>An optional hash of flash values.</li>
+</ul>
+
+<p>Example: Calling the <code>:show</code> action, passing an <code>id</code> of 12 as the <code>params</code> and setting a <code>user_id</code> of 5 in the session:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">get</span><span class="p">(</span><span class="ss">:show</span><span class="p">,</span> <span class="p">{</span><span class="s1">'id'</span> <span class="o">=&gt;</span> <span class="s2">"12"</span><span class="p">},</span> <span class="p">{</span><span class="s1">'user_id'</span> <span class="o">=&gt;</span> <span class="mi">5</span><span class="p">})</span>
+</pre>
+
+</div>
+<p>Another example: Calling the <code>:view</code> action, passing an <code>id</code> of 12 as the <code>params</code>, this time with no session, but with a flash message.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">get</span><span class="p">(</span><span class="ss">:view</span><span class="p">,</span> <span class="p">{</span><span class="s1">'id'</span> <span class="o">=&gt;</span> <span class="s1">'12'</span><span class="p">},</span> <span class="kp">nil</span><span class="p">,</span> <span class="p">{</span><span class="s1">'message'</span> <span class="o">=&gt;</span> <span class="s1">'booya!'</span><span class="p">})</span>
+</pre>
+
+</div>
+<p>NOTE: If you try running <code>test_should_create_post</code> test from <code>posts_controller_test.rb</code> it will fail on account of the newly added model level validation and rightly so.</p>
+
+<p>Let us modify <code>test_should_create_post</code> test in <code>posts_controller_test.rb</code> so that all our test pass:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="nb">test</span> <span class="s2">"should create post"</span> <span class="k">do</span>
+  <span class="n">assert_difference</span><span class="p">(</span><span class="s1">'Post.count'</span><span class="p">)</span> <span class="k">do</span>
+    <span class="n">post</span> <span class="ss">:create</span><span class="p">,</span> <span class="ss">post: </span><span class="p">{</span><span class="ss">title: </span><span class="s1">'Some title'</span><span class="p">}</span>
+  <span class="k">end</span>
+
+  <span class="n">assert_redirected_to</span> <span class="n">post_path</span><span class="p">(</span><span class="n">assigns</span><span class="p">(</span><span class="ss">:post</span><span class="p">))</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>Now you can try running all the tests and they should pass.</p>
+
+<h3>Available Request Types for Functional Tests</h3>
+
+<p>If you’re familiar with the HTTP protocol, you’ll know that <code>get</code> is a type of request. There are 6 request types supported in Rails functional tests:</p>
+
+<ul>
+  <li><code>get</code></li>
+  <li><code>post</code></li>
+  <li><code>patch</code></li>
+  <li><code>put</code></li>
+  <li><code>head</code></li>
+  <li><code>delete</code></li>
+</ul>
+
+<p>All of request types are methods that you can use, however, you’ll probably end up using the first two more often than the others.</p>
+
+<p>NOTE: Functional tests do not verify whether the specified request type should be accepted by the action. Request types in this context exist to make your tests more descriptive.</p>
+
+<h3>The Four Hashes of the Apocalypse</h3>
+
+<p>After a request has been made using one of the 6 methods (<code>get</code>, <code>post</code>, etc.) and processed, you will have 4 Hash objects ready for use:</p>
+
+<ul>
+  <li><code>assigns</code> - Any objects that are stored as instance variables in actions for use in views.</li>
+  <li><code>cookies</code> - Any cookies that are set.</li>
+  <li><code>flash</code> - Any objects living in the flash.</li>
+  <li><code>session</code> - Any object living in session variables.</li>
+</ul>
+
+<p>As is the case with normal Hash objects, you can access the values by referencing the keys by string. You can also reference them by symbol name, except for <code>assigns</code>. For example:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">flash</span><span class="o">[</span><span class="s2">"gordon"</span><span class="o">]</span>               <span class="n">flash</span><span class="o">[</span><span class="ss">:gordon</span><span class="o">]</span>
+<span class="n">session</span><span class="o">[</span><span class="s2">"shmession"</span><span class="o">]</span>          <span class="n">session</span><span class="o">[</span><span class="ss">:shmession</span><span class="o">]</span>
+<span class="n">cookies</span><span class="o">[</span><span class="s2">"are_good_for_u"</span><span class="o">]</span>     <span class="n">cookies</span><span class="o">[</span><span class="ss">:are_good_for_u</span><span class="o">]</span>
+
+<span class="c1"># Because you can't use assigns[:something] for historical reasons:</span>
+<span class="n">assigns</span><span class="o">[</span><span class="s2">"something"</span><span class="o">]</span>          <span class="n">assigns</span><span class="p">(</span><span class="ss">:something</span><span class="p">)</span>
+</pre>
+
+</div>
+<h3>Instance Variables Available</h3>
+
+<p>You also have access to three instance variables in your functional tests:</p>
+
+<ul>
+  <li><code>@controller</code> - The controller processing the request</li>
+  <li><code>@request</code> - The request</li>
+  <li><code>@response</code> - The response</li>
+</ul>
+
+<h3>Setting Headers and CGI variables</h3>
+
+<p><a href="http://tools.ietf.org/search/rfc2616#section-5.3">HTTP headers</a>
+and
+<a href="http://tools.ietf.org/search/rfc3875#section-4.1">CGI variables</a>
+can be set directly on the <code>@request</code> instance variable:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="c1"># setting a HTTP Header</span>
+<span class="vi">@request</span><span class="p">.</span><span class="nf">headers</span><span class="o">[</span><span class="s2">"Accept"</span><span class="o">]</span> <span class="o">=</span> <span class="s2">"text/plain, text/html"</span>
+<span class="n">get</span> <span class="ss">:index</span> <span class="c1"># simulate the request with custom header</span>
+
+<span class="c1"># setting a CGI variable</span>
+<span class="vi">@request</span><span class="p">.</span><span class="nf">headers</span><span class="o">[</span><span class="s2">"HTTP_REFERER"</span><span class="o">]</span> <span class="o">=</span> <span class="s2">"http://example.com/home"</span>
+<span class="n">post</span> <span class="ss">:create</span> <span class="c1"># simulate the request with custom env variable</span>
+</pre>
+
+</div>
+<h3>Testing Templates and Layouts</h3>
+
+<p>If you want to make sure that the response rendered the correct template and layout, you can use the <code>assert_template</code>
+method:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="nb">test</span> <span class="s2">"index should render correct template and layout"</span> <span class="k">do</span>
+  <span class="n">get</span> <span class="ss">:index</span>
+  <span class="n">assert_template</span> <span class="ss">:index</span>
+  <span class="n">assert_template</span> <span class="ss">layout: </span><span class="s2">"layouts/application"</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>Note that you cannot test for template and layout at the same time, with one call to <code>assert_template</code> method.
+Also, for the <code>layout</code> test, you can give a regular expression instead of a string, but using the string, makes
+things clearer. On the other hand, you have to include the “layouts” directory name even if you save your layout
+file in this standard layout directory. Hence,</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">assert_template</span> <span class="ss">layout: </span><span class="s2">"application"</span>
+</pre>
+
+</div>
+<p>will not work.</p>
+
+<p>If your view renders any partial, when asserting for the layout, you have to assert for the partial at the same time.
+Otherwise, assertion will fail.</p>
+
+<p>Hence:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="nb">test</span> <span class="s2">"new should render correct layout"</span> <span class="k">do</span>
+  <span class="n">get</span> <span class="ss">:new</span>
+  <span class="n">assert_template</span> <span class="ss">layout: </span><span class="s2">"layouts/application"</span><span class="p">,</span> <span class="ss">partial: </span><span class="s2">"_form"</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>is the correct way to assert for the layout when the view renders a partial with name <code>_form</code>. Omitting the <code>:partial</code> key in your <code>assert_template</code> call will complain.</p>
+
+<h3>A Fuller Functional Test Example</h3>
+
+<p>Here’s another example that uses <code>flash</code>, <code>assert_redirected_to</code>, and <code>assert_difference</code>:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="nb">test</span> <span class="s2">"should create post"</span> <span class="k">do</span>
+  <span class="n">assert_difference</span><span class="p">(</span><span class="s1">'Post.count'</span><span class="p">)</span> <span class="k">do</span>
+    <span class="n">post</span> <span class="ss">:create</span><span class="p">,</span> <span class="ss">post: </span><span class="p">{</span><span class="ss">title: </span><span class="s1">'Hi'</span><span class="p">,</span> <span class="ss">body: </span><span class="s1">'This is my first post.'</span><span class="p">}</span>
+  <span class="k">end</span>
+  <span class="n">assert_redirected_to</span> <span class="n">post_path</span><span class="p">(</span><span class="n">assigns</span><span class="p">(</span><span class="ss">:post</span><span class="p">))</span>
+  <span class="n">assert_equal</span> <span class="s1">'Post was successfully created.'</span><span class="p">,</span> <span class="n">flash</span><span class="o">[</span><span class="ss">:notice</span><span class="o">]</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<h3>Testing Views</h3>
+
+<p>Testing the response to your request by asserting the presence of key HTML elements and their content is a useful way to test the views of your application. The <code>assert_select</code> assertion allows you to do this by using a simple yet powerful syntax.</p>
+
+<p>NOTE: You may find references to <code>assert_tag</code> in other documentation, but this is now deprecated in favor of <code>assert_select</code>.</p>
+
+<p>There are two forms of <code>assert_select</code>:</p>
+
+<p><code>assert_select(selector, [equality], [message])</code> ensures that the equality condition is met on the selected elements through the selector. The selector may be a CSS selector expression (String), an expression with substitution values, or an <code>HTML::Selector</code> object.</p>
+
+<p><code>assert_select(element, selector, [equality], [message])</code> ensures that the equality condition is met on all the selected elements through the selector starting from the <em>element</em> (instance of <code>HTML::Node</code>) and its descendants.</p>
+
+<p>For example, you could verify the contents on the title element in your response with:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">assert_select</span> <span class="s1">'title'</span><span class="p">,</span> <span class="s2">"Welcome to Rails Testing Guide"</span>
+</pre>
+
+</div>
+<p>You can also use nested <code>assert_select</code> blocks. In this case the inner <code>assert_select</code> runs the assertion on the complete collection of elements selected by the outer <code>assert_select</code> block:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">assert_select</span> <span class="s1">'ul.navigation'</span> <span class="k">do</span>
+  <span class="n">assert_select</span> <span class="s1">'li.menu_item'</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>Alternatively the collection of elements selected by the outer <code>assert_select</code> may be iterated through so that <code>assert_select</code> may be called separately for each element. Suppose for example that the response contains two ordered lists, each with four list elements then the following tests will both pass.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">assert_select</span> <span class="s2">"ol"</span> <span class="k">do</span> <span class="o">|</span><span class="n">elements</span><span class="o">|</span>
+  <span class="n">elements</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">element</span><span class="o">|</span>
+    <span class="n">assert_select</span> <span class="n">element</span><span class="p">,</span> <span class="s2">"li"</span><span class="p">,</span> <span class="mi">4</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="n">assert_select</span> <span class="s2">"ol"</span> <span class="k">do</span>
+  <span class="n">assert_select</span> <span class="s2">"li"</span><span class="p">,</span> <span class="mi">8</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>The <code>assert_select</code> assertion is quite powerful. For more advanced usage, refer to its <a href="http://api.rubyonrails.org/classes/ActionDispatch/Assertions/SelectorAssertions.html">documentation</a>.</p>
+
+<h4>Additional View-Based Assertions</h4>
+
+<p>There are more assertions that are primarily used in testing views:</p>
+
+<div class="table"><table>
+  <thead>
+    <tr>
+      <th>Assertion</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>assert_select_email</code></td>
+      <td>Allows you to make assertions on the body of an e-mail.</td>
+    </tr>
+    <tr>
+      <td><code>assert_select_encoded</code></td>
+      <td>Allows you to make assertions on encoded HTML. It does this by un-encoding the contents of each element and then calling the block with all the un-encoded elements.</td>
+    </tr>
+    <tr>
+      <td><code>css_select(selector)</code> or <code>css_select(element, selector)</code></td>
+      <td>Returns an array of all the elements selected by the <em>selector</em>. In the second variant it first matches the base <em>element</em> and tries to match the <em>selector</em> expression on any of its children. If there are no matches both variants return an empty array.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>Here’s an example of using <code>assert_select_email</code>:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="n">assert_select_email</span> <span class="k">do</span>
+  <span class="n">assert_select</span> <span class="s1">'small'</span><span class="p">,</span> <span class="s1">'Please click the "Unsubscribe" link if you want to opt-out.'</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<h2>Integration Testing</h2>
+
+<p>Integration tests are used to test the interaction among any number of controllers. They are generally used to test important work flows within your application.</p>
+
+<p>Unlike Unit and Functional tests, integration tests have to be explicitly created under the ‘test/integration’ folder within your application. Rails provides a generator to create an integration test skeleton for you.</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails generate integration_test user_flows
+      exists  <span class="nb">test</span>/integration/
+      create  <span class="nb">test</span>/integration/user_flows_test.rb
+</pre>
+
+</div>
+<p>Here’s what a freshly-generated integration test looks like:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="nb">require</span> <span class="s1">'test_helper'</span>
+
+<span class="k">class</span> <span class="nc">UserFlowsTest</span> <span class="o">&lt;</span> <span class="no">ActionDispatch</span><span class="o">::</span><span class="no">IntegrationTest</span>
+  <span class="c1"># test "the truth" do</span>
+  <span class="c1">#   assert true</span>
+  <span class="c1"># end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>Integration tests inherit from <code>ActionDispatch::IntegrationTest</code>. This makes available some additional helpers to use in your integration tests. Also you need to explicitly include the fixtures to be made available to the test.</p>
+
+<h3>Helpers Available for Integration Tests</h3>
+
+<p>In addition to the standard testing helpers, there are some additional helpers available to integration tests:</p>
+
+<div class="table"><table>
+  <thead>
+    <tr>
+      <th>Helper</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>https?</code></td>
+      <td>Returns <code>true</code> if the session is mimicking a secure HTTPS request.</td>
+    </tr>
+    <tr>
+      <td><code>https!</code></td>
+      <td>Allows you to mimic a secure HTTPS request.</td>
+    </tr>
+    <tr>
+      <td><code>host!</code></td>
+      <td>Allows you to set the host name to use in the next request.</td>
+    </tr>
+    <tr>
+      <td><code>redirect?</code></td>
+      <td>Returns <code>true</code> if the last request was a redirect.</td>
+    </tr>
+    <tr>
+      <td><code>follow_redirect!</code></td>
+      <td>Follows a single redirect response.</td>
+    </tr>
+    <tr>
+      <td><code>request_via_redirect(http_method, path, [parameters], [headers])</code></td>
+      <td>Allows you to make an HTTP request and follow any subsequent redirects.</td>
+    </tr>
+    <tr>
+      <td><code>post_via_redirect(path, [parameters], [headers])</code></td>
+      <td>Allows you to make an HTTP POST request and follow any subsequent redirects.</td>
+    </tr>
+    <tr>
+      <td><code>get_via_redirect(path, [parameters], [headers])</code></td>
+      <td>Allows you to make an HTTP GET request and follow any subsequent redirects.</td>
+    </tr>
+    <tr>
+      <td><code>patch_via_redirect(path, [parameters], [headers])</code></td>
+      <td>Allows you to make an HTTP PATCH request and follow any subsequent redirects.</td>
+    </tr>
+    <tr>
+      <td><code>put_via_redirect(path, [parameters], [headers])</code></td>
+      <td>Allows you to make an HTTP PUT request and follow any subsequent redirects.</td>
+    </tr>
+    <tr>
+      <td><code>delete_via_redirect(path, [parameters], [headers])</code></td>
+      <td>Allows you to make an HTTP DELETE request and follow any subsequent redirects.</td>
+    </tr>
+    <tr>
+      <td><code>open_session</code></td>
+      <td>Opens a new session instance.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<h3>Integration Testing Examples</h3>
+
+<p>A simple integration test that exercises multiple controllers:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="nb">require</span> <span class="s1">'test_helper'</span>
+
+<span class="k">class</span> <span class="nc">UserFlowsTest</span> <span class="o">&lt;</span> <span class="no">ActionDispatch</span><span class="o">::</span><span class="no">IntegrationTest</span>
+  <span class="n">fixtures</span> <span class="ss">:users</span>
+
+  <span class="nb">test</span> <span class="s2">"login and browse site"</span> <span class="k">do</span>
+    <span class="c1"># login via https</span>
+    <span class="n">https!</span>
+    <span class="n">get</span> <span class="s2">"/login"</span>
+    <span class="n">assert_response</span> <span class="ss">:success</span>
+
+    <span class="n">post_via_redirect</span> <span class="s2">"/login"</span><span class="p">,</span> <span class="ss">username: </span><span class="n">users</span><span class="p">(</span><span class="ss">:david</span><span class="p">).</span><span class="nf">username</span><span class="p">,</span> <span class="ss">password: </span><span class="n">users</span><span class="p">(</span><span class="ss">:david</span><span class="p">).</span><span class="nf">password</span>
+    <span class="n">assert_equal</span> <span class="s1">'/welcome'</span><span class="p">,</span> <span class="n">path</span>
+    <span class="n">assert_equal</span> <span class="s1">'Welcome david!'</span><span class="p">,</span> <span class="n">flash</span><span class="o">[</span><span class="ss">:notice</span><span class="o">]</span>
+
+    <span class="n">https!</span><span class="p">(</span><span class="kp">false</span><span class="p">)</span>
+    <span class="n">get</span> <span class="s2">"/posts/all"</span>
+    <span class="n">assert_response</span> <span class="ss">:success</span>
+    <span class="n">assert</span> <span class="n">assigns</span><span class="p">(</span><span class="ss">:products</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>As you can see the integration test involves multiple controllers and exercises the entire stack from database to dispatcher. In addition you can have multiple session instances open simultaneously in a test and extend those instances with assertion methods to create a very powerful testing DSL (domain-specific language) just for your application.</p>
+
+<p>Here’s an example of multiple sessions and custom DSL in an integration test</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="nb">require</span> <span class="s1">'test_helper'</span>
+
+<span class="k">class</span> <span class="nc">UserFlowsTest</span> <span class="o">&lt;</span> <span class="no">ActionDispatch</span><span class="o">::</span><span class="no">IntegrationTest</span>
+  <span class="n">fixtures</span> <span class="ss">:users</span>
+
+  <span class="nb">test</span> <span class="s2">"login and browse site"</span> <span class="k">do</span>
+
+    <span class="c1"># User david logs in</span>
+    <span class="n">david</span> <span class="o">=</span> <span class="n">login</span><span class="p">(</span><span class="ss">:david</span><span class="p">)</span>
+    <span class="c1"># User guest logs in</span>
+    <span class="n">guest</span> <span class="o">=</span> <span class="n">login</span><span class="p">(</span><span class="ss">:guest</span><span class="p">)</span>
+
+    <span class="c1"># Both are now available in different sessions</span>
+    <span class="n">assert_equal</span> <span class="s1">'Welcome david!'</span><span class="p">,</span> <span class="n">david</span><span class="p">.</span><span class="nf">flash</span><span class="o">[</span><span class="ss">:notice</span><span class="o">]</span>
+    <span class="n">assert_equal</span> <span class="s1">'Welcome guest!'</span><span class="p">,</span> <span class="n">guest</span><span class="p">.</span><span class="nf">flash</span><span class="o">[</span><span class="ss">:notice</span><span class="o">]</span>
+
+    <span class="c1"># User david can browse site</span>
+    <span class="n">david</span><span class="p">.</span><span class="nf">browses_site</span>
+    <span class="c1"># User guest can browse site as well</span>
+    <span class="n">guest</span><span class="p">.</span><span class="nf">browses_site</span>
+
+    <span class="c1"># Continue with other assertions</span>
+  <span class="k">end</span>
+
+  <span class="kp">private</span>
+
+    <span class="k">module</span> <span class="nn">CustomDsl</span>
+      <span class="k">def</span> <span class="nf">browses_site</span>
+        <span class="n">get</span> <span class="s2">"/products/all"</span>
+        <span class="n">assert_response</span> <span class="ss">:success</span>
+        <span class="n">assert</span> <span class="n">assigns</span><span class="p">(</span><span class="ss">:products</span><span class="p">)</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+
+    <span class="k">def</span> <span class="nf">login</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+      <span class="n">open_session</span> <span class="k">do</span> <span class="o">|</span><span class="n">sess</span><span class="o">|</span>
+        <span class="n">sess</span><span class="p">.</span><span class="nf">extend</span><span class="p">(</span><span class="no">CustomDsl</span><span class="p">)</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">users</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">sess</span><span class="p">.</span><span class="nf">https!</span>
+        <span class="n">sess</span><span class="p">.</span><span class="nf">post</span> <span class="s2">"/login"</span><span class="p">,</span> <span class="ss">username: </span><span class="n">u</span><span class="p">.</span><span class="nf">username</span><span class="p">,</span> <span class="ss">password: </span><span class="n">u</span><span class="p">.</span><span class="nf">password</span>
+        <span class="n">assert_equal</span> <span class="s1">'/welcome'</span><span class="p">,</span> <span class="n">sess</span><span class="p">.</span><span class="nf">path</span>
+        <span class="n">sess</span><span class="p">.</span><span class="nf">https!</span><span class="p">(</span><span class="kp">false</span><span class="p">)</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<h2>Rake Tasks for Running your Tests</h2>
+
+<p>You don’t need to set up and run your tests by hand on a test-by-test basis.
+Rails comes with a number of commands to help in testing.
+The table below lists all commands that come along in the default Rakefile
+when you initiate a Rails project.</p>
+
+<div class="table"><table>
+  <thead>
+    <tr>
+      <th>Tasks</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>rake test</code></td>
+      <td>Runs all unit, functional and integration tests. You can also simply run <code>rake</code> as Rails will run all the tests by default</td>
+    </tr>
+    <tr>
+      <td><code>rake test:controllers</code></td>
+      <td>Runs all the controller tests from <code>test/controllers</code></td>
+    </tr>
+    <tr>
+      <td><code>rake test:functionals</code></td>
+      <td>Runs all the functional tests from <code>test/controllers</code>, <code>test/mailers</code>, and <code>test/functional</code></td>
+    </tr>
+    <tr>
+      <td><code>rake test:helpers</code></td>
+      <td>Runs all the helper tests from <code>test/helpers</code></td>
+    </tr>
+    <tr>
+      <td><code>rake test:integration</code></td>
+      <td>Runs all the integration tests from <code>test/integration</code></td>
+    </tr>
+    <tr>
+      <td><code>rake test:mailers</code></td>
+      <td>Runs all the mailer tests from <code>test/mailers</code></td>
+    </tr>
+    <tr>
+      <td><code>rake test:models</code></td>
+      <td>Runs all the model tests from <code>test/models</code></td>
+    </tr>
+    <tr>
+      <td><code>rake test:units</code></td>
+      <td>Runs all the unit tests from <code>test/models</code>, <code>test/helpers</code>, and <code>test/unit</code></td>
+    </tr>
+    <tr>
+      <td><code>rake test:all</code></td>
+      <td>Runs all tests quickly by merging all types and not resetting db</td>
+    </tr>
+    <tr>
+      <td><code>rake test:all:db</code></td>
+      <td>Runs all tests quickly by merging all types and resetting db</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<h2>Brief Note About <code>MiniTest</code></h2>
+
+<p>Ruby ships with a boat load of libraries. Ruby 1.8 provides <code>Test::Unit</code>, a framework for unit testing in Ruby. All the basic assertions discussed above are actually defined in <code>Test::Unit::Assertions</code>. The class <code>ActiveSupport::TestCase</code> which we have been using in our unit and functional tests extends <code>Test::Unit::TestCase</code>, allowing
+us to use all of the basic assertions in our tests.</p>
+
+<p>Ruby 1.9 introduced <code>MiniTest</code>, an updated version of <code>Test::Unit</code> which provides a backwards compatible API for <code>Test::Unit</code>. You could also use <code>MiniTest</code> in Ruby 1.8 by installing the <code>minitest</code> gem.</p>
+
+<p>NOTE: For more information on <code>Test::Unit</code>, refer to <a href="http://ruby-doc.org/stdlib/libdoc/test/unit/rdoc/">test/unit Documentation</a>
+For more information on <code>MiniTest</code>, refer to <a href="http://www.ruby-doc.org/stdlib-1.9.3/libdoc/minitest/unit/rdoc/">Minitest</a></p>
+
+<h2>Setup and Teardown</h2>
+
+<p>If you would like to run a block of code before the start of each test and another block of code after the end of each test you have two special callbacks for your rescue. Let’s take note of this by looking at an example for our functional test in <code>Posts</code> controller:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="nb">require</span> <span class="s1">'test_helper'</span>
+
+<span class="k">class</span> <span class="nc">PostsControllerTest</span> <span class="o">&lt;</span> <span class="no">ActionController</span><span class="o">::</span><span class="no">TestCase</span>
+
+  <span class="c1"># called before every single test</span>
+  <span class="k">def</span> <span class="nf">setup</span>
+    <span class="vi">@post</span> <span class="o">=</span> <span class="n">posts</span><span class="p">(</span><span class="ss">:one</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="c1"># called after every single test</span>
+  <span class="k">def</span> <span class="nf">teardown</span>
+    <span class="c1"># as we are re-initializing @post before every test</span>
+    <span class="c1"># setting it to nil here is not essential but I hope</span>
+    <span class="c1"># you understand how you can use the teardown method</span>
+    <span class="vi">@post</span> <span class="o">=</span> <span class="kp">nil</span>
+  <span class="k">end</span>
+
+  <span class="nb">test</span> <span class="s2">"should show post"</span> <span class="k">do</span>
+    <span class="n">get</span> <span class="ss">:show</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="vi">@post</span><span class="p">.</span><span class="nf">id</span>
+    <span class="n">assert_response</span> <span class="ss">:success</span>
+  <span class="k">end</span>
+
+  <span class="nb">test</span> <span class="s2">"should destroy post"</span> <span class="k">do</span>
+    <span class="n">assert_difference</span><span class="p">(</span><span class="s1">'Post.count'</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">do</span>
+      <span class="n">delete</span> <span class="ss">:destroy</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="vi">@post</span><span class="p">.</span><span class="nf">id</span>
+    <span class="k">end</span>
+
+    <span class="n">assert_redirected_to</span> <span class="n">posts_path</span>
+  <span class="k">end</span>
+
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>Above, the <code>setup</code> method is called before each test and so <code>@post</code> is available for each of the tests. Rails implements <code>setup</code> and <code>teardown</code> as <code>ActiveSupport::Callbacks</code>. Which essentially means you need not only use <code>setup</code> and <code>teardown</code> as methods in your tests. You could specify them by using:</p>
+
+<ul>
+  <li>a block</li>
+  <li>a method (like in the earlier example)</li>
+  <li>a method name as a symbol</li>
+  <li>a lambda</li>
+</ul>
+
+<p>Let’s see the earlier example by specifying <code>setup</code> callback by specifying a method name as a symbol:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="nb">require</span> <span class="s1">'test_helper'</span>
+
+<span class="k">class</span> <span class="nc">PostsControllerTest</span> <span class="o">&lt;</span> <span class="no">ActionController</span><span class="o">::</span><span class="no">TestCase</span>
+
+  <span class="c1"># called before every single test</span>
+  <span class="n">setup</span> <span class="ss">:initialize_post</span>
+
+  <span class="c1"># called after every single test</span>
+  <span class="k">def</span> <span class="nf">teardown</span>
+    <span class="vi">@post</span> <span class="o">=</span> <span class="kp">nil</span>
+  <span class="k">end</span>
+
+  <span class="nb">test</span> <span class="s2">"should show post"</span> <span class="k">do</span>
+    <span class="n">get</span> <span class="ss">:show</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="vi">@post</span><span class="p">.</span><span class="nf">id</span>
+    <span class="n">assert_response</span> <span class="ss">:success</span>
+  <span class="k">end</span>
+
+  <span class="nb">test</span> <span class="s2">"should update post"</span> <span class="k">do</span>
+    <span class="n">patch</span> <span class="ss">:update</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="vi">@post</span><span class="p">.</span><span class="nf">id</span><span class="p">,</span> <span class="ss">post: </span><span class="p">{}</span>
+    <span class="n">assert_redirected_to</span> <span class="n">post_path</span><span class="p">(</span><span class="n">assigns</span><span class="p">(</span><span class="ss">:post</span><span class="p">))</span>
+  <span class="k">end</span>
+
+  <span class="nb">test</span> <span class="s2">"should destroy post"</span> <span class="k">do</span>
+    <span class="n">assert_difference</span><span class="p">(</span><span class="s1">'Post.count'</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">do</span>
+      <span class="n">delete</span> <span class="ss">:destroy</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="vi">@post</span><span class="p">.</span><span class="nf">id</span>
+    <span class="k">end</span>
+
+    <span class="n">assert_redirected_to</span> <span class="n">posts_path</span>
+  <span class="k">end</span>
+
+  <span class="kp">private</span>
+
+    <span class="k">def</span> <span class="nf">initialize_post</span>
+      <span class="vi">@post</span> <span class="o">=</span> <span class="n">posts</span><span class="p">(</span><span class="ss">:one</span><span class="p">)</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<h2>Testing Routes</h2>
+
+<p>Like everything else in your Rails application, it is recommended that you test your routes. An example test for a route in the default <code>show</code> action of <code>Posts</code> controller above should look like:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="nb">test</span> <span class="s2">"should route to post"</span> <span class="k">do</span>
+  <span class="n">assert_routing</span> <span class="s1">'/posts/1'</span><span class="p">,</span> <span class="p">{</span><span class="ss">controller: </span><span class="s2">"posts"</span><span class="p">,</span> <span class="ss">action: </span><span class="s2">"show"</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="s2">"1"</span><span class="p">}</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<h2>Testing Your Mailers</h2>
+
+<p>Testing mailer classes requires some specific tools to do a thorough job.</p>
+
+<h3>Keeping the Postman in Check</h3>
+
+<p>Your mailer classes - like every other part of your Rails application - should be tested to ensure that it is working as expected.</p>
+
+<p>The goals of testing your mailer classes are to ensure that:</p>
+
+<ul>
+  <li>emails are being processed (created and sent)</li>
+  <li>the email content is correct (subject, sender, body, etc)</li>
+  <li>the right emails are being sent at the right times</li>
+</ul>
+
+<h4>From All Sides</h4>
+
+<p>There are two aspects of testing your mailer, the unit tests and the functional tests. In the unit tests, you run the mailer in isolation with tightly controlled inputs and compare the output to a known value (a fixture.) In the functional tests you don’t so much test the minute details produced by the mailer; instead, we test that our controllers and models are using the mailer in the right way. You test to prove that the right email was sent at the right time.</p>
+
+<h3>Unit Testing</h3>
+
+<p>In order to test that your mailer is working as expected, you can use unit tests to compare the actual results of the mailer with pre-written examples of what should be produced.</p>
+
+<h4>Revenge of the Fixtures</h4>
+
+<p>For the purposes of unit testing a mailer, fixtures are used to provide an example of how the output <em>should</em> look. Because these are example emails, and not Active Record data like the other fixtures, they are kept in their own subdirectory apart from the other fixtures. The name of the directory within <code>test/fixtures</code> directly corresponds to the name of the mailer. So, for a mailer named <code>UserMailer</code>, the fixtures should reside in <code>test/fixtures/user_mailer</code> directory.</p>
+
+<p>When you generated your mailer, the generator creates stub fixtures for each of the mailers actions. If you didn’t use the generator you’ll have to make those files yourself.</p>
+
+<h4>The Basic Test Case</h4>
+
+<p>Here’s a unit test to test a mailer named <code>UserMailer</code> whose action <code>invite</code> is used to send an invitation to a friend. It is an adapted version of the base test created by the generator for an <code>invite</code> action.</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="nb">require</span> <span class="s1">'test_helper'</span>
+
+<span class="k">class</span> <span class="nc">UserMailerTest</span> <span class="o">&lt;</span> <span class="no">ActionMailer</span><span class="o">::</span><span class="no">TestCase</span>
+  <span class="nb">test</span> <span class="s2">"invite"</span> <span class="k">do</span>
+    <span class="c1"># Send the email, then test that it got queued</span>
+    <span class="n">email</span> <span class="o">=</span> <span class="no">UserMailer</span><span class="p">.</span><span class="nf">create_invite</span><span class="p">(</span><span class="s1">'me@example.com'</span><span class="p">,</span>
+                                     <span class="s1">'friend@example.com'</span><span class="p">,</span> <span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">).</span><span class="nf">deliver</span>
+    <span class="n">assert_not</span> <span class="no">ActionMailer</span><span class="o">::</span><span class="no">Base</span><span class="p">.</span><span class="nf">deliveries</span><span class="p">.</span><span class="nf">empty?</span>
+
+    <span class="c1"># Test the body of the sent email contains what we expect it to</span>
+    <span class="n">assert_equal</span> <span class="o">[</span><span class="s1">'me@example.com'</span><span class="o">]</span><span class="p">,</span> <span class="n">email</span><span class="p">.</span><span class="nf">from</span>
+    <span class="n">assert_equal</span> <span class="o">[</span><span class="s1">'friend@example.com'</span><span class="o">]</span><span class="p">,</span> <span class="n">email</span><span class="p">.</span><span class="nf">to</span>
+    <span class="n">assert_equal</span> <span class="s1">'You have been invited by me@example.com'</span><span class="p">,</span> <span class="n">email</span><span class="p">.</span><span class="nf">subject</span>
+    <span class="n">assert_equal</span> <span class="n">read_fixture</span><span class="p">(</span><span class="s1">'invite'</span><span class="p">).</span><span class="nf">join</span><span class="p">,</span> <span class="n">email</span><span class="p">.</span><span class="nf">body</span><span class="p">.</span><span class="nf">to_s</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>In the test we send the email and store the returned object in the <code>email</code>
+variable. We then ensure that it was sent (the first assert), then, in the
+second batch of assertions, we ensure that the email does indeed contain what we
+expect. The helper <code>read_fixture</code> is used to read in the content from this file.</p>
+
+<p>Here’s the content of the <code>invite</code> fixture:</p>
+
+<div class="codeblock text"><pre class="highlight">Hi friend@example.com,
+
+You have been invited.
+
+Cheers!
+</pre>
+
+</div>
+<p>This is the right time to understand a little more about writing tests for your
+mailers. The line <code>ActionMailer::Base.delivery_method = :test</code> in
+<code>config/environments/test.rb</code> sets the delivery method to test mode so that
+email will not actually be delivered (useful to avoid spamming your users while
+testing) but instead it will be appended to an array
+(<code>ActionMailer::Base.deliveries</code>).</p>
+
+<p>NOTE: The <code>ActionMailer::Base.deliveries</code> array is only reset automatically in
+<code>ActionMailer::TestCase</code> tests. If you want to have a clean slate outside Action
+Mailer tests, you can reset it manually with:
+<code>ActionMailer::Base.deliveries.clear</code></p>
+
+<h3>Functional Testing</h3>
+
+<p>Functional testing for mailers involves more than just checking that the email body, recipients and so forth are correct. In functional mail tests you call the mail deliver methods and check that the appropriate emails have been appended to the delivery list. It is fairly safe to assume that the deliver methods themselves do their job. You are probably more interested in whether your own business logic is sending emails when you expect them to go out. For example, you can check that the invite friend operation is sending an email appropriately:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="nb">require</span> <span class="s1">'test_helper'</span>
+
+<span class="k">class</span> <span class="nc">UserControllerTest</span> <span class="o">&lt;</span> <span class="no">ActionController</span><span class="o">::</span><span class="no">TestCase</span>
+  <span class="nb">test</span> <span class="s2">"invite friend"</span> <span class="k">do</span>
+    <span class="n">assert_difference</span> <span class="s1">'ActionMailer::Base.deliveries.size'</span><span class="p">,</span> <span class="o">+</span><span class="mi">1</span> <span class="k">do</span>
+      <span class="n">post</span> <span class="ss">:invite_friend</span><span class="p">,</span> <span class="ss">email: </span><span class="s1">'friend@example.com'</span>
+    <span class="k">end</span>
+    <span class="n">invite_email</span> <span class="o">=</span> <span class="no">ActionMailer</span><span class="o">::</span><span class="no">Base</span><span class="p">.</span><span class="nf">deliveries</span><span class="p">.</span><span class="nf">last</span>
+
+    <span class="n">assert_equal</span> <span class="s2">"You have been invited by me@example.com"</span><span class="p">,</span> <span class="n">invite_email</span><span class="p">.</span><span class="nf">subject</span>
+    <span class="n">assert_equal</span> <span class="s1">'friend@example.com'</span><span class="p">,</span> <span class="n">invite_email</span><span class="p">.</span><span class="nf">to</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span>
+    <span class="n">assert_match</span><span class="p">(</span><span class="sr">/Hi friend@example.com/</span><span class="p">,</span> <span class="n">invite_email</span><span class="p">.</span><span class="nf">body</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<h2>Testing helpers</h2>
+
+<p>In order to test helpers, all you need to do is check that the output of the
+helper method matches what you’d expect. Tests related to the helpers are
+located under the <code>test/helpers</code> directory. Rails provides a generator which
+generates both the helper and the test file:</p>
+
+<div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails generate helper User
+      create  app/helpers/user_helper.rb
+      invoke  test_unit
+      create    <span class="nb">test</span>/helpers/user_helper_test.rb
+</pre>
+
+</div>
+<p>The generated test file contains the following code:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="nb">require</span> <span class="s1">'test_helper'</span>
+
+<span class="k">class</span> <span class="nc">UserHelperTest</span> <span class="o">&lt;</span> <span class="no">ActionView</span><span class="o">::</span><span class="no">TestCase</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>A helper is just a simple module where you can define methods which are
+available into your views. To test the output of the helper’s methods, you just
+have to use a mixin like this:</p>
+
+<div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">UserHelperTest</span> <span class="o">&lt;</span> <span class="no">ActionView</span><span class="o">::</span><span class="no">TestCase</span>
+  <span class="kp">include</span> <span class="no">UserHelper</span>
+
+  <span class="nb">test</span> <span class="s2">"should return the user name"</span> <span class="k">do</span>
+    <span class="c1"># ...</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+
+</div>
+<p>Moreover, since the test class extends from <code>ActionView::TestCase</code>, you have
+access to Rails’ helper methods such as <code>link_to</code> or <code>pluralize</code>.</p>
+
+<h2>Other Testing Approaches</h2>
+
+<p>The built-in <code>test/unit</code> based testing is not the only way to test Rails applications. Rails developers have come up with a wide variety of other approaches and aids for testing, including:</p>
+
+<ul>
+  <li><a href="http://avdi.org/projects/nulldb/">NullDB</a>, a way to speed up testing by avoiding database use.</li>
+  <li><a href="https://github.com/thoughtbot/factory_girl/tree/master">Factory Girl</a>, a replacement for fixtures.</li>
+  <li><a href="https://github.com/notahat/machinist/tree/master">Machinist</a>, another replacement for fixtures.</li>
+  <li><a href="https://github.com/rdy/fixture_builder">Fixture Builder</a>, a tool that compiles Ruby factories into fixtures before a test run.</li>
+  <li><a href="https://github.com/metaskills/minitest-spec-rails">MiniTest::Spec Rails</a>, use the MiniTest::Spec DSL within your rails tests.</li>
+  <li><a href="http://www.thoughtbot.com/projects/shoulda">Shoulda</a>, an extension to <code>test/unit</code> with additional helpers, macros, and assertions.</li>
+  <li><a href="http://relishapp.com/rspec">RSpec</a>, a behavior-driven development framework</li>
+</ul>
+
+                    </article>
+                    <div class="section-nav clearfix">
+  <div class="pull-left">
+    
+      <a href="http://docs-china.com/rails//action_mailer_basics.html" class="prev">
+        &laquo;前一篇
+      </a>
+    
+  </div>
+  <div class="pull-right">
+    
+      <a href="http://docs-china.com/rails//security.html" class="next">
+        后一篇&raquo;
+      </a>
+    
+  </div>
+</div>
+
+                </main>
+                <div class="sidebar col-sm-3 col-md-3 hidden-xs">
+                    <aside>
+    
+    <h4>起跑</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//getting_started.html">Rails 入门</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+    <h4>模型</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//active_record_basics.html">Active Record Basics</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//migrations.html">Active Record Migrations</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//active_record_validations.html">Active Record Validations</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//active_record_callbacks.html">Active Record Callbacks</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//association_basics.html">Active Record Associations</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+    <h4>视图</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//action_view_overview.html">Action View Overview</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//layouts_and_rendering.html">Layouts and Rendering in Rails</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//form_helpers.html">Form Helpers</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+    <h4>控制器</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//action_controller_overview.html">Action Controller 简介</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//routing.html">Rails 路由全解</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+    <h4>深入</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//active_support_core_extensions.html">Active Support Core Extensions</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//i18n.html">Rails Internationalization (I18n) API</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//action_mailer_basics.html">Action Mailer Basics</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class="current"><a href="http://docs-china.com/rails//testing.html">A Guide to Testing Rails Applications</a></li>
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//security.html">Ruby on Rails Security Guide</a></li>
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//debugging_rails_applications.html">Debugging Rails Applications</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//configuring.html">Configuring Rails Applications</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//command_line.html">The Rails Command Line</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//caching_with_rails.html">Caching with Rails An overview</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//asset_pipeline.html">The Asset Pipeline</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//working_with_javascript_in_rails.html">Working with JavaScript in Rails</a></li>
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//engines.html">Getting Started with Engines</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//initialization.html">The Rails Initialization Process</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+    <h4>扩展</h4>
+    
+
+<ul>
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//plugins.html">The Basics of Creating Rails Plugins</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//rails_on_rack.html">Rails on Rack</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails//generators.html">Creating and Customizing Rails Generators & Templates</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+</ul>
+
+    
+</aside>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer" role="contentinfo">
+        <div class="container">
+            <div>
+                <ul class="social">
+                    <li class="github">
+                        <a href="https://github.com/docs-china/rails/" title="在 GitHub 上关注我们">Github</a>
+                    </li>
+                    <li class="weibo">
+                        <a href="http://weibo.com/docschina" title="关注我们的微博">@DocsChina</a>
+                    </li>
+                </ul>
+            </div>
+
+            <p>本文档授权协议：<a href="http://creativecommons.org/licenses/by-sa/4.0/deed.zh" title="CC BY-SA 4.0">CC BY-SA 4.0</a></p>
+        </div>
+    </footer>
+</body>
+</html>
