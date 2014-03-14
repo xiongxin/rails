@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width" />
 
     <link rel="stylesheet" href="http://cdn.staticfile.org/twitter-bootstrap/3.1.1/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="http://docs-china.com/rails//styles/docs.css" />
+    <link rel="stylesheet" href="http://docs-china.com/rails/styles/docs.css" />
 </head>
 <body>
     <a class="sr-only" href="#content">跳到正文</a>
@@ -22,7 +22,7 @@
 
     <header class="header" role="banner">
         <div class="container">
-            <h1 class="logo"><a href="http://docs-china.com/rails//" title="Rails 指南">Rails 指南</a></h1>
+            <h1 class="logo"><a href="http://docs-china.com/rails/" title="Rails 指南">Rails 指南</a></h1>
             
             <iframe src="http://ghbtns.com/github-btn.html?user=docs-china&repo=rails&type=fork&count=false"
   allowtransparency="true" frameborder="0" scrolling="0" width="62" height="20"></iframe>
@@ -62,7 +62,7 @@
 <p>因此，控制器可以视作模型和视图的中间人，让模型中的数据可以在视图中使用，把数据显示给用户，再把用户提交的数据保存或更新到模型中。</p>
 
           <div class="box information-box">
-  <p>路由的处理细节请查阅 <a href="http://docs-china.com/rails//routing.html">Rails Routing From the Outside In</a>。</p>
+  <p>路由的处理细节请查阅 <a href="http://docs-china.com/rails/routing.html">Rails Routing From the Outside In</a>。</p>
 </div>
 
 
@@ -70,7 +70,7 @@
 
 <p>Rails 控制器的命名习惯是，最后一个单词使用<strong>复数形式</strong>，但也是有例外，比如 <code>ApplicationController</code>。例如：用 <code>ClientsController</code>，而不是 <code>ClientController</code>；用 <code>SiteAdminsController</code>，而不是 <code>SiteAdminController</code> 或 <code>SitesAdminsController</code>。</p>
 
-<p>遵守这一约定便可享用默认的路由生成器（例如 <code>resources</code> 等），无需再指定 <code>:path</code> 或 <code>:controller</code>，URL 和路径的帮助方法也能保持一致性。详情参阅 <a href="http://docs-china.com/rails//layouts_and_rendering.html">Layouts &amp; Rendering Guide</a>。</p>
+<p>遵守这一约定便可享用默认的路由生成器（例如 <code>resources</code> 等），无需再指定 <code>:path</code> 或 <code>:controller</code>，URL 和路径的帮助方法也能保持一致性。详情参阅 <a href="http://docs-china.com/rails/layouts_and_rendering.html">Layouts &amp; Rendering Guide</a>。</p>
 
           <div class="box information-box">
   <p>控制器的命名习惯和模型不同，模型的名字习惯使用单数形式。</p>
@@ -96,7 +96,7 @@
 </pre>
 
 </div>
-<p>详情参阅 <a href="http://docs-china.com/rails//layouts_and_rendering.html">Layouts &amp; Rendering Guide</a>。</p>
+<p>详情参阅 <a href="http://docs-china.com/rails/layouts_and_rendering.html">Layouts &amp; Rendering Guide</a>。</p>
 
 <p><code>ApplicationController</code> 继承自 <code>ActionController::Base</code>。<code>ActionController::Base</code> 定义了很多实用方法。本文会介绍部分方法，如果想知道定义了哪些方法，可查阅 API 文档或源码。</p>
 
@@ -154,7 +154,7 @@
 <p>此时，<code>params[:ids]</code> 的值是 <code>["1", "2", "3"]</code>。注意，参数的值始终是字符串，Rails 不会尝试转换类型。</p>
 
           <div class="box information-box">
-  <p>默认情况下，基于安全考虑，参数中的 <code>[]</code>、<code>[nil]</code> 和 <code>[nil, nil, ...]</code> 会替换成 <code>nil</code>。详情参阅<a href="http://docs-china.com/rails//security.html#unsafe-query-generation">安全指南</a>。</p>
+  <p>默认情况下，基于安全考虑，参数中的 <code>[]</code>、<code>[nil]</code> 和 <code>[nil, nil, ...]</code> 会替换成 <code>nil</code>。详情参阅<a href="http://docs-china.com/rails/security.html#unsafe-query-generation">安全指南</a>。</p>
 </div>
 
 
@@ -364,7 +364,7 @@
 
 <p>如果会话中没有存储重要的数据，或者不需要持久存储（例如使用 Falsh 存储消息），可以考虑使用 <code>ActionDispatch::Session::CacheStore</code>。这种存储机制使用程序所配置的缓存方式。CacheStore 的优点是，可以直接使用现有的缓存方式存储会话，不用额外的设置。不过缺点也很明显，会话存在时间很多，随时可能消失。</p>
 
-<p>关于会话存储的更多内容请参阅<a href="http://docs-china.com/rails//security.html">安全指南</a></p>
+<p>关于会话存储的更多内容请参阅<a href="http://docs-china.com/rails/security.html">安全指南</a></p>
 
 <p>如果想使用其他的会话存储机制，可以在 <code>config/initializers/session_store.rb</code> 文件中设置：</p>
 
@@ -772,11 +772,11 @@
 </pre>
 
 </div>
-<p>所有使用<a href="http://docs-china.com/rails//form_helpers.html">表单帮助方法</a>生成的表单，都有会添加这个令牌。如果想自己编写表单，或者基于其他原因添加令牌，可以使用 <code>form_authenticity_token</code> 方法。</p>
+<p>所有使用<a href="http://docs-china.com/rails/form_helpers.html">表单帮助方法</a>生成的表单，都有会添加这个令牌。如果想自己编写表单，或者基于其他原因添加令牌，可以使用 <code>form_authenticity_token</code> 方法。</p>
 
 <p><code>form_authenticity_token</code> 会生成一个有效的令牌。在 Rails 没有自动添加令牌的地方（例如 Ajax）可以使用这个方法。</p>
 
-<p><a href="http://docs-china.com/rails//security.html">安全指南</a>一文更深入的介绍了请求伪造防范措施，还有一些开发网页程序需要知道的安全隐患。</p>
+<p><a href="http://docs-china.com/rails/security.html">安全指南</a>一文更深入的介绍了请求伪造防范措施，还有一些开发网页程序需要知道的安全隐患。</p>
 
 <h2 id="the-request-and-response-objects"><code>request</code> 和 <code>response</code> 对象</h2>
 
@@ -1219,14 +1219,14 @@
                     <div class="section-nav clearfix">
   <div class="pull-left">
     
-      <a href="http://docs-china.com/rails//form_helpers.html" class="prev">
+      <a href="http://docs-china.com/rails/form_helpers.html" class="prev">
         &laquo;前一篇
       </a>
     
   </div>
   <div class="pull-right">
     
-      <a href="http://docs-china.com/rails//routing.html" class="next">
+      <a href="http://docs-china.com/rails/routing.html" class="next">
         后一篇&raquo;
       </a>
     
@@ -1286,7 +1286,7 @@
     
   
     
-      <li class=""><a href="http://docs-china.com/rails//getting_started.html">Rails 入门</a></li>
+      <li class=""><a href="http://docs-china.com/rails/getting_started.html">Rails 入门</a></li>
     
   
     
@@ -1335,7 +1335,7 @@
     
   
     
-      <li class=""><a href="http://docs-china.com/rails//active_record_basics.html">Active Record Basics</a></li>
+      <li class=""><a href="http://docs-china.com/rails/active_record_basics.html">Active Record Basics</a></li>
     
   
     
@@ -1440,7 +1440,7 @@
     
   
     
-      <li class=""><a href="http://docs-china.com/rails//migrations.html">Active Record Migrations</a></li>
+      <li class=""><a href="http://docs-china.com/rails/migrations.html">Active Record Migrations</a></li>
     
   
     
@@ -1479,76 +1479,7 @@
     
   
     
-      <li class=""><a href="http://docs-china.com/rails//active_record_validations.html">Active Record Validations</a></li>
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-
-
-  
-
-  
-    
-  
-
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-      <li class=""><a href="http://docs-china.com/rails//active_record_callbacks.html">Active Record Callbacks</a></li>
-    
-  
-    
-  
+      <li class=""><a href="http://docs-china.com/rails/active_record_validations.html">Active Record Validations</a></li>
     
   
     
@@ -1613,6 +1544,16 @@
     
   
     
+      <li class=""><a href="http://docs-china.com/rails/active_record_callbacks.html">Active Record Callbacks</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
   
     
   
@@ -1623,7 +1564,66 @@
     
   
     
-      <li class=""><a href="http://docs-china.com/rails//association_basics.html">Active Record Associations</a></li>
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails/association_basics.html">Active Record Associations</a></li>
     
   
     
@@ -1753,7 +1753,7 @@
     
   
     
-      <li class=""><a href="http://docs-china.com/rails//action_view_overview.html">Action View Overview</a></li>
+      <li class=""><a href="http://docs-china.com/rails/action_view_overview.html">Action View Overview</a></li>
     
   
     
@@ -1858,7 +1858,7 @@
     
   
     
-      <li class=""><a href="http://docs-china.com/rails//layouts_and_rendering.html">Layouts and Rendering in Rails</a></li>
+      <li class=""><a href="http://docs-china.com/rails/layouts_and_rendering.html">Layouts and Rendering in Rails</a></li>
     
   
     
@@ -1917,7 +1917,7 @@
     
   
     
-      <li class=""><a href="http://docs-china.com/rails//form_helpers.html">Form Helpers</a></li>
+      <li class=""><a href="http://docs-china.com/rails/form_helpers.html">Form Helpers</a></li>
     
   
     
@@ -1964,7 +1964,7 @@
     
   
     
-      <li class="current"><a href="http://docs-china.com/rails//action_controller_overview.html">Action Controller 简介</a></li>
+      <li class="current"><a href="http://docs-china.com/rails/action_controller_overview.html">Action Controller 简介</a></li>
     
   
     
@@ -2081,7 +2081,7 @@
     
   
     
-      <li class=""><a href="http://docs-china.com/rails//routing.html">Rails 路由全解</a></li>
+      <li class=""><a href="http://docs-china.com/rails/routing.html">Rails 路由全解</a></li>
     
   
     
@@ -2124,7 +2124,7 @@
     
   
     
-      <li class=""><a href="http://docs-china.com/rails//active_support_core_extensions.html">Active Support Core Extensions</a></li>
+      <li class=""><a href="http://docs-china.com/rails/active_support_core_extensions.html">Active Support Core Extensions</a></li>
     
   
     
@@ -2215,7 +2215,7 @@
     
   
     
-      <li class=""><a href="http://docs-china.com/rails//i18n.html">Rails Internationalization (I18n) API</a></li>
+      <li class=""><a href="http://docs-china.com/rails/i18n.html">Rails Internationalization (I18n) API</a></li>
     
   
     
@@ -2250,7 +2250,7 @@
     
   
     
-      <li class=""><a href="http://docs-china.com/rails//action_mailer_basics.html">Action Mailer Basics</a></li>
+      <li class=""><a href="http://docs-china.com/rails/action_mailer_basics.html">Action Mailer Basics</a></li>
     
   
     
@@ -2265,489 +2265,6 @@
   
     
   
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-
-
-  
-
-  
-    
-  
-
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-      <li class=""><a href="http://docs-china.com/rails//testing.html">A Guide to Testing Rails Applications</a></li>
-    
-  
-    
-  
-
-
-  
-
-  
-    
-  
-
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-      <li class=""><a href="http://docs-china.com/rails//security.html">Ruby on Rails Security Guide</a></li>
-    
-  
-    
-  
-    
-  
-
-
-  
-
-  
-    
-  
-
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-      <li class=""><a href="http://docs-china.com/rails//debugging_rails_applications.html">Debugging Rails Applications</a></li>
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-
-
-  
-
-  
-    
-  
-
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-      <li class=""><a href="http://docs-china.com/rails//configuring.html">Configuring Rails Applications</a></li>
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-
-
-  
-
-  
-    
-  
-
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-      <li class=""><a href="http://docs-china.com/rails//command_line.html">The Rails Command Line</a></li>
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-
-
-  
-
-  
-    
-  
-
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-      <li class=""><a href="http://docs-china.com/rails//caching_with_rails.html">Caching with Rails An overview</a></li>
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-
-
-  
-
-  
-    
-  
-
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-      <li class=""><a href="http://docs-china.com/rails//asset_pipeline.html">The Asset Pipeline</a></li>
     
   
     
@@ -2852,76 +2369,7 @@
     
   
     
-  
-    
-      <li class=""><a href="http://docs-china.com/rails//working_with_javascript_in_rails.html">Working with JavaScript in Rails</a></li>
-    
-  
-
-
-  
-
-  
-    
-  
-
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-      <li class=""><a href="http://docs-china.com/rails//engines.html">Getting Started with Engines</a></li>
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
+      <li class=""><a href="http://docs-china.com/rails/testing.html">A Guide to Testing Rails Applications</a></li>
     
   
     
@@ -2976,7 +2424,559 @@
     
   
     
-      <li class=""><a href="http://docs-china.com/rails//initialization.html">The Rails Initialization Process</a></li>
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails/security.html">Ruby on Rails Security Guide</a></li>
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails/debugging_rails_applications.html">Debugging Rails Applications</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails/configuring.html">Configuring Rails Applications</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails/command_line.html">The Rails Command Line</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails/caching_with_rails.html">Caching with Rails An overview</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails/asset_pipeline.html">The Asset Pipeline</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails/working_with_javascript_in_rails.html">Working with JavaScript in Rails</a></li>
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails/engines.html">Getting Started with Engines</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="http://docs-china.com/rails/initialization.html">The Rails Initialization Process</a></li>
     
   
     
@@ -3059,7 +3059,7 @@
     
   
     
-      <li class=""><a href="http://docs-china.com/rails//plugins.html">The Basics of Creating Rails Plugins</a></li>
+      <li class=""><a href="http://docs-china.com/rails/plugins.html">The Basics of Creating Rails Plugins</a></li>
     
   
     
@@ -3130,7 +3130,7 @@
     
   
     
-      <li class=""><a href="http://docs-china.com/rails//rails_on_rack.html">Rails on Rack</a></li>
+      <li class=""><a href="http://docs-china.com/rails/rails_on_rack.html">Rails on Rack</a></li>
     
   
     
@@ -3185,7 +3185,7 @@
     
   
     
-      <li class=""><a href="http://docs-china.com/rails//generators.html">Creating and Customizing Rails Generators & Templates</a></li>
+      <li class=""><a href="http://docs-china.com/rails/generators.html">Creating and Customizing Rails Generators & Templates</a></li>
     
   
     
