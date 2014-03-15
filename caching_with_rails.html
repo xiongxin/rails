@@ -5,9 +5,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <title>Caching with Rails An overview - Rails 指南</title>
     <meta name="viewport" content="width=device-width" />
-
+    <script src="http://docs-china.com/rails/scripts/docs.js"></script>
     <link rel="stylesheet" href="http://cdn.staticfile.org/twitter-bootstrap/3.1.1/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="http://docs-china.com/rails/styles/docs.css" />
+    <link rel="stylesheet" href="http://docs-china.com/rails/scripts/docs.css" />
 </head>
 <body>
     <a class="sr-only" href="#content">跳到正文</a>
@@ -24,7 +24,7 @@
         <div class="container">
             <h1 class="logo"><a href="http://docs-china.com/rails/" title="Rails 指南">Rails 指南</a></h1>
             
-            <iframe src="http://ghbtns.com/github-btn.html?user=docs-china&repo=rails&type=fork&count=false"
+            <iframe src="http://ghbtns.com/github-btn.html?user=docs-china&repo=&type=fork&count=false"
   allowtransparency="true" frameborder="0" scrolling="0" width="62" height="20"></iframe>
             
         </div>
@@ -310,7 +310,7 @@ page and action caching, you will need to add <code>actionpack-page_caching</cod
 
 <p>In addition to the standard <code>:expires_in</code> option, the <code>write</code> method on this cache can also accept the additional <code>:unless_exist</code> option, which will cause the cache store to use Ehcache’s <code>putIfAbsent</code> method instead of <code>put</code>, and therefore will not overwrite an existing entry. Additionally, the <code>write</code> method supports all of the properties exposed by the <a href="http://ehcache.org/apidocs/net/sf/ehcache/Element.html">Ehcache Element class</a> , including:</p>
 
-<div class="table"><table>
+<div class="table-responsive"><table>
   <thead>
     <tr>
       <th>Property</th>
@@ -669,7 +669,7 @@ For more information about Ehcache for JRuby and Rails, see <a href="http://ehca
     
   
     
-      <li class=""><a href="http://docs-china.com/rails/migrations.html">Active Record Migrations</a></li>
+      <li class=""><a href="http://docs-china.com/rails/migrations.html">Active Record 数据库迁移</a></li>
     
   
     
@@ -708,7 +708,7 @@ For more information about Ehcache for JRuby and Rails, see <a href="http://ehca
     
   
     
-      <li class=""><a href="http://docs-china.com/rails/active_record_validations.html">Active Record Validations</a></li>
+      <li class=""><a href="http://docs-china.com/rails/active_record_validations.html">Active Record 数据验证</a></li>
     
   
     
@@ -1665,7 +1665,7 @@ For more information about Ehcache for JRuby and Rails, see <a href="http://ehca
     
   
     
-      <li class=""><a href="http://docs-china.com/rails/security.html">Ruby on Rails Security Guide</a></li>
+      <li class=""><a href="http://docs-china.com/rails/security.html">Ruby on Rails 安全指南</a></li>
     
   
     

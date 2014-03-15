@@ -5,9 +5,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <title>Rails 入门 - Rails 指南</title>
     <meta name="viewport" content="width=device-width" />
-
+    <script src="http://docs-china.com/rails/scripts/docs.js"></script>
     <link rel="stylesheet" href="http://cdn.staticfile.org/twitter-bootstrap/3.1.1/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="http://docs-china.com/rails/styles/docs.css" />
+    <link rel="stylesheet" href="http://docs-china.com/rails/scripts/docs.css" />
 </head>
 <body>
     <a class="sr-only" href="#content">跳到正文</a>
@@ -24,7 +24,7 @@
         <div class="container">
             <h1 class="logo"><a href="http://docs-china.com/rails/" title="Rails 指南">Rails 指南</a></h1>
             
-            <iframe src="http://ghbtns.com/github-btn.html?user=docs-china&repo=rails&type=fork&count=false"
+            <iframe src="http://ghbtns.com/github-btn.html?user=docs-china&repo=&type=fork&count=false"
   allowtransparency="true" frameborder="0" scrolling="0" width="62" height="20"></iframe>
             
         </div>
@@ -155,7 +155,7 @@ ruby 2.0.0p353
 </div>
 <p><code>blog</code> 文件夹中有很多自动生成的文件和文件夹，组成一个 Rails 程序。本文大部分时间都花在 <code>app</code> 文件夹上。下面简单介绍默认生成的文件和文件夹的作用：</p>
 
-<div class="table"><table>
+<div class="table-responsive"><table>
   <thead>
     <tr>
       <th>文件/文件夹</th>
@@ -241,7 +241,7 @@ ruby 2.0.0p353
 
 <p>上述命令会启动 WEBrick，这是 Ruby 内置的服务器。要查看程序，请打开一个浏览器窗口，访问 <a href="http://localhost:3000">http://localhost:3000</a>。应该会看到默认的 Rails 信息页面：</p>
 
-<p><img src="images/getting_started/rails_welcome.png" alt="欢迎使用页面" /></p>
+<p><img src="http://docs-china.com/rails/images/getting_started/rails_welcome.png" alt="欢迎使用页面" /></p>
 
           <div class="box tip-box">
   <p>要想停止服务器，请在命令行中按 Ctrl+C 键。服务器成功停止后回重新看到命令行提示符。在大多数类 Unix 系统中，包括 Mac OS X，命令行提示符是 <code>$</code> 符号。在开发模式中，一般情况下无需重启服务器，修改文件后，服务器会自动重新加载。</p>
@@ -329,20 +329,15 @@ create      app/assets/stylesheets/welcome.css.scss
 </div>
 
 
-<h2>Getting Up and Running</h2>
+<h2 id="getting-up-and-running">开始使用</h2>
 
-<p>Now that you’ve seen how to create a controller, an action and a view, let’s
-create something with a bit more substance.</p>
+<p>前文已经介绍如何创建控制器、动作和视图，下面我们来创建一些更实质的功能。</p>
 
-<p>In the Blog application, you will now create a new <em>resource</em>. A resource is the
-term used for a collection of similar objects, such as articles, people or
-animals.
-You can create, read, update and destroy items for a resource and these
-operations are referred to as <em>CRUD</em> operations.</p>
+<p>在博客程序中，我们要创建一个新“资源”。资源是指一系列类似的对象，比如文章，人和动物。</p>
 
-<p>Rails provides a <code>resources</code> method which can be used to declare a standard REST
-resource. Here’s what <code>config/routes.rb</code> should look like after the
-<em>article resource</em> is declared.</p>
+<p>资源可以被创建、读取、更新和删除，这些操作简称 CRUD。</p>
+
+<p>Rails 提供了一个 <code>resources</code> 方法，可以声明一个符合 REST 架构的资源。创建文章资源后，<code>config/routes.rb</code> 文件的内容如下：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Blog</span><span class="o">::</span><span class="no">Application</span><span class="p">.</span><span class="nf">routes</span><span class="p">.</span><span class="nf">draw</span> <span class="k">do</span>
 
@@ -353,10 +348,7 @@ resource. Here’s what <code>config/routes.rb</code> should look like after the
 </pre>
 
 </div>
-<p>If you run <code>rake routes</code>, you’ll see that it has defined routes for all the
-standard RESTful actions.  The meaning of the prefix column (and other columns)
-will be seen later, but for now notice that Rails has inferred the
-singular form <code>article</code> and makes meaningful use of the distinction.</p>
+<p>执行 <code>rake routes</code> 任务，会看到定义了所有标准的 REST 动作。输出结果中各列的意义稍后会说明，现在只要留意 <code>article</code> 的单复数形式，这在 Rails 中有特殊的含义。</p>
 
 <div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rake routes
       Prefix Verb   URI Pattern                  Controller#Action
@@ -372,135 +364,84 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 </pre>
 
 </div>
-<p>In the next section, you will add the ability to create new articles in your
-application and be able to view them. This is the “C” and the “R” from CRUD:
-creation and reading. The form for doing this will look like this:</p>
+<p>下一节，我们会加入新建文章和查看文章的功能。这两个操作分别对应于 CRUD 的 C 和 R，即创建和读取。新建文章的表单如下所示：</p>
 
-<p><img src="images/getting_started/new_article.png" alt="The new article form" /></p>
+<p><img src="images/getting_started/new_article.png" alt="新建文章表单" /></p>
 
-<p>It will look a little basic for now, but that’s ok. We’ll look at improving the
-styling for it afterwards.</p>
+<p>表单看起来很简陋，不过没关系，后文会加入更多的样式。</p>
 
-<h3>Laying down the ground work</h3>
+<h3 id="laying-down-the-ground-work">挖地基</h3>
 
-<p>Firstly, you need a place within the application to create a new article. A
-great place for that would be at <code>/articles/new</code>. With the route already
-defined, requests can now be made to <code>/articles/new</code> in the application.
-Navigate to <a href="http://localhost:3000/articles/new">http://localhost:3000/articles/new</a> and you’ll see a routing
-error:</p>
+<p>首先，程序中要有个页面用来新建文章。一个比较好的选择是 <code>/articles/new</code>。这个路由前面已经定义了，可以访问。打开 <a href="http://localhost:3000/articles/new">http://localhost:3000/articles/new</a> ，会看到如下的路由错误：</p>
 
-<p><img src="images/getting_started/routing_error_no_controller.png" alt="Another routing error, uninitialized constant ArticlesController" /></p>
+<p><img src="http://docs-china.com/rails/images/getting_started/routing_error_no_controller.png" alt="路由错误，常量 ArticlesController 未初始化" /></p>
 
-<p>This error occurs because the route needs to have a controller defined in order
-to serve the request. The solution to this particular problem is simple: create
-a controller called <code>ArticlesController</code>. You can do this by running this
-command:</p>
+<p>产生这个错误的原因是，要为路由定义控制器来处理请求。解决这个问题的方法很简单：创建名为 <code>ArticlesController</code> 的控制器。执行下面的命令即可：</p>
 
 <div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails g controller articles
 </pre>
 
 </div>
-<p>If you open up the newly generated <code>app/controllers/articles_controller.rb</code>
-you’ll see a fairly empty controller:</p>
+<p>打开刚生成的 <code>app/controllers/articles_controller.rb</code> 文件，会看到一个几乎没什么内容的控制器：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">ArticlesController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
 <span class="k">end</span>
 </pre>
 
 </div>
-<p>A controller is simply a class that is defined to inherit from
-<code>ApplicationController</code>.
-It’s inside this class that you’ll define methods that will become the actions
-for this controller. These actions will perform CRUD operations on the articles
-within our system.</p>
+<p>控制器就是一个类，继承自 <code>ApplicationController</code>。在这个类中定义的方法就是控制器的动作。动作的作用是处理文章的 CRUD 操作。</p>
 
-<p>NOTE: There are <code>public</code>, <code>private</code> and <code>protected</code> methods in Ruby,
-but only <code>public</code> methods can be actions for controllers.
-For more details check out <a href="http://www.ruby-doc.org/docs/ProgrammingRuby/">Programming Ruby</a>.</p>
+          <div class="box information-box">
+  <p>在 Ruby 中，方法分为 <code>public</code>、<code>private</code> 和 <code>protected</code> 三种，只有 <code>public</code> 方法才能作为控制器的动作。详情参阅 <a href="http://www.ruby-doc.org/docs/ProgrammingRuby/">Programming Ruby</a> 一书。</p>
+</div>
 
-<p>If you refresh <a href="http://localhost:3000/articles/new">http://localhost:3000/articles/new</a> now, you’ll get a new error:</p>
 
-<p><img src="images/getting_started/unknown_action_new_for_articles.png" alt="Unknown action new for ArticlesController!" /></p>
+<p>现在刷新 <a href="http://localhost:3000/articles/new">http://localhost:3000/articles/new</a>，会看到一个新错误：</p>
 
-<p>This error indicates that Rails cannot find the <code>new</code> action inside the
-<code>ArticlesController</code> that you just generated. This is because when controllers
-are generated in Rails they are empty by default, unless you tell it
-your wanted actions during the generation process.</p>
+<p><img src="http://docs-china.com/rails/images/getting_started/unknown_action_new_for_articles.png" alt="ArticlesController 控制器不知如何处理 new 动作" /></p>
 
-<p>To manually define an action inside a controller, all you need to do is to
-define a new method inside the controller.
-Open <code>app/controllers/articles_controller.rb</code> and inside the <code>ArticlesController</code>
-class, define a <code>new</code> method like this:</p>
+<p>这个错误的意思是，在刚生成的 <code>ArticlesController</code> 控制器中找不到 <code>new</code> 动作。因为在生成控制器时，除非指定要哪些动作，否则不会生成，控制器是空的。</p>
+
+<p>手动创建动作只需在控制器中定义一个新方法。打开 <code>app/controllers/articles_controller.rb</code> 文件，在 <code>ArticlesController</code> 类中，定义 <code>new</code> 方法，如下所示：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">def</span> <span class="nf">new</span>
 <span class="k">end</span>
 </pre>
 
 </div>
-<p>With the <code>new</code> method defined in <code>ArticlesController</code>, if you refresh
-<a href="http://localhost:3000/articles/new">http://localhost:3000/articles/new</a> you’ll see another error:</p>
+<p>在 <code>ArticlesController</code> 中定义 <code>new</code> 方法后，再刷新 <a href="http://localhost:3000/articles/new">http://localhost:3000/articles/new</a>，看到的还是个错误：</p>
 
-<p><img src="images/getting_started/template_is_missing_articles_new.png" alt="Template is missing for articles/new" /></p>
+<p><img src="http://docs-china.com/rails/images/getting_started/template_is_missing_articles_new.png" alt="找不到 articles/new 所用模板" /></p>
 
-<p>You’re getting this error now because Rails expects plain actions like this one
-to have views associated with them to display their information. With no view
-available, Rails errors out.</p>
+<p>产生这个错误的原因是，Rails 希望这样的常规动作有对应的视图，显示内容。没有视图可用，Rails 就报错了。</p>
 
-<p>In the above image, the bottom line has been truncated. Let’s see what the full
-thing looks like:</p>
+<p>在上图中，最后一行被截断了，我们来看一下完整的信息：</p>
 
-<blockquote>
-Missing template articles/new, application/new with {locale:[:en], formats:[:html], handlers:[:erb, :builder, :coffee]}. Searched in: * "/path/to/blog/app/views"
-</blockquote>
+<div class="codeblock text"><pre class="highlight">Missing template articles/new, application/new with {locale:[:en], formats:[:html], handlers:[:erb, :builder, :coffee]}. Searched in: * "/path/to/blog/app/views"
+</pre>
 
-<p>That’s quite a lot of text! Let’s quickly go through and understand what each
-part of it does.</p>
+</div>
+<p>这行信息还挺长，我们来看一下到底是什么意思。</p>
 
-<p>The first part identifies what template is missing. In this case, it’s the
-<code>articles/new</code> template. Rails will first look for this template. If not found,
-then it will attempt to load a template called <code>application/new</code>. It looks for
-one here because the <code>ArticlesController</code> inherits from <code>ApplicationController</code>.</p>
+<p>第一部分说明找不到哪个模板，这里，丢失的是 <code>articles/new</code> 模板。Rails 首先会寻找这个模板，如果找不到，再找名为 <code>application/new</code> 的模板。之所以这么找，是因为 <code>ArticlesController</code> 继承自 <code>ApplicationController</code>。</p>
 
-<p>The next part of the message contains a hash. The <code>:locale</code> key in this hash
-simply indicates what spoken language template should be retrieved. By default,
-this is the English - or “en” - template. The next key, <code>:formats</code> specifies the
-format of template to be served in response. The default format is <code>:html</code>, and
-so Rails is looking for an HTML template. The final key, <code>:handlers</code>, is telling
-us what <em>template handlers</em> could be used to render our template. <code>:erb</code> is most
-commonly used for HTML templates, <code>:builder</code> is used for XML templates, and
-<code>:coffee</code> uses CoffeeScript to build JavaScript templates.</p>
+<p>后面一部分是个 Hash。<code>:locale</code> 表示要找哪国语言模板，默认是英语（<code>"en"</code>）。<code>:format</code> 表示响应使用的模板格式，默认为 <code>:html</code>，所以 Rails 要寻找一个 HTML 模板。<code>:handlers</code> 表示可用来处理模板的程序，HTML 模板一般使用 <code>:erb</code>，XML 模板使用 <code>:builder</code>，<code>:coffee</code> 用来把 CoffeeScript 转换成 JavaScript。</p>
 
-<p>The final part of this message tells us where Rails has looked for the templates.
-Templates within a basic Rails application like this are kept in a single
-location, but in more complex applications it could be many different paths.</p>
+<p>最后一部分说明 Rails 在哪里寻找模板。在这个简单的程序里，模板都存放在一个地方，复杂的程序可能用多个位置存放模板。</p>
 
-<p>The simplest template that would work in this case would be one located at
-<code>app/views/articles/new.html.erb</code>. The extension of this file name is key: the
-first extension is the <em>format</em> of the template, and the second extension is the
-<em>handler</em> that will be used. Rails is attempting to find a template called
-<code>articles/new</code> within <code>app/views</code> for the application. The format for this
-template can only be <code>html</code> and the handler must be one of <code>erb</code>, <code>builder</code> or
-<code>coffee</code>. Because you want to create a new HTML form, you will be using the <code>ERB</code>
-language. Therefore the file should be called <code>articles/new.html.erb</code> and needs
-to be located inside the <code>app/views</code> directory of the application.</p>
+<p>让这个程序正常运行，最简单的一种模板是 <code>app/views/articles/new.html.erb</code>。模板文件的扩展名是关键所在：第一个扩展名是模板的类型，第二个扩展名是模板的处理程序。Rails 会尝试在 <code>app/views</code> 文件夹中寻找名为 <code>articles/new</code> 的模板。这个模板的类型只能是 <code>html</code>，处理程序可以是 <code>erb</code>、<code>builder</code> 或 <code>coffee</code>。因为我们要编写一个 HTML 表单，所以使用 <code>erb</code>。所以这个模板文件应该命名为 <code>articles/new.html.erb</code>，还要放在 <code>app/views</code> 文件夹中。</p>
 
-<p>Go ahead now and create a new file at <code>app/views/articles/new.html.erb</code> and
-write this content in it:</p>
+<p>新建文件 <code>app/views/articles/new.html.erb</code>，写入如下代码：</p>
 
 <div class="codeblock html"><pre class="highlight"><span class="nt">&lt;h1&gt;</span>New Article<span class="nt">&lt;/h1&gt;</span>
 </pre>
 
 </div>
-<p>When you refresh <a href="http://localhost:3000/articles/new">http://localhost:3000/articles/new</a> you’ll now see that the
-page has a title. The route, controller, action and view are now working
-harmoniously! It’s time to create the form for a new article.</p>
+<p>再次刷新 <a href="http://localhost:3000/articles/new">http://localhost:3000/articles/new</a>，可以看到页面中显示了一个标头。现在路由、控制器、动作和视图都能正常运行了。接下来要编写新建文章的表单了。</p>
 
-<h3>The first form</h3>
+<h3 id="the-first-form">首个表单</h3>
 
-<p>To create a form within this template, you will use a <em>form
-builder</em>. The primary form builder for Rails is provided by a helper
-method called <code>form_for</code>. To use this method, add this code into
-<code>app/views/articles/new.html.erb</code>:</p>
+<p>要在模板中编写表单，可以使用“表单构造器”。Rails 中常用的表单构造器是 <code>forn_for</code>。在 <code>app/views/articles/new.html.erb</code> 文件中加入以下代码：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">form_for</span> <span class="ss">:article</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="cp">%&gt;</span>
   <span class="nt">&lt;p&gt;</span>
@@ -520,37 +461,21 @@ method called <code>form_for</code>. To use this method, add this code into
 </pre>
 
 </div>
-<p>If you refresh the page now, you’ll see the exact same form as in the example.
-Building forms in Rails is really just that easy!</p>
+<p>现在刷新页面，会看到如上代码所示的表单。在 Rails 中编写表单就是这么简单！</p>
 
-<p>When you call <code>form_for</code>, you pass it an identifying object for this
-form. In this case, it’s the symbol <code>:article</code>. This tells the <code>form_for</code>
-helper what this form is for. Inside the block for this method, the
-<code>FormBuilder</code> object - represented by <code>f</code> - is used to build two labels and two
-text fields, one each for the title and text of an article. Finally, a call to
-<code>submit</code> on the <code>f</code> object will create a submit button for the form.</p>
+<p>调用 <code>form_for</code> 方法时，要指定一个对象。在上面的表单中，指定的是 <code>:article</code>。这个对象告诉 <code>form_for</code>，这个表单是用来处理哪个资源的。在 <code>form_for</code> 方法的块中，<code>FormBuilder</code> 对象（用 <code>f</code> 表示）创建了两个标签和两个文本字段，一个用于文章标题，一个用于文章内容。最后，在 <code>f</code> 对象上调用 <code>submit</code> 方法，创建一个提交按钮。</p>
 
-<p>There’s one problem with this form though. If you inspect the HTML that is
-generated, by viewing the source of the page, you will see that the <code>action</code>
-attribute for the form is pointing at <code>/articles/new</code>. This is a problem because
-this route goes to the very page that you’re on right at the moment, and that
-route should only be used to display the form for a new article.</p>
+<p>不过这个表单还有个问题。如果查看这个页面的源码，会发现表单 <code>action</code> 属性的值是 <code>/articles/new</code>。这就是问题所在，因为其指向的地址就是现在这个页面，而这个页面是用来显示新建文章表单的。</p>
 
-<p>The form needs to use a different URL in order to go somewhere else.
-This can be done quite simply with the <code>:url</code> option of <code>form_for</code>.
-Typically in Rails, the action that is used for new form submissions
-like this is called “create”, and so the form should be pointed to that action.</p>
+<p>要想转到其他地址，就要使用其他的地址。这个问题可使用 <code>form_for</code> 方法的 <code>:url</code> 选项解决。在 Rails 中，用来处理新建资源表单提交数据的动作是 <code>create</code>，所以表单应该转向这个动作。</p>
 
-<p>Edit the <code>form_for</code> line inside <code>app/views/articles/new.html.erb</code> to look like
-this:</p>
+<p>修改 <code>app/views/articles/new.html.erb</code> 文件中的 <code>form_for</code>，改成这样：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">form_for</span> <span class="ss">:article</span><span class="p">,</span> <span class="ss">url: </span><span class="n">articles_path</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="cp">%&gt;</span>
 </pre>
 
 </div>
-<p>In this example, the <code>articles_path</code> helper is passed to the <code>:url</code> option.
-To see what Rails will do with this, we look back at the output of
-<code>rake routes</code>:</p>
+<p>这里，我们把 <code>:url</code> 选项的值设为 <code>articles_path</code> 帮助方法。要想知道这个方法有什么作用，我们要回过头再看一下 <code>rake routes</code> 的输出：</p>
 
 <div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rake routes
       Prefix Verb   URI Pattern                  Controller#Action
@@ -566,27 +491,17 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 </pre>
 
 </div>
-<p>The <code>articles_path</code> helper tells Rails to point the form
-to the URI Pattern associated with the <code>articles</code> prefix; and
-the form will (by default) send a <code>POST</code> request
-to that route.  This is associated with the
-<code>create</code> action of the current controller, the <code>ArticlesController</code>.</p>
+<p><code>articles_path</code> 帮助方法告诉 Rails，对应的地址指向 <code>articels</code> 前缀，默认情况下，这个表单会向这个路由发起 <code>POST</code> 请求。这个路由对应于 <code>ArticlesController</code> 控制器的 <code>create</code> 动作。</p>
 
-<p>With the form and its associated route defined, you will be able to fill in the
-form and then click the submit button to begin the process of creating a new
-article, so go ahead and do that. When you submit the form, you should see a
-familiar error:</p>
+<p>表单写好了，路由也定义了，现在可以填写表单，然后点击提交按钮新建文章了。请实际操作一下。提交表单后，会看到一个熟悉的错误：</p>
 
-<p><img src="images/getting_started/unknown_action_create_for_articles.png" alt="Unknown action create for ArticlesController" /></p>
+<p><img src="http://docs-china.com/rails/images/getting_started/unknown_action_create_for_articles.png" alt="ArticlesController 控制器不知如何处理 create 动作" /></p>
 
-<p>You now need to create the <code>create</code> action within the <code>ArticlesController</code> for
-this to work.</p>
+<p>解决这个错误，要在 <code>ArticlesController</code> 控制器中定义 <code>create</code> 动作。</p>
 
-<h3>Creating articles</h3>
+<h3 id="creating-articles">创建文章</h3>
 
-<p>To make the “Unknown action” go away, you can define a <code>create</code> action within
-the <code>ArticlesController</code> class in <code>app/controllers/articles_controller.rb</code>,
-underneath the <code>new</code> action:</p>
+<p>要解决前一节出现的错误，可以在 <code>ArticlesController</code> 类中定义 <code>create</code> 方法。在 <code>app/controllers/articles_controller.rb</code> 文件中 <code>new</code> 方法后面添加以下代码：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">ArticlesController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
   <span class="k">def</span> <span class="nf">new</span>
@@ -598,14 +513,9 @@ underneath the <code>new</code> action:</p>
 </pre>
 
 </div>
-<p>If you re-submit the form now, you’ll see another familiar error: a template is
-missing. That’s ok, we can ignore that for now. What the <code>create</code> action should
-be doing is saving our new article to the database.</p>
+<p>然后再次提交表单，会看到另一个熟悉的错误：找不到模板。现在暂且不管这个错误。<code>create</code> 动作的作用是把新文章保存到数据库中。</p>
 
-<p>When a form is submitted, the fields of the form are sent to Rails as
-<em>parameters</em>. These parameters can then be referenced inside the controller
-actions, typically to perform a particular task. To see what these parameters
-look like, change the <code>create</code> action to this:</p>
+<p>提交表单后，其中的字段以参数的形式传递给 Rails。这些参数可以在控制器的动作中使用，完成指定的操作。要想查看这些参数的内容，可以把 <code>create</code> 动作改成：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">def</span> <span class="nf">create</span>
   <span class="n">render</span> <span class="ss">plain: </span><span class="n">params</span><span class="o">[</span><span class="ss">:article</span><span class="o">]</span><span class="p">.</span><span class="nf">inspect</span>
@@ -613,63 +523,38 @@ look like, change the <code>create</code> action to this:</p>
 </pre>
 
 </div>
-<p>The <code>render</code> method here is taking a very simple hash with a key of <code>text</code> and
-value of <code>params[:article].inspect</code>. The <code>params</code> method is the object which
-represents the parameters (or fields) coming in from the form. The <code>params</code>
-method returns an <code>ActiveSupport::HashWithIndifferentAccess</code> object, which
-allows you to access the keys of the hash using either strings or symbols. In
-this situation, the only parameters that matter are the ones from the form.</p>
+<p><code>render</code> 方法接受一个简单的 Hash 为参数，这个 Hash 的键是 <code>plain</code>，对应的值为 <code>params[:article].inspect</code>。<code>params</code> 方法表示通过表单提交的参数，返回 <code>ActiveSupport::HashWithIndifferentAccess</code> 对象，可以使用字符串或者 Symbol 获取键对应的值。现在，我们只关注通过表单提交的参数。</p>
 
-<p>If you re-submit the form one more time you’ll now no longer get the missing
-template error. Instead, you’ll see something that looks like the following:</p>
+<p>如果现在再次提交表单，不会再看到找不到模板错误，而是会看到类似下面的文字：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="p">{</span><span class="s2">"title"</span><span class="o">=&gt;</span><span class="s2">"First article!"</span><span class="p">,</span> <span class="s2">"text"</span><span class="o">=&gt;</span><span class="s2">"This is my first article."</span><span class="p">}</span>
 </pre>
 
 </div>
-<p>This action is now displaying the parameters for the article that are coming in
-from the form. However, this isn’t really all that helpful. Yes, you can see the
-parameters but nothing in particular is being done with them.</p>
+<p><code>create</code> 动作把表单体检的参数显示出来了。不过这么做没什么用，看到了参数又怎样，什么都没发生。</p>
 
-<h3>Creating the Article model</h3>
+<h3 id="creating-the-article-model">创建 Article 模型</h3>
 
-<p>Models in Rails use a singular name, and their corresponding database tables use
-a plural name. Rails provides a generator for creating models, which
-most Rails developers tend to use when creating new models.
-To create the new model, run this command in your terminal:</p>
+<p>在 Rails 中，模型的名字使用单数，对应的数据表名使用复数。Rails 提供了一个生成器用来创建模型，大多数 Rails 开发者创建模型时都会使用。创建模型，请在终端里执行下面的命令：</p>
 
 <div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails generate model Article title:string text:text
 </pre>
 
 </div>
-<p>With that command we told Rails that we want a <code>Article</code> model, together
-with a <em>title</em> attribute of type string, and a <em>text</em> attribute
-of type text. Those attributes are automatically added to the <code>articles</code>
-table in the database and mapped to the <code>Article</code> model.</p>
+<p>这个命令告知 Rails，我们要创建 <code>Article</code> 模型，以及一个字符串属性 <code>ttile</code> 和文本属性 <code>text</code>。这两个属性会自动添加到 <code>articles</code> 数据表中，映射到 <code>Article</code> 模型。</p>
 
-<p>Rails responded by creating a bunch of files. For
-now, we’re only interested in <code>app/models/article.rb</code> and
-<code>db/migrate/20140120191729_create_articles.rb</code> (your name could be a bit
-different). The latter is responsible
-for creating the database structure, which is what we’ll look at next.</p>
+<p>执行这个命令后，Rails 会生成一堆文件。现在我们只关注 <code>app/models/article.rb</code> 和 <code>db/migrate/20140120191729_create_articles.rb</code>（你得到的文件名可能有点不一样）这两个文件。后者用来创建数据库结构，下一节会详细说明。</p>
 
-<p>TIP: Active Record is smart enough to automatically map column names to
-model attributes, which means you don’t have to declare attributes
-inside Rails models, as that will be done automatically by Active
-Record.</p>
+          <div class="box tip-box">
+  <p>Active Record 很智能，能自能把数据表中的字段映射到模型的属性上。所以无需在 Rails 的模型中声明属性，因为 Active Record 会自动映射。</p>
+</div>
 
-<h3>Running a Migration</h3>
 
-<p>As we’ve just seen, <code>rails generate model</code> created a <em>database
-migration</em> file inside the <code>db/migrate</code> directory.
-Migrations are Ruby classes that are designed to make it simple to
-create and modify database tables. Rails uses rake commands to run migrations,
-and it’s possible to undo a migration after it’s been applied to your database.
-Migration filenames include a timestamp to ensure that they’re processed in the
-order that they were created.</p>
+<h3 id="running-a-migration">运行迁移</h3>
 
-<p>If you look in the <code>db/migrate/20140120191729_create_articles.rb</code> file (remember,
-yours will have a slightly different name), here’s what you’ll find:</p>
+<p>如前文所述，<code>rails generate model</code> 命令会在 <code>db/migrate</code> 文件夹中生成一个数据库迁移文件。迁移是一个 Ruby 类，能简化创建和修改数据库结构的操作。Rails 使用 rake 任务运行迁移，修改数据库结构后还能撤销操作。迁移的文件名中有个时间戳，这样能保证迁移按照创建的时间顺序运行。</p>
+
+<p><code>db/migrate/20140120191729_create_articles.rb</code>（还记得吗，你的迁移文件名可能有点不一样）文件的内容如下所示：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">CreateArticles</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
   <span class="k">def</span> <span class="nf">change</span>
@@ -684,24 +569,20 @@ yours will have a slightly different name), here’s what you’ll find:</p>
 </pre>
 
 </div>
-<p>The above migration creates a method named <code>change</code> which will be called when
-you run this migration. The action defined in this method is also reversible,
-which means Rails knows how to reverse the change made by this migration,
-in case you want to reverse it later. When you run this migration it will create
-an <code>articles</code> table with one string column and a text column. It also creates
-two timestamp fields to allow Rails to track article creation and update times.</p>
+<p>在这个迁移中定义了一个名为 <code>change</code> 的方法，在运行迁移时执行。<code>change</code> 方法中定义的操作都是可逆的，Rails 知道如何撤销这次迁移操作。运行迁移后，会创建 <code>articles</code> 表，以及一个字符串字段和文本字段。同时还会创建两个时间戳字段，Rails 用来跟踪记录的创建时间和更新时间。</p>
 
-<p>TIP: For more information about migrations, refer to <a href="migrations.html">Rails Database
-Migrations</a>.</p>
+          <div class="box tip-box">
+  <p>关于迁移的详细说明，请参阅 <a href="http://docs-china.com/rails/migrations.html">Active Record 数据库迁移</a>一文。</p>
+</div>
 
-<p>At this point, you can use a rake command to run the migration:</p>
+
+<p>然后，使用 rake 命令运行迁移：</p>
 
 <div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rake db:migrate
 </pre>
 
 </div>
-<p>Rails will execute this migration command and tell you it created the Articles
-table.</p>
+<p>Rails 会执行迁移操作，告诉你创建了 <code>articles</code> 表。</p>
 
 <div class="codeblock bash"><pre class="highlight"><span class="o">==</span>  CreateArticles: migrating <span class="o">==================================================</span>
 -- create_table<span class="o">(</span>:articles<span class="o">)</span>
@@ -710,18 +591,14 @@ table.</p>
 </pre>
 
 </div>
-<p>NOTE. Because you’re working in the development environment by default, this
-command will apply to the database defined in the <code>development</code> section of your
-<code>config/database.yml</code> file. If you would like to execute migrations in another
-environment, for instance in production, you must explicitly pass it when
-invoking the command: <code>rake db:migrate RAILS_ENV=production</code>.</p>
+          <div class="box information-box">
+  <p>因为默认情况下，程序运行在开发环境中，所以相关的操作应用于 <code>config/database.yml</code> 文件中 <code>development</code> 区域设置的数据库上。如果想在其他环境中运行迁移，必须在命令中指明：<code>rake db:migrate RAILS_ENV=production</code>。</p>
+</div>
 
-<h3>Saving data in the controller</h3>
 
-<p>Back in <code>ArticlesController</code>, we need to change the <code>create</code> action
-to use the new <code>Article</code> model to save the data in the database.
-Open <code>app/controllers/articles_controller.rb</code> and change the <code>create</code> action to
-look like this:</p>
+<h3 id="saving-data-in-the-controller">在控制器中保存数据</h3>
+
+<p>再回到 <code>ArticlesController</code> 控制器，我们要修改 <code>create</code> 动作，使用 <code>Article</code> 模型把数据保存到数据库中。打开 <code>app/controllers/articles_controller.rb</code> 文件，把 <code>create</code> 动作修改成这样：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">def</span> <span class="nf">create</span>
   <span class="vi">@article</span> <span class="o">=</span> <span class="no">Article</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">params</span><span class="o">[</span><span class="ss">:article</span><span class="o">]</span><span class="p">)</span>
@@ -732,28 +609,18 @@ look like this:</p>
 </pre>
 
 </div>
-<p>Here’s what’s going on: every Rails model can be initialized with its
-respective attributes, which are automatically mapped to the respective
-database columns. In the first line we do just that
-(remember that <code>params[:article]</code> contains the attributes we’re interested in).
-Then, <code>@article.save</code> is responsible for saving the model in the database.
-Finally, we redirect the user to the <code>show</code> action, which we’ll define later.</p>
+<p>在 Rails 中，每个模型可以使用各自的属性初始化，自动映射到数据库字段上。<code>create</code> 动作中的第一行就是这个目的（还记得吗，<code>params[:article]</code> 就是我们要获取的属性）。<code>@article.save</code> 的作用是把模型保存到数据库中。保存完后转向 <code>show</code> 动作。稍后再编写 <code>show</code> 动作。</p>
 
-<p>TIP: As we’ll see later, <code>@article.save</code> returns a boolean indicating
-whether the article was saved or not.</p>
+          <div class="box tip-box">
+  <p>后文会看到，<code>@article.save</code> 返回一个布尔值，表示保存是否成功。</p>
+</div>
 
-<p>If you now go to
-<a href="http://localhost:3000/articles/new">http://localhost:3000/articles/new</a> you’ll <em>almost</em> be able to create an
-article. Try it! You should get an error that looks like this:</p>
 
-<p><img src="images/getting_started/forbidden_attributes_for_new_article.png" alt="Forbidden attributes for new article" /></p>
+<p>再次访问 <a href="http://localhost:3000/articles/new">http://localhost:3000/articles/new</a>，填写表单，还差一步就能创建文章了，会看到一个错误页面：</p>
 
-<p>Rails has several security features that help you write secure applications,
-and you’re running into one of them now. This one is called
-<code>strong_parameters</code>, which requires us to tell Rails exactly which parameters
-we want to accept in our controllers. In this case, we want to allow the
-<code>title</code> and <code>text</code> parameters, so change your <code>create</code> controller action to
-look like this:</p>
+<p><img src="http://docs-china.com/rails/images/getting_started/forbidden_attributes_for_new_article.png" alt="新建文章时禁止使用属性" /></p>
+
+<p>Rails 提供了很多安全防范措施保证程序的安全，你所看到的错误就是因为违反了其中一个措施。这个防范措施叫做“健壮参数”，我们要明确地告知 Rails 哪些参数可在控制器中使用。这里，我们想使用 <code>title</code> 和 <code>text</code> 参数。请把 <code>create</code> 动作修成成：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">def</span> <span class="nf">create</span>
   <span class="vi">@article</span> <span class="o">=</span> <span class="no">Article</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">article_params</span><span class="p">)</span>
@@ -769,33 +636,26 @@ look like this:</p>
 </pre>
 
 </div>
-<p>See the <code>permit</code>? It allows us to accept both <code>title</code> and <code>text</code> in this
-action.</p>
+<p>看到 <code>permit</code> 方法了吗？这个方法允许在动作中使用 <code>title</code> 和 <code>text</code> 属性。</p>
 
-<p>TIP: Note that <code>def article_params</code> is private. This new approach prevents an
-attacker from setting the model’s attributes by manipulating the hash passed to
-the model.
-For more information, refer to
-<a href="http://weblog.rubyonrails.org/2012/3/21/strong-parameters/">this blog article about Strong Parameters</a>.</p>
+          <div class="box tip-box">
+  <p>注意，<code>article_params</code> 是私有方法。这种用法可以防止攻击者把修改后的属性传递给模型。关于健壮参数的更多介绍，请阅读<a href="http://weblog.rubyonrails.org/2012/3/21/strong-parameters/">这篇文章</a>。</p>
+</div>
 
-<h3>Showing Articles</h3>
 
-<p>If you submit the form again now, Rails will complain about not finding
-the <code>show</code> action. That’s not very useful though, so let’s add the
-<code>show</code> action before proceeding.</p>
+<h3 id="showing-articles">显示文章</h3>
 
-<p>As we have seen in the output of <code>rake routes</code>, the route for <code>show</code> action is
-as follows:</p>
+<p>现在再次提交表单，Rails 会提示找不到 <code>show</code> 动作。这个提示没多大用，我们还是先添加 <code>show</code> 动作吧。</p>
+
+<p>我们在 <code>rake routes</code> 的输出中看到，<code>show</code> 动作的路由是：</p>
 
 <div class="codeblock text"><pre class="highlight">article GET    /articles/:id(.:format)      articles#show
 </pre>
 
 </div>
-<p>The special syntax <code>:id</code> tells rails that this route expects an <code>:id</code>
-parameter, which in our case will be the id of the article.</p>
+<p><code>:id</code> 的意思是，路由期望接收一个名为 <code>id</code> 的参数，在这个例子中，就是文章的 ID。</p>
 
-<p>As we did before, we need to add the <code>show</code> action in
-<code>app/controllers/articles_controller.rb</code> and its respective view.</p>
+<p>和前面一样，我们要在 <code>app/controllers/articles_controller.rb</code> 文件中添加 <code>show</code> 动作，以及相应的视图文件。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">def</span> <span class="nf">show</span>
   <span class="vi">@article</span> <span class="o">=</span> <span class="no">Article</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">params</span><span class="o">[</span><span class="ss">:id</span><span class="o">]</span><span class="p">)</span>
@@ -803,14 +663,9 @@ parameter, which in our case will be the id of the article.</p>
 </pre>
 
 </div>
-<p>A couple of things to note. We use <code>Article.find</code> to find the article we’re
-interested in, passing in <code>params[:id]</code> to get the <code>:id</code> parameter from the
-request. We also use an instance variable (prefixed by <code>@</code>) to hold a
-reference to the article object. We do this because Rails will pass all instance
-variables to the view.</p>
+<p>有几点要注意。我们调用 <code>Article.find</code> 方法查找想查看的文章，传入的参数 <code>params[:id]</code> 会从请求中获取 <code>:id</code> 参数。我们还把文章对象存储在一个实例变量中（以 <code>@</code> 开头的变量），只有这样，变量才能在视图中使用。</p>
 
-<p>Now, create a new file <code>app/views/articles/show.html.erb</code> with the following
-content:</p>
+<p>然后，新建 <code>app/views/articles/show.html.erb</code> 文件，写入下面的代码：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="nt">&lt;p&gt;</span>
   <span class="nt">&lt;strong&gt;</span>Title:<span class="nt">&lt;/strong&gt;</span>
@@ -824,22 +679,19 @@ content:</p>
 </pre>
 
 </div>
-<p>With this change, you should finally be able to create new articles.
-Visit <a href="http://localhost:3000/articles/new">http://localhost:3000/articles/new</a> and give it a try!</p>
+<p>做了以上修改后，就能真正的新建文章了。访问 <a href="http://localhost:3000/articles/new">http://localhost:3000/articles/new</a>，自己试试。</p>
 
-<p><img src="images/getting_started/show_action_for_articles.png" alt="Show action for articles" /></p>
+<p><img src="http://docs-china.com/rails/images/getting_started/show_action_for_articles.png" alt="显示文章" /></p>
 
-<h3>Listing all articles</h3>
+<h3 id="listing-all-articles">列出所有文章</h3>
 
-<p>We still need a way to list all our articles, so let’s do that.
-The route for this as per output of <code>rake routes</code> is:</p>
+<p>我们还要列出所有文章，对应的路由是：</p>
 
 <div class="codeblock text"><pre class="highlight">articles GET    /articles(.:format)          articles#index
 </pre>
 
 </div>
-<p>Add the corresponding <code>index</code> action for that route inside the
-<code>ArticlesController</code> in the <code>app/controllers/articles_controller.rb</code> file:</p>
+<p>在 <code>app/controllers/articles_controller.rb</code> 文件中，为 <code>ArticlesController</code> 控制器添加 <code>index</code> 动作：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">def</span> <span class="nf">index</span>
   <span class="vi">@articles</span> <span class="o">=</span> <span class="no">Article</span><span class="p">.</span><span class="nf">all</span>
@@ -847,8 +699,7 @@ The route for this as per output of <code>rake routes</code> is:</p>
 </pre>
 
 </div>
-<p>And then finally, add view for this action, located at
-<code>app/views/articles/index.html.erb</code>:</p>
+<p>然后编写这个动作的视图，位于 <code>app/views/articles/index.html.erb</code>：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="nt">&lt;h1&gt;</span>Listing articles<span class="nt">&lt;/h1&gt;</span>
 
@@ -868,37 +719,30 @@ The route for this as per output of <code>rake routes</code> is:</p>
 </pre>
 
 </div>
-<p>Now if you go to <code>http://localhost:3000/articles</code> you will see a list of all the
-articles that you have created.</p>
+<p>现在访问 <a href="http://localhost:3000/articles">http://localhost:3000/articles</a>，会看到已经发布的文章列表。</p>
 
-<h3>Adding links</h3>
+<h3 id="adding-links">添加链接</h3>
 
-<p>You can now create, show, and list articles. Now let’s add some links to
-navigate through pages.</p>
+<p>至此，我们可以新建、显示、列出文章了。下面我们添加一些链接，指向这些页面。</p>
 
-<p>Open <code>app/views/welcome/index.html.erb</code> and modify it as follows:</p>
+<p>打开 <code>app/views/welcome/index.html.erb</code> 文件，改成这样：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="nt">&lt;h1&gt;</span>Hello, Rails!<span class="nt">&lt;/h1&gt;</span>
 <span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="s1">'My Blog'</span><span class="p">,</span> <span class="ss">controller: </span><span class="s1">'articles'</span> <span class="cp">%&gt;</span>
 </pre>
 
 </div>
-<p>The <code>link_to</code> method is one of Rails’ built-in view helpers. It creates a
-hyperlink based on text to display and where to go - in this case, to the path
-for articles.</p>
+<p><code>link_to</code> 是 Rails 内置的视图帮助方法之一，根据提供的文本和地址创建超链接。这上面这段代码中，地址是文章列表页面。</p>
 
-<p>Let’s add links to the other views as well, starting with adding this
-“New Article” link to <code>app/views/articles/index.html.erb</code>, placing it above the
-<code>&lt;table&gt;</code> tag:</p>
+<p>接下来添加到其他页面的链接。先在 <code>app/views/articles/index.html.erb</code> 中添加“New Article”链接，放在 <code>&lt;table&gt;</code> 标签之前：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="s1">'New article'</span><span class="p">,</span> <span class="n">new_article_path</span> <span class="cp">%&gt;</span>
 </pre>
 
 </div>
-<p>This link will allow you to bring up the form that lets you create a new article.</p>
+<p>点击这个链接后，会转向新建文章的表单页面。</p>
 
-<p>Also add a link in <code>app/views/articles/new.html.erb</code>, underneath the form, to
-go back to the <code>index</code> action:</p>
+<p>然后在 <code>app/views/articles/new.html.erb</code> 中添加一个链接，位于表单下面，返回到 <code>index</code> 动作：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">form_for</span> <span class="ss">:article</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="cp">%&gt;</span>
   ...
@@ -908,9 +752,7 @@ go back to the <code>index</code> action:</p>
 </pre>
 
 </div>
-<p>Finally, add another link to the <code>app/views/articles/show.html.erb</code> template to
-go back to the <code>index</code> action as well, so that people who are viewing a single
-article can go back and view the whole list again:</p>
+<p>最后，在 <code>app/views/articles/show.html.erb</code> 模板中添加一个链接，返回 <code>index</code> 动作，这样用户查看某篇文章后就可以返回文章列表页面了：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="nt">&lt;p&gt;</span>
   <span class="nt">&lt;strong&gt;</span>Title:<span class="nt">&lt;/strong&gt;</span>
@@ -926,31 +768,28 @@ article can go back and view the whole list again:</p>
 </pre>
 
 </div>
-<p>TIP: If you want to link to an action in the same controller, you don’t
-need to specify the <code>:controller</code> option, as Rails will use the current
-controller by default.</p>
+          <div class="box tip-box">
+  <p>如果要链接到同一个控制器中的动作，不用指定 <code>:controller</code> 选项，因为默认情况下使用的就是当前控制器。</p>
+</div>
 
-<p>TIP: In development mode (which is what you’re working in by default), Rails
-reloads your application with every browser request, so there’s no need to stop
-and restart the web server when a change is made.</p>
 
-<h3>Adding Some Validation</h3>
+          <div class="box tip-box">
+  <p>在开发模式下（默认），每次请求 Rails 都会重新加载程序，因此修改之后无需重启服务器。</p>
+</div>
 
-<p>The model file, <code>app/models/article.rb</code> is about as simple as it can get:</p>
+
+<h3 id="adding-some-validation">添加数据验证</h3>
+
+<p>模型文件，比如 <code>app/models/article.rb</code>，可以简单到只有这两行代码：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Article</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
 <span class="k">end</span>
 </pre>
 
 </div>
-<p>There isn’t much to this file - but note that the <code>Article</code> class inherits from
-<code>ActiveRecord::Base</code>. Active Record supplies a great deal of functionality to
-your Rails models for free, including basic database CRUD (Create, Read, Update,
-Destroy) operations, data validation, as well as sophisticated search support
-and the ability to relate multiple models to one another.</p>
+<p>文件中没有多少代码，不过请注意，<code>Article</code> 类继承自 <code>ActiveRecord::Base</code>。Active Record 提供了很多功能，包括：基本的数据库 CRUD 操作，数据验证，复杂的搜索功能，以及多个模型之间的关联。</p>
 
-<p>Rails includes methods to help you validate the data that you send to models.
-Open the <code>app/models/article.rb</code> file and edit it:</p>
+<p>Rails 为模型提供了很多方法，用来验证传入的数据。打开 <code>app/models/article.rb</code> 文件，修改成：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Article</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">validates</span> <span class="ss">:title</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span><span class="p">,</span>
@@ -959,19 +798,9 @@ Open the <code>app/models/article.rb</code> file and edit it:</p>
 </pre>
 
 </div>
-<p>These changes will ensure that all articles have a title that is at least five
-characters long. Rails can validate a variety of conditions in a model,
-including the presence or uniqueness of columns, their format, and the
-existence of associated objects. Validations are covered in detail in <a href="active_record_validations.html">Active
-Record Validations</a></p>
+<p>添加的这段代码可以确保每篇文章都有一个标题，而且至少有五个字符。在模型中可以验证数据是否满足多种条件，包括：字段是否存在、是否唯一，数据类型，以及关联对象是否存在。<a href="http://docs-china.com/rails/active_record_validations.html">Active Record 验证</a>一文会详细介绍数据验证。</p>
 
-<p>With the validation now in place, when you call <code>@article.save</code> on an invalid
-article, it will return <code>false</code>. If you open
-<code>app/controllers/articles_controller.rb</code> again, you’ll notice that we don’t
-check the result of calling <code>@article.save</code> inside the <code>create</code> action.
-If <code>@article.save</code> fails in this situation, we need to show the form back to the
-user. To do this, change the <code>new</code> and <code>create</code> actions inside
-<code>app/controllers/articles_controller.rb</code> to these:</p>
+<p>添加数据验证后，如果把不满足验证条件的文章传递给 <code>@article.save</code>，会返回 <code>false</code>。打开 <code>app/controllers/articles_controller.rb</code> 文件，会发现，我们还没在 <code>create</code> 动作中检查 <code>@article.save</code> 的返回结果。如果保存失败，应该再次显示表单。为了实现这种功能，请打开 <code>app/controllers/articles_controller.rb</code> 文件，把 <code>new</code> 和 <code>create</code> 动作改成：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">def</span> <span class="nf">new</span>
   <span class="vi">@article</span> <span class="o">=</span> <span class="no">Article</span><span class="p">.</span><span class="nf">new</span>
@@ -994,21 +823,11 @@ user. To do this, change the <code>new</code> and <code>create</code> actions in
 </pre>
 
 </div>
-<p>The <code>new</code> action is now creating a new instance variable called <code>@article</code>, and
-you’ll see why that is in just a few moments.</p>
+<p>在 <code>new</code> 动作中添加了一个实例变量 <code>@article</code>。稍后不会知道为什么要这么做。</p>
 
-<p>Notice that inside the <code>create</code> action we use <code>render</code> instead of <code>redirect_to</code>
-when <code>save</code> returns <code>false</code>. The <code>render</code> method is used so that the <code>@article</code>
-object is passed back to the <code>new</code> template when it is rendered. This rendering
-is done within the same request as the form submission, whereas the
-<code>redirect_to</code> will tell the browser to issue another request.</p>
+<p>注意，在 <code>create</code> 动作中，如果保存失败，调用的是 <code>render</code> 方法而不是 <code>redirect_to</code> 方法。用 <code>render</code> 方法才能在保存失败后把 <code>@article</code> 对象传给 <code>new</code> 动作的视图。渲染操作和表单提交在同一次请求中完成；而 <code>redirect_to</code> 会让浏览器发起一次新请求。</p>
 
-<p>If you reload
-<a href="http://localhost:3000/articles/new">http://localhost:3000/articles/new</a> and
-try to save an article without a title, Rails will send you back to the
-form, but that’s not very useful. You need to tell the user that
-something went wrong. To do that, you’ll modify
-<code>app/views/articles/new.html.erb</code> to check for error messages:</p>
+<p>刷新 <a href="http://localhost:3000/articles/new">http://localhost:3000/articles/new</a>，提交一个没有标题的文章，Rails 会退回这个页面，但这种处理方法没多少用，你要告诉用户出错了。为了实现这种功能，请在 <code>app/views/articles/new.html.erb</code> 文件中检测错误消息：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">form_for</span> <span class="ss">:article</span><span class="p">,</span> <span class="ss">url: </span><span class="n">articles_path</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="cp">%&gt;</span>
   <span class="cp">&lt;%</span> <span class="k">if</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">any?</span> <span class="cp">%&gt;</span>
@@ -1041,34 +860,26 @@ something went wrong. To do that, you’ll modify
 </pre>
 
 </div>
-<p>A few things are going on. We check if there are any errors with
-<code>@article.errors.any?</code>, and in that case we show a list of all
-errors with <code>@article.errors.full_messages</code>.</p>
+<p>我们添加了很多代码，使用 <code>@article.errors.any?</code> 检查是否有错误，如果有错误，使用 <code>@article.errors.full_messages</code> 显示错误。</p>
 
-<p><code>pluralize</code> is a rails helper that takes a number and a string as its
-arguments. If the number is greater than one, the string will be automatically
-pluralized.</p>
+<p><code>pluralize</code> 是 Rails 提供的帮助方法，接受一个数字和字符串作为参数。如果数字比 1 大，字符串会被转换成复数形式。</p>
 
-<p>The reason why we added <code>@article = Article.new</code> in the <code>ArticlesController</code> is
-that otherwise <code>@article</code> would be <code>nil</code> in our view, and calling
-<code>@article.errors.any?</code> would throw an error.</p>
+<p>在 <code>new</code> 动作中加入 <code>@article = Article.new</code> 的原因是，如果没定义，在视图中 <code>@article</code> 的值就是 <code>nil</code>，调用 <code>@article.errors.any?</code> 时会发生错误。</p>
 
-<p>TIP: Rails automatically wraps fields that contain an error with a div
-with class <code>field_with_errors</code>. You can define a css rule to make them
-standout.</p>
+          <div class="box tip-box">
+  <p>Rails 会自动把出错的表单字段包含在一个 <code>div</code> 中，并为其添加了一个 class：<code>field_with_errors</code>。我们可以定义一些样式，凸显出错的字段。</p>
+</div>
 
-<p>Now you’ll get a nice error message when saving an article without title when
-you attempt to do just that on the new article form
-<a href="http://localhost:3000/articles/new">(http://localhost:3000/articles/new)</a>.</p>
 
-<p><img src="images/getting_started/form_with_errors.png" alt="Form With Errors" /></p>
+<p>再次访问 <a href="http://localhost:3000/articles/new">http://localhost:3000/articles/new</a>，尝试发布一篇没有标题的文章，会看到一个很有用的错误提示。</p>
 
-<h3>Updating Articles</h3>
+<p><img src="http://docs-china.com/rails/images/getting_started/form_with_errors.png" alt="出错的表单" /></p>
 
-<p>We’ve covered the “CR” part of CRUD. Now let’s focus on the “U” part, updating
-articles.</p>
+<h3 id="updating-articles">更新文章</h3>
 
-<p>The first step we’ll take is adding an <code>edit</code> action to the <code>ArticlesController</code>.</p>
+<p>我们已经说明了 CRUD 中的 CR 两种操作。下面进入 U 部分，更新文章。</p>
+
+<p>首先，要在 <code>ArticlesController</code> 中添加 <code>edit</code> 动作：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">def</span> <span class="nf">edit</span>
   <span class="vi">@article</span> <span class="o">=</span> <span class="no">Article</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">params</span><span class="o">[</span><span class="ss">:id</span><span class="o">]</span><span class="p">)</span>
@@ -1076,9 +887,7 @@ articles.</p>
 </pre>
 
 </div>
-<p>The view will contain a form similar to the one we used when creating
-new articles. Create a file called <code>app/views/articles/edit.html.erb</code> and make
-it look as follows:</p>
+<p>视图中要添加一个类似新建文章的表单。新建 <code>app/views/articles/edit.html.erb</code> 文件，写入下面的代码：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="nt">&lt;h1&gt;</span>Editing article<span class="nt">&lt;/h1&gt;</span>
 
@@ -1113,21 +922,13 @@ it look as follows:</p>
 </pre>
 
 </div>
-<p>This time we point the form to the <code>update</code> action, which is not defined yet
-but will be very soon.</p>
+<p>这里的表单指向 <code>update</code> 动作，现在还没定义，稍后会添加。</p>
 
-<p>The <code>method: :patch</code> option tells Rails that we want this form to be submitted
-via the <code>PATCH</code> HTTP method which is the HTTP method you’re expected to use to
-<strong>update</strong> resources according to the REST protocol.</p>
+<p><code>method: :patch</code> 选项告诉 Rails，提交这个表单时使用 <code>PATCH</code> 方法发送请求。根据 REST 架构，更新资源时要使用 HTTP <code>PATCH</code> 方法。</p>
 
-<p>The first parameter of the <code>form_tag</code> can be an object, say, <code>@article</code> which would
-cause the helper to fill in the form with the fields of the object. Passing in a
-symbol (<code>:article</code>) with the same name as the instance variable (<code>@article</code>) also
-automagically leads to the same behavior. This is what is happening here. More details
-can be found in <a href="http://api.rubyonrails.org/classes/ActionView/Helpers/FormHelper.html#method-i-form_for">form_for documentation</a>.</p>
+<p><code>form_for</code> 的第一个参数可以是对象，例如 <code>@article</code>，把对象中的字段填入表单。如果传入一个和实例变量（<code>@article</code>）同名的 Symbol（<code>:article</code>），效果也是一样。上面的代码使用的就是 Symbol。详情参见 <a href="http://api.rubyonrails.org/classes/ActionView/Helpers/FormHelper.html#method-i-form_for">form_for 的文档</a>。</p>
 
-<p>Next we need to create the <code>update</code> action in
-<code>app/controllers/articles_controller.rb</code>:</p>
+<p>然后，要在 <code>app/controllers/articles_controller.rb</code> 中添加 <code>update</code> 动作：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">def</span> <span class="nf">update</span>
   <span class="vi">@article</span> <span class="o">=</span> <span class="no">Article</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">params</span><span class="o">[</span><span class="ss">:id</span><span class="o">]</span><span class="p">)</span>
@@ -1146,22 +947,16 @@ can be found in <a href="http://api.rubyonrails.org/classes/ActionView/Helpers/F
 </pre>
 
 </div>
-<p>The new method, <code>update</code>, is used when you want to update a record
-that already exists, and it accepts a hash containing the attributes
-that you want to update. As before, if there was an error updating the
-article we want to show the form back to the user.</p>
+<p>新定义的 <code>update</code> 方法用来处理对现有文章的更新操作，接收一个 Hash，包含想要修改的属性。和之前一样，如果更新文章出错了，要再次显示表单。</p>
 
-<p>We reuse the <code>article_params</code> method that we defined earlier for the create
-action.</p>
+<p>上面的代码再次使用了前面为 <code>create</code> 动作定义的 <code>article_params</code> 方法。</p>
 
-<p>TIP: You don’t need to pass all attributes to <code>update</code>. For
-example, if you’d call <code>@article.update(title: 'A new title')</code>
-Rails would only update the <code>title</code> attribute, leaving all other
-attributes untouched.</p>
+          <div class="box tip-box">
+  <p>不用把所有的属性都提供给 <code>update</code> 动作。例如，如果使用 <code>@article.update(title: 'A new title')</code>，Rails 只会更新 <code>title</code> 属性，不修改其他属性。</p>
+</div>
 
-<p>Finally, we want to show a link to the <code>edit</code> action in the list of all the
-articles, so let’s add that now to <code>app/views/articles/index.html.erb</code> to make
-it appear next to the “Show” link:</p>
+
+<p>最后，我们想在文章列表页面，在每篇文章后面都加上一个链接，指向 <code>edit</code> 动作。打开 <code>app/views/articles/index.html.erb</code> 文件，在“Show”链接后面添加“Edit”链接：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="nt">&lt;table&gt;</span>
   <span class="nt">&lt;tr&gt;</span>
@@ -1182,9 +977,7 @@ it appear next to the “Show” link:</p>
 </pre>
 
 </div>
-<p>And we’ll also add one to the <code>app/views/articles/show.html.erb</code> template as
-well, so that there’s also an “Edit” link on an article’s page. Add this at the
-bottom of the template:</p>
+<p>我们还要在 <code>app/views/articles/show.html.erb</code> 模板的底部加上“Edit”链接：</p>
 
 <div class="codeblock erb"><pre class="highlight">...
 
@@ -1193,22 +986,20 @@ bottom of the template:</p>
 </pre>
 
 </div>
-<p>And here’s how our app looks so far:</p>
+<p>下图是首页现在的样子：</p>
 
-<p><img src="images/getting_started/index_action_with_edit_link.png" alt="Index action with edit link" /></p>
+<p><img src="http://docs-china.com/rails/images/getting_started/index_action_with_edit_link.png" alt="在首页显示了编辑了编辑链接" /></p>
 
-<h3>Using partials to clean up duplication in views</h3>
+<h3 id="using-partials-to-clean-up-duplication-in-views">使用局部视图去掉视图中的重复代码</h3>
 
-<p>Our <code>edit</code> page looks very similar to the <code>new</code> page, in fact they
-both share the same code for displaying the form. Let’s remove some duplication
-by using a view partial. By convention, partial files are prefixed by an
-underscore.</p>
+<p>编辑文章页面和新建文章页面很相似，显示表单的代码是相同的。下面使用局部视图去掉两个视图中的重复代码。按照约定，局部视图的文件名以下划线开头。</p>
 
-<p>TIP: You can read more about partials in the
-<a href="layouts_and_rendering.html">Layouts and Rendering in Rails</a> guide.</p>
+          <div class="box tip-box">
+  <p>关于局部视图的详细介绍参阅 <a href="http://docs-china.com/rails/layouts_and_rendering.html">Layouts and Rendering in Rails</a> 一文。</p>
+</div>
 
-<p>Create a new file <code>app/views/articles/_form.html.erb</code> with the following
-content:</p>
+
+<p>新建 <code>app/views/articles/_form.html.erb</code> 文件，写入以下代码：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">form_for</span> <span class="vi">@article</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="cp">%&gt;</span>
   <span class="cp">&lt;%</span> <span class="k">if</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">any?</span> <span class="cp">%&gt;</span>
@@ -1239,16 +1030,11 @@ content:</p>
 </pre>
 
 </div>
-<p>Everything except for the <code>form_for</code> declaration remained the same.
-The reason we can use this shorter, simpler <code>form_for</code> declaration
-to stand in for either of the other forms is that <code>@article</code> is a <em>resource</em>
-corresponding to a full set of RESTful routes, and Rails is able to infer
-which URI and method to use.
-For more information about this use of <code>form_for</code>, see
-<a href="//api.rubyonrails.org/classes/ActionView/Helpers/FormHelper.html#method-i-form_for-label-Resource-oriented+style">Resource-oriented style</a>.</p>
+<p>除了第一行 <code>form_for</code> 的用法变了之外，其他代码都和之前一样。之所以能在两个动作中共用一个 <code>form_for</code> 是因为，<code>@article</code> 是一个资源，对应于符合 REST 架构的路由，Rails 能自动分辨使用哪个地址和请求方法。</p>
 
-<p>Now, let’s update the <code>app/views/articles/new.html.erb</code> view to use this new
-partial, rewriting it completely:</p>
+<p>关于这种 <code>form_for</code> 用法的详细说明，请查阅 <a href="http://api.rubyonrails.org/classes/ActionView/Helpers/FormHelper.html#method-i-form_for-label-Resource-oriented+style">API 文档</a>。</p>
+
+<p>下面来修改 <code>app/views/articles/new.html.erb</code> 视图，使用新建的局部视图，把其中的代码全删掉，替换成：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="nt">&lt;h1&gt;</span>New article<span class="nt">&lt;/h1&gt;</span>
 
@@ -1258,7 +1044,7 @@ partial, rewriting it completely:</p>
 </pre>
 
 </div>
-<p>Then do the same for the <code>app/views/articles/edit.html.erb</code> view:</p>
+<p>然后按照同样地方法修改 <code>app/views/articles/edit.html.erb</code> 视图：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="nt">&lt;h1&gt;</span>Edit article<span class="nt">&lt;/h1&gt;</span>
 
@@ -1268,27 +1054,21 @@ partial, rewriting it completely:</p>
 </pre>
 
 </div>
-<h3>Deleting Articles</h3>
+<h3 id="deleting-articles">删除文章</h3>
 
-<p>We’re now ready to cover the “D” part of CRUD, deleting articles from the
-database. Following the REST convention, the route for
-deleting articles as per output of <code>rake routes</code> is:</p>
+<p>现在介绍 CRUD 中的 D，从数据库中删除文章。按照 REST 架构的约定，删除文章的路由是：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">DELETE</span> <span class="sr">/articles/</span><span class="ss">:id</span><span class="p">(</span><span class="o">.</span><span class="ss">:format</span><span class="p">)</span>      <span class="n">articles</span><span class="c1">#destroy</span>
 </pre>
 
 </div>
-<p>The <code>delete</code> routing method should be used for routes that destroy
-resources. If this was left as a typical <code>get</code> route, it could be possible for
-people to craft malicious URLs like this:</p>
+<p>删除资源时使用 DELETE 请求。如果还使用 GET 请求，可以构建如下所示的恶意地址：</p>
 
 <div class="codeblock html"><pre class="highlight"><span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">'http://example.com/articles/1/destroy'</span><span class="nt">&gt;</span>look at this cat!<span class="nt">&lt;/a&gt;</span>
 </pre>
 
 </div>
-<p>We use the <code>delete</code> method for destroying resources, and this route is mapped to
-the <code>destroy</code> action inside <code>app/controllers/articles_controller.rb</code>, which
-doesn’t exist yet, but is provided below:</p>
+<p>删除资源使用 DELETE 方法，路由把请求发往 <code>app/controllers/articles_controller.rb</code> 中的 <code>destroy</code> 动作。<code>destroy</code> 动作现在还不存在，下面来添加：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">def</span> <span class="nf">destroy</span>
   <span class="vi">@article</span> <span class="o">=</span> <span class="no">Article</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">params</span><span class="o">[</span><span class="ss">:id</span><span class="o">]</span><span class="p">)</span>
@@ -1299,13 +1079,9 @@ doesn’t exist yet, but is provided below:</p>
 </pre>
 
 </div>
-<p>You can call <code>destroy</code> on Active Record objects when you want to delete
-them from the database. Note that we don’t need to add a view for this
-action since we’re redirecting to the <code>index</code> action.</p>
+<p>想把记录从数据库删除，可以在 Active Record 对象上调用 <code>destroy</code> 方法。注意，我们无需为这个动作编写视图，因为会转向 <code>index</code> 动作。</p>
 
-<p>Finally, add a ‘Destroy’ link to your <code>index</code> action template
-(<code>app/views/articles/index.html.erb</code>) to wrap everything
-together.</p>
+<p>最后，在 <code>index</code> 动作的模板（<code>app/views/articles/index.html.erb</code>）中加上“Destroy”链接：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="nt">&lt;h1&gt;</span>Listing Articles<span class="nt">&lt;/h1&gt;</span>
 <span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="s1">'New article'</span><span class="p">,</span> <span class="n">new_article_path</span> <span class="cp">%&gt;</span>
@@ -1330,70 +1106,61 @@ together.</p>
 </pre>
 
 </div>
-<p>Here we’re using <code>link_to</code> in a different way. We pass the named route as the
-second argument, and then the options as another argument. The <code>:method</code> and
-<code>:'data-confirm'</code> options are used as HTML5 attributes so that when the link is
-clicked, Rails will first show a confirm dialog to the user, and then submit the
-link with method <code>delete</code>.  This is done via the JavaScript file <code>jquery_ujs</code>
-which is automatically included into your application’s layout
-(<code>app/views/layouts/application.html.erb</code>) when you generated the application.
-Without this file, the confirmation dialog box wouldn’t appear.</p>
+<p>生成“Destroy”链接的 <code>link_to</code> 用法有点不一样，第二个参数是具名路由，随后还传入了几个参数。<code>:method</code> 和 <code>:'data-confirm'</code> 选项设置链接的 HTML5 属性，点击链接后，首先会显示一个对话框，然后发起 DELETE 请求。这两个操作通过 <code>jquery_ujs</code> 这个 JavaScript 脚本实现。生成程序骨架时，会自动把 <code>jquery_ujs</code> 加入程序的布局中（<code>app/views/layouts/application.html.erb</code>）。没有这个脚本，就不会显示确认对话框。</p>
 
-<p><img src="images/getting_started/confirm_dialog.png" alt="Confirm Dialog" /></p>
+<p><img src="http://docs-china.com/rails/images/getting_started/confirm_dialog.png" alt="确认对话框" /></p>
 
-<p>Congratulations, you can now create, show, list, update and destroy
-articles.</p>
+<p>恭喜，现在你可以新建、显示、列出、更新、删除文章了。</p>
 
-<p>TIP: In general, Rails encourages the use of resources objects in place
-of declaring routes manually.
-For more information about routing, see
-<a href="routing.html">Rails Routing from the Outside In</a>.</p>
+          <div class="box tip-box">
+  <p>一般情况下，Rails 建议使用资源对象，而不手动设置路由。关于路由的详细介绍参阅 <a href="http://docs-china.com/rails/routing.html">Rails 路由全解</a>一文。</p>
+</div>
 
-<h2>Adding a Second Model</h2>
 
-<p>It’s time to add a second model to the application. The second model will handle
-comments on articles.</p>
+<h2 id="adding-a-second-model">添加第二个模型</h2>
 
-<h3>Generating a Model</h3>
+<p>接下来要在程序中添加第二个模型，用来处理文章的评论。</p>
 
-<p>We’re going to see the same generator that we used before when creating
-the <code>Article</code> model. This time we’ll create a <code>Comment</code> model to hold
-reference of article comments. Run this command in your terminal:</p>
+<h3 id="generating-a-model">生成模型</h3>
+
+<p>下面要用到的生成器，和之前生成 <code>Article</code> 模型的一样。我们要创建一个 <code>Comment</code> 模型，表示文章的评论。在终端执行下面的命令：</p>
 
 <div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails generate model Comment commenter:string body:text article:references
 </pre>
 
 </div>
-<p>This command will generate four files:</p>
+<p>这个命令生成四个文件：</p>
 
-<div class="table"><table>
-  <thead>
-    <tr>
-      <th>File</th>
-      <th>Purpose</th>
-    </tr>
-  </thead>
+<div class="table-responsive"><table>
   <tbody>
     <tr>
+      <td>文件</td>
+      <td>作用</td>
+    </tr>
+    <tr>
+      <td>———————————————</td>
+      <td>———————————————————————</td>
+    </tr>
+    <tr>
       <td>db/migrate/20140120201010_create_comments.rb</td>
-      <td>Migration to create the comments table in your database (your name will include a different timestamp)</td>
+      <td>生成 comments 表所用的迁移文件（你得到的文件名稍有不同）</td>
     </tr>
     <tr>
       <td>app/models/comment.rb</td>
-      <td>The Comment model</td>
+      <td>Comment 模型文件</td>
     </tr>
     <tr>
       <td>test/models/comment_test.rb</td>
-      <td>Testing harness for the comments model</td>
+      <td>Comment 模型的测试文件</td>
     </tr>
     <tr>
       <td>test/fixtures/comments.yml</td>
-      <td>Sample comments for use in testing</td>
+      <td>测试时使用的评论固件</td>
     </tr>
   </tbody>
 </table>
 </div>
-<p>First, take a look at <code>app/models/comment.rb</code>:</p>
+<p>首先来看一下 <code>app/models/comment.rb</code> 文件：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Comment</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">belongs_to</span> <span class="ss">:article</span>
@@ -1401,12 +1168,9 @@ reference of article comments. Run this command in your terminal:</p>
 </pre>
 
 </div>
-<p>This is very similar to the <code>Article</code> model that you saw earlier. The difference
-is the line <code>belongs_to :article</code>, which sets up an Active Record <em>association</em>.
-You’ll learn a little about associations in the next section of this guide.</p>
+<p>文件的内容和前面的 <code>Article</code> 模型差不多，不过多了一行代码：<code>belongs_to :article</code>。这行代码用来建立 Active Record 关联。下文会简单介绍关联。</p>
 
-<p>In addition to the model, Rails has also made a migration to create the
-corresponding database table:</p>
+<p>除了模型文件，Rails 还生成了一个迁移文件，用来创建对应的数据表：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">CreateComments</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
   <span class="k">def</span> <span class="nf">change</span>
@@ -1424,16 +1188,13 @@ corresponding database table:</p>
 </pre>
 
 </div>
-<p>The <code>t.references</code> line sets up a foreign key column for the association between
-the two models. An index for this association is also created on this column.
-Go ahead and run the migration:</p>
+<p><code>t.references</code> 这行代码为两个模型的关联创建一个外键字段，同时还为这个字段创建了索引。下面运行这个迁移：</p>
 
 <div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rake db:migrate
 </pre>
 
 </div>
-<p>Rails is smart enough to only execute the migrations that have not already been
-run against the current database, so in this case you will just see:</p>
+<p>Rails 相当智能，只会执行还没有运行的迁移，在命令行中会看到以下输出：</p>
 
 <div class="codeblock bash"><pre class="highlight"><span class="o">==</span>  CreateComments: migrating <span class="o">=================================================</span>
 -- create_table<span class="o">(</span>:comments<span class="o">)</span>
@@ -1442,20 +1203,16 @@ run against the current database, so in this case you will just see:</p>
 </pre>
 
 </div>
-<h3>Associating Models</h3>
+<h3 id="associating-models">关联模型</h3>
 
-<p>Active Record associations let you easily declare the relationship between two
-models. In the case of comments and articles, you could write out the
-relationships this way:</p>
+<p>使用 Active Record 关联可以轻易的建立两个模型之间的关系。评论和文章之间的关联是这样的：</p>
 
 <ul>
-  <li>Each comment belongs to one article.</li>
-  <li>One article can have many comments.</li>
+  <li>评论属于一篇文章</li>
+  <li>一篇文章有多个评论</li>
 </ul>
 
-<p>In fact, this is very close to the syntax that Rails uses to declare this
-association. You’ve already seen the line of code inside the <code>Comment</code> model
-(app/models/comment.rb) that makes each comment belong to an Article:</p>
+<p>这种关系和 Rails 用来声明关联的句法具有相同的逻辑。我们已经看过 <code>Comment</code> 模型中那行代码，声明评论属于文章：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Comment</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">belongs_to</span> <span class="ss">:article</span>
@@ -1463,8 +1220,7 @@ association. You’ve already seen the line of code inside the <code>Comment</co
 </pre>
 
 </div>
-<p>You’ll need to edit <code>app/models/article.rb</code> to add the other side of the
-association:</p>
+<p>我们要编辑 <code>app/models/article.rb</code> 文件，加入这层关系的另一方：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Article</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:comments</span>
@@ -1474,19 +1230,16 @@ association:</p>
 </pre>
 
 </div>
-<p>These two declarations enable a good bit of automatic behavior. For example, if
-you have an instance variable <code>@article</code> containing an article, you can retrieve
-all the comments belonging to that article as an array using
-<code>@article.comments</code>.</p>
+<p>这两行声明能自动完成很多操作。例如，如果实例变量 <code>@article</code> 是一个文章对象，可以使用 <code>@article.comments</code> 取回一个数组，其元素是这篇文章的评论。</p>
 
-<p>TIP: For more information on Active Record associations, see the <a href="association_basics.html">Active Record
-Associations</a> guide.</p>
+          <div class="box tip-box">
+  <p>关于 Active Record 关联的详细介绍，参阅 <a href="http://docs-china.com/rails/association_basics.html">Active Record 关联</a>一文。</p>
+</div>
 
-<h3>Adding a Route for Comments</h3>
 
-<p>As with the <code>welcome</code> controller, we will need to add a route so that Rails
-knows where we would like to navigate to see <code>comments</code>. Open up the
-<code>config/routes.rb</code> file again, and edit it as follows:</p>
+<h3 id="adding-a-route-for-comments">添加评论的路由</h3>
+
+<p>和 <code>article</code> 控制器一样，添加路由后 Rails 才知道在哪个地址上查看评论。打开 <code>config/routes.rb</code> 文件，按照下面的方式修改：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">resources</span> <span class="ss">:articles</span> <span class="k">do</span>
   <span class="n">resources</span> <span class="ss">:comments</span>
@@ -1494,71 +1247,65 @@ knows where we would like to navigate to see <code>comments</code>. Open up the
 </pre>
 
 </div>
-<p>This creates <code>comments</code> as a <em>nested resource</em> within <code>articles</code>. This is
-another part of capturing the hierarchical relationship that exists between
-articles and comments.</p>
+<p>我们把 <code>comments</code> 放在 <code>articles</code> 中，这叫做嵌套资源，表明了文章和评论间的层级关系。</p>
 
-<p>TIP: For more information on routing, see the <a href="routing.html">Rails Routing</a>
-guide.</p>
+          <div class="box tip-box">
+  <p>关于路由的详细介绍，参阅 <a href="http://docs-china.com/rails/routing.html">Rails 路由全解</a>一文。</p>
+</div>
 
-<h3>Generating a Controller</h3>
 
-<p>With the model in hand, you can turn your attention to creating a matching
-controller. Again, we’ll use the same generator we used before:</p>
+<h3 id="generating-a-controller">生成控制器</h3>
+
+<p>有了模型，下面要创建控制器了，还是使用前面用过的生成器：</p>
 
 <div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails generate controller Comments
 </pre>
 
 </div>
-<p>This creates six files and one empty directory:</p>
+<p>这个命令生成留个文件和一个空文件夹：</p>
 
-<div class="table"><table>
+<div class="table-responsive"><table>
   <thead>
     <tr>
-      <th>File/Directory</th>
-      <th>Purpose</th>
+      <th>文件/文件夹</th>
+      <th>作用</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td>app/controllers/comments_controller.rb</td>
-      <td>The Comments controller</td>
+      <td>Comments 控制器文件</td>
     </tr>
     <tr>
       <td>app/views/comments/</td>
-      <td>Views of the controller are stored here</td>
+      <td>控制器的视图存放在这个文件夹里</td>
     </tr>
     <tr>
       <td>test/controllers/comments_controller_test.rb</td>
-      <td>The test for the controller</td>
+      <td>控制器测试文件</td>
     </tr>
     <tr>
       <td>app/helpers/comments_helper.rb</td>
-      <td>A view helper file</td>
+      <td>视图帮助方法文件</td>
     </tr>
     <tr>
       <td>test/helpers/comments_helper_test.rb</td>
-      <td>The test for the helper</td>
+      <td>帮助方法测试文件</td>
     </tr>
     <tr>
       <td>app/assets/javascripts/comment.js.coffee</td>
-      <td>CoffeeScript for the controller</td>
+      <td>控制器的 CoffeeScript 文件</td>
     </tr>
     <tr>
       <td>app/assets/stylesheets/comment.css.scss</td>
-      <td>Cascading style sheet for the controller</td>
+      <td>控制器的样式表文件</td>
     </tr>
   </tbody>
 </table>
 </div>
-<p>Like with any blog, our readers will create their comments directly after
-reading the article, and once they have added their comment, will be sent back
-to the article show page to see their comment now listed. Due to this, our
-<code>CommentsController</code> is there to provide a method to create comments and delete
-spam comments when they arrive.</p>
+<p>在任何一个博客中，读者读完文章后可以直接发布评论，评论发布后，会转会文章显示页面，查看自己的评论是否显示出来了。所以，<code>CommentsController</code> 中要定义新建评论的和删除垃圾评论的方法。</p>
 
-<p>So first, we’ll wire up the Article show template
-(<code>app/views/articles/show.html.erb</code>) to let us make a new comment:</p>
+<p>首先，修改显示文章的模板（<code>app/views/articles/show.html.erb</code>），允许读者发布评论：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="nt">&lt;p&gt;</span>
   <span class="nt">&lt;strong&gt;</span>Title:<span class="nt">&lt;/strong&gt;</span>
@@ -1590,11 +1337,9 @@ spam comments when they arrive.</p>
 </pre>
 
 </div>
-<p>This adds a form on the <code>Article</code> show page that creates a new comment by
-calling the <code>CommentsController</code> <code>create</code> action. The <code>form_for</code> call here uses
-an array, which will build a nested route, such as <code>/articles/1/comments</code>.</p>
+<p>上面的代码在显示文章的页面添加了一个表单，调用 <code>CommentsController</code> 控制器的 <code>create</code> 动作发布评论。<code>form_for</code> 的参数是个数组，构建嵌套路由，例如 <code>/articles/1/comments</code>。</p>
 
-<p>Let’s wire up the <code>create</code> in <code>app/controllers/comments_controller.rb</code>:</p>
+<p>下面在 <code>app/controllers/comments_controller.rb</code> 文件中定义 <code>create</code> 方法：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">CommentsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
   <span class="k">def</span> <span class="nf">create</span>
@@ -1611,22 +1356,11 @@ an array, which will build a nested route, such as <code>/articles/1/comments</c
 </pre>
 
 </div>
-<p>You’ll see a bit more complexity here than you did in the controller for
-articles. That’s a side-effect of the nesting that you’ve set up. Each request
-for a comment has to keep track of the article to which the comment is attached,
-thus the initial call to the <code>find</code> method of the <code>Article</code> model to get the
-article in question.</p>
+<p>这里使用的代码要比文章的控制器复杂得多，因为设置了嵌套关系，必须这么做评论功能才能使用。发布评论时要知道这个评论属于哪篇文章，所以要在 <code>Article</code> 模型上调用 <code>find</code> 方法查找文章对象。</p>
 
-<p>In addition, the code takes advantage of some of the methods available for an
-association. We use the <code>create</code> method on <code>@article.comments</code> to create and
-save the comment. This will automatically link the comment so that it belongs to
-that particular article.</p>
+<p>而且，这段代码还充分利用了关联关系生成的方法。我们在 <code>@article.comments</code> 上调用 <code>create</code> 方法，创建并保存评论。这么做能自动把评论和文章联系起来，所以这个评论属于这篇文章。</p>
 
-<p>Once we have made the new comment, we send the user back to the original article
-using the <code>article_path(@article)</code> helper. As we have already seen, this calls
-the <code>show</code> action of the <code>ArticlesController</code> which in turn renders the
-<code>show.html.erb</code> template. This is where we want the comment to show, so let’s
-add that to the <code>app/views/articles/show.html.erb</code>.</p>
+<p>添加评论后，调用 <code>article_path(@article)</code> 帮助方法，转向原来的文章页面。前面说过，这个帮助函数调用 <code>ArticlesController</code> 的 <code>show</code> 动作，渲染 <code>show.html.erb</code> 模板。我们要在这个模板中显示评论，所以要修改一下 <code>app/views/articles/show.html.erb</code>：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="nt">&lt;p&gt;</span>
   <span class="nt">&lt;strong&gt;</span>Title:<span class="nt">&lt;/strong&gt;</span>
@@ -1671,22 +1405,17 @@ add that to the <code>app/views/articles/show.html.erb</code>.</p>
 </pre>
 
 </div>
-<p>Now you can add articles and comments to your blog and have them show up in the
-right places.</p>
+<p>现在，可以为文章添加评论了，成功添加后，评论会在正确的位置显示。</p>
 
-<p><img src="images/getting_started/article_with_comments.png" alt="Article with Comments" /></p>
+<p><img src="http://docs-china.com/rails/images/getting_started/article_with_comments.png" alt="文章的评论" /></p>
 
-<h2>Refactoring</h2>
+<h2 id="refactoring">重构</h2>
 
-<p>Now that we have articles and comments working, take a look at the
-<code>app/views/articles/show.html.erb</code> template. It is getting long and awkward. We
-can use partials to clean it up.</p>
+<p>现在博客的文章和评论都能正常使用了。看一下 <code>app/views/articles/show.html.erb</code> 模板，内容太多。下面使用局部视图重构。</p>
 
-<h3>Rendering Partial Collections</h3>
+<h3 id="rendering-partial-collections">渲染局部视图中的集合</h3>
 
-<p>First, we will make a comment partial to extract showing all the comments for
-the article. Create the file <code>app/views/comments/_comment.html.erb</code> and put the
-following into it:</p>
+<p>首先，把显示文章评论的代码抽出来，写入局部视图中。新建 <code>app/views/comments/_comment.html.erb</code> 文件，写入下面的代码：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="nt">&lt;p&gt;</span>
   <span class="nt">&lt;strong&gt;</span>Commenter:<span class="nt">&lt;/strong&gt;</span>
@@ -1700,8 +1429,7 @@ following into it:</p>
 </pre>
 
 </div>
-<p>Then you can change <code>app/views/articles/show.html.erb</code> to look like the
-following:</p>
+<p>然后把 <code>app/views/articles/show.html.erb</code> 修改成：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="nt">&lt;p&gt;</span>
   <span class="nt">&lt;strong&gt;</span>Title:<span class="nt">&lt;/strong&gt;</span>
@@ -1736,16 +1464,11 @@ following:</p>
 </pre>
 
 </div>
-<p>This will now render the partial in <code>app/views/comments/_comment.html.erb</code> once
-for each comment that is in the <code>@article.comments</code> collection. As the <code>render</code>
-method iterates over the <code>@article.comments</code> collection, it assigns each
-comment to a local variable named the same as the partial, in this case
-<code>comment</code> which is then available in the partial for us to show.</p>
+<p>这个视图会使用局部视图 <code>app/views/comments/_comment.html.erb</code> 渲染 <code>@article.comments</code> 集合中的每个评论。<code>render</code> 方法会遍历 <code>@article.comments</code> 集合，把每个评论复制给本地一个和局部视图同名的本地变量，在这个例子中本地变量是 <code>comment</code>，这个本地变量可以在局部视图中使用。</p>
 
-<h3>Rendering a Partial Form</h3>
+<h3 id="rendering-a-partial-form">渲染局部视图中的表单</h3>
 
-<p>Let us also move that new comment section out to its own partial. Again, you
-create a file <code>app/views/comments/_form.html.erb</code> containing:</p>
+<p>我们把添加评论的代码也移到局部视图中。新建 <code>app/views/comments/_form.html.erb</code> 文件，写入：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">form_for</span><span class="p">(</span><span class="o">[</span><span class="vi">@article</span><span class="p">,</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">comments</span><span class="p">.</span><span class="nf">build</span><span class="o">]</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="cp">%&gt;</span>
   <span class="nt">&lt;p&gt;</span>
@@ -1763,7 +1486,7 @@ create a file <code>app/views/comments/_form.html.erb</code> containing:</p>
 </pre>
 
 </div>
-<p>Then you make the <code>app/views/articles/show.html.erb</code> look like the following:</p>
+<p>然后把 <code>app/views/articles/show.html.erb</code> 改成：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="nt">&lt;p&gt;</span>
   <span class="nt">&lt;strong&gt;</span>Title:<span class="nt">&lt;/strong&gt;</span>
@@ -1786,22 +1509,15 @@ create a file <code>app/views/comments/_form.html.erb</code> containing:</p>
 </pre>
 
 </div>
-<p>The second render just defines the partial template we want to render,
-<code>comments/form</code>. Rails is smart enough to spot the forward slash in that
-string and realize that you want to render the <code>_form.html.erb</code> file in
-the <code>app/views/comments</code> directory.</p>
+<p>第二个 <code>render</code> 方法的参数就是要渲染的局部视图，即 <code>comments/form</code>。Rails 很智能，能解析其中的斜线，知道要渲染 <code>app/views/comments</code> 文件夹中的 <code>_form.html.erb</code> 模板。</p>
 
-<p>The <code>@article</code> object is available to any partials rendered in the view because
-we defined it as an instance variable.</p>
+<p><code>@article</code> 变量在所有局部视图中都可使用，因为它是实例变量。</p>
 
-<h2>Deleting Comments</h2>
+<h2 id="deleting-comments">删除评论</h2>
 
-<p>Another important feature of a blog is being able to delete spam comments. To do
-this, we need to implement a link of some sort in the view and a <code>destroy</code>
-action in the <code>CommentsController</code>.</p>
+<p>博客还有一个重要的功能是删除垃圾评论。为了实现这个功能，要在视图中添加一个连接，并在 <code>CommentsController</code> 中定义 <code>destroy</code> 动作。</p>
 
-<p>So first, let’s add the delete link in the
-<code>app/views/comments/_comment.html.erb</code> partial:</p>
+<p>现在 <code>app/views/comments/_comment.html.erb</code> 局部视图中加入删除评论的链接：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="nt">&lt;p&gt;</span>
   <span class="nt">&lt;strong&gt;</span>Commenter:<span class="nt">&lt;/strong&gt;</span>
@@ -1821,10 +1537,7 @@ action in the <code>CommentsController</code>.</p>
 </pre>
 
 </div>
-<p>Clicking this new “Destroy Comment” link will fire off a <code>DELETE
-/articles/:article_id/comments/:id</code> to our <code>CommentsController</code>, which can then
-use this to find the comment we want to delete, so let’s add a <code>destroy</code> action
-to our controller (<code>app/controllers/comments_controller.rb</code>):</p>
+<p>点击“Destroy Comment”链接后，会向 <code>CommentsController</code> 控制器发起 <code>DELETE /articles/:article_id/comments/:id</code> 请求。我们可以从这个请求中找到要删除的评论。下面在控制器中加入 <code>destroy</code> 动作（<code>app/controllers/comments_controller.rb</code>）：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">CommentsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
   <span class="k">def</span> <span class="nf">create</span>
@@ -1848,16 +1561,11 @@ to our controller (<code>app/controllers/comments_controller.rb</code>):</p>
 </pre>
 
 </div>
-<p>The <code>destroy</code> action will find the article we are looking at, locate the comment
-within the <code>@article.comments</code> collection, and then remove it from the
-database and send us back to the show action for the article.</p>
+<p><code>destroy</code> 动作先查找当前文章，然后在 <code>@article.comments</code> 集合中找到对应的评论，将其从数据库中删掉，最后转向显示文章的页面。</p>
 
-<h3>Deleting Associated Objects</h3>
+<h3 id="deleting-associated-objects">删除关联对象</h3>
 
-<p>If you delete an article then its associated comments will also need to be
-deleted. Otherwise they would simply occupy space in the database. Rails allows
-you to use the <code>dependent</code> option of an association to achieve this. Modify the
-Article model, <code>app/models/article.rb</code>, as follows:</p>
+<p>如果删除一篇文章，也要删除文章中的评论，不然这些评论会浪费数据库空间。在 Rails 中可以在关联中指定 <code>dependent</code> 选项达到这一目的。把 <code>Article</code> 模型（<code>app/models/article.rb</code>）修改成：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Article</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:comments</span><span class="p">,</span> <span class="ss">dependent: :destroy</span>
@@ -1867,25 +1575,17 @@ Article model, <code>app/models/article.rb</code>, as follows:</p>
 </pre>
 
 </div>
-<h2>Security</h2>
+<h2 id="security">安全</h2>
 
-<h3>Basic Authentication</h3>
+<h3 id="basic-authentication">基本认证</h3>
 
-<p>If you were to publish your blog online, anybody would be able to add, edit and
-delete articles or delete comments.</p>
+<p>如果把这个博客程序放在网上，现在所有人都能添加、编辑、删除文章和评论。</p>
 
-<p>Rails provides a very simple HTTP authentication system that will work nicely in
-this situation.</p>
+<p>Rails 提供了一种简单的 HTTP 身份认证机制可以避免出现这种情况。</p>
 
-<p>In the <code>ArticlesController</code> we need to have a way to block access to the various
-actions if the person is not authenticated, here we can use the Rails
-<code>http_basic_authenticate_with</code> method, allowing access to the requested
-action if that method allows it.</p>
+<p>在 <code>ArticlesController</code> 中，我们要有一种方法禁止未通过认证的用户访问其中几个动作。我们需要的是 <code>http_basic_authenticate_with</code> 方法，通过这个方法的认证后才能访问请求的动作。</p>
 
-<p>To use the authentication system, we specify it at the top of our
-<code>ArticlesController</code>, in this case, we want the user to be authenticated on
-every action, except for <code>index</code> and <code>show</code>, so we write that in
-<code>app/controllers/articles_controller.rb</code>:</p>
+<p>要使用这个身份认证机制，需要在 <code>ArticlesController</code> 控制器的顶部调用 <code>http_basic_authenticate_with</code> 方法。除了 <code>index</code> 和 <code>show</code> 动作，访问其他动作都要通过认证，所以在 <code>app/controllers/articles_controller.rb</code> 中，要这么做：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">ArticlesController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
 
@@ -1899,8 +1599,7 @@ every action, except for <code>index</code> and <code>show</code>, so we write t
 </pre>
 
 </div>
-<p>We also want to allow only authenticated users to delete comments, so in the
-<code>CommentsController</code> (<code>app/controllers/comments_controller.rb</code>) we write:</p>
+<p>同时，我们还希望只有通过认证的用户才能删除评论。修改 <code>CommentsController</code> 控制器（<code>app/controllers/comments_controller.rb</code>）：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">CommentsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
 
@@ -1915,84 +1614,50 @@ every action, except for <code>index</code> and <code>show</code>, so we write t
 </pre>
 
 </div>
-<p>Now if you try to create a new article, you will be greeted with a basic HTTP
-Authentication challenge</p>
+<p>现在，如果想新建文章，会看到一个 HTTP 基本认证对话框。</p>
 
-<p><img src="images/getting_started/challenge.png" alt="Basic HTTP Authentication Challenge" /></p>
+<p><img src="images/getting_started/challenge.png" alt="HTTP 基本认证对话框" /></p>
 
-<p>Other authentication methods are available for Rails applications. Two popular
-authentication add-ons for Rails are the
-<a href="https://github.com/plataformatec/devise">Devise</a> rails engine and
-the <a href="https://github.com/binarylogic/authlogic">Authlogic</a> gem,
-along with a number of others.</p>
+<p>其他的身份认证方法也可以在 Rails 程序中使用。其中两个比较流行的是 <a href="https://github.com/plataformatec/devise">Devise</a> 引擎和 <a href="https://github.com/binarylogic/authlogic">Authlogic</a> gem。</p>
 
-<h3>Other Security Considerations</h3>
+<h3 id="other-security-considerations">其他安全注意事项</h3>
 
-<p>Security, especially in web applications, is a broad and detailed area. Security
-in your Rails application is covered in more depth in
-The <a href="security.html">Ruby on Rails Security Guide</a></p>
+<p>安全，尤其是在网页程序中，是个很宽泛和值得深入研究的领域。Rails 程序的安全措施，在 <a href="http://docs-china.com/rails/security.html">Ruby on Rails 安全指南</a>中有更深入的说明。</p>
 
-<h2>What’s Next?</h2>
+<h2 id="whats-next">接下来做什么</h2>
 
-<p>Now that you’ve seen your first Rails application, you should feel free to
-update it and experiment on your own. But you don’t have to do everything
-without help. As you need assistance getting up and running with Rails, feel
-free to consult these support resources:</p>
+<p>至此，我们开发了第一个 Rails 程序，请尽情的修改、试验。在开发过程中难免会需要帮助，如果使用 Rails 时需要协助，可以使用这些资源：</p>
 
 <ul>
-  <li>The <a href="index.html">Ruby on Rails guides</a></li>
-  <li>The <a href="http://railstutorial.org/book">Ruby on Rails Tutorial</a></li>
-  <li>The <a href="http://groups.google.com/group/rubyonrails-talk">Ruby on Rails mailing list</a></li>
-  <li>The <a href="irc://irc.freenode.net/#rubyonrails">#rubyonrails</a> channel on irc.freenode.net</li>
+  <li><a href="http://docs-china.com/rails/index.html">Ruby on Rails 指南</a></li>
+  <li><a href="http://railstutorial-china.org/">Ruby on Rails 教程</a></li>
+  <li><a href="http://groups.google.com/group/rubyonrails-talk">Ruby on Rails 邮件列表</a></li>
+  <li>irc.freenode.net 上的 <a href="irc://irc.freenode.net/#rubyonrails">#rubyonrails</a> 频道</li>
 </ul>
 
-<p>Rails also comes with built-in help that you can generate using the rake
-command-line utility:</p>
+<p>Rails 本身也提供了帮助文档，可以使用下面的 rake 任务生成：</p>
 
 <ul>
-  <li>Running <code>rake doc:guides</code> will put a full copy of the Rails Guides in the
-<code>doc/guides</code> folder of your application. Open <code>doc/guides/index.html</code> in your
-web browser to explore the Guides.</li>
-  <li>Running <code>rake doc:rails</code> will put a full copy of the API documentation for
-Rails in the <code>doc/api</code> folder of your application. Open <code>doc/api/index.html</code>
-in your web browser to explore the API documentation.</li>
+  <li>运行 <code>rake doc:guides</code>，会在程序的 <code>doc/guides</code> 文件夹中生成一份 Rails 指南。在浏览器中打开 <code>doc/guides/index.html</code> 可以查看这份指南。</li>
+  <li>运行 <code>rake doc:rails</code>，会在程序的 <code>doc/api</code> 文件夹中生成一份完整的 API 文档。在浏览器中打开 <code>doc/api/index.html</code> 可以查看 API 文档。</li>
 </ul>
 
-<p>TIP: To be able to generate the Rails Guides locally with the <code>doc:guides</code> rake
-task you need to install the RedCloth gem. Add it to your <code>Gemfile</code> and run
-<code>bundle install</code> and you’re ready to go.</p>
+          <div class="box tip-box">
+  <p>使用 <code>doc:guides</code> 任务在本地生成 Rails 指南，要安装 RedCloth gem。在 <code>Gemfile</code> 中加入这个 gem，然后执行 <code>bundle install</code> 命令即可。</p>
+</div>
 
-<h2>Configuration Gotchas</h2>
 
-<p>The easiest way to work with Rails is to store all external data as UTF-8. If
-you don’t, Ruby libraries and Rails will often be able to convert your native
-data into UTF-8, but this doesn’t always work reliably, so you’re better off
-ensuring that all external data is UTF-8.</p>
+<h2 id="configuration-gotchas">配置问题</h2>
 
-<p>If you have made a mistake in this area, the most common symptom is a black
-diamond with a question mark inside appearing in the browser. Another common
-symptom is characters like “Ã¼” appearing instead of “ü”. Rails takes a number
-of internal steps to mitigate common causes of these problems that can be
-automatically detected and corrected. However, if you have external data that is
-not stored as UTF-8, it can occasionally result in these kinds of issues that
-cannot be automatically detected by Rails and corrected.</p>
+<p>使用 Rails 时，最好使用 UTF-8 编码存储所有外部数据。如果没使用 UTF-8 编码，Ruby 的代码库和 Rails 一般都能将其转换成 UTF-8，但不一定总能成功，所以最好还是确保所有的外部数据都使用 UTF-8 编码。</p>
 
-<p>Two very common sources of data that are not UTF-8:</p>
+<p>如果编码出错，常见的征兆是浏览器中显示很多黑色方块和问号。还有一种常见的符号是“Ã¼”，包含在“ü”中。Rails 内部采用很多方法尽量避免出现这种问题。如果你使用的外部数据编码不是 UTF-8，有时会出现这些问题，Rails 无法自动纠正。</p>
+
+<p>非 UTF-8 编码的数据经常来源于：</p>
 
 <ul>
-  <li>Your text editor: Most text editors (such as TextMate), default to saving
-files as UTF-8. If your text editor does not, this can result in special
-characters that you enter in your templates (such as é) to appear as a diamond
-with a question mark inside in the browser. This also applies to your i18n
-translation files. Most editors that do not already default to UTF-8 (such as
-some versions of Dreamweaver) offer a way to change the default to UTF-8. Do
-so.</li>
-  <li>Your database: Rails defaults to converting data from your database into UTF-8
-at the boundary. However, if your database is not using UTF-8 internally, it
-may not be able to store all characters that your users enter. For instance,
-if your database is using Latin-1 internally, and your user enters a Russian,
-Hebrew, or Japanese character, the data will be lost forever once it enters
-the database. If possible, use UTF-8 as the internal storage of your database.</li>
+  <li>你的文本编辑器：大多数文本编辑器（例如 TextMate）默认使用 UTF-8 编码保存文件。如果你的编辑器没使用 UTF-8 编码，有可能是你在模板中输入了特殊字符（例如 é），在浏览器中显示为方块和问号。这种问题也会出现在国际化文件中。默认不使用 UTF-8 保存文件的编辑器（例如 Dreamweaver 的某些版本）都会提供一种方法，把默认编码设为 UTF-8。记得要修改。</li>
+  <li>你的数据库：默认情况下，Rails 会把从数据库中取出的数据转换成 UTF-8 格式。如果数据库内部不使用 UTF-8 编码，就无法保存用户输入的所有字符。例如，数据库内部使用 Latin-1 编码，用户输入俄语、希伯来语或日语字符时，存进数据库时就会永远丢失。如果可能，在数据库中尽量使用 UTF-8 编码。</li>
 </ul>
 
                     </article>
@@ -2216,7 +1881,7 @@ the database. If possible, use UTF-8 as the internal storage of your database.</
     
   
     
-      <li class=""><a href="http://docs-china.com/rails/migrations.html">Active Record Migrations</a></li>
+      <li class=""><a href="http://docs-china.com/rails/migrations.html">Active Record 数据库迁移</a></li>
     
   
     
@@ -2255,7 +1920,7 @@ the database. If possible, use UTF-8 as the internal storage of your database.</
     
   
     
-      <li class=""><a href="http://docs-china.com/rails/active_record_validations.html">Active Record Validations</a></li>
+      <li class=""><a href="http://docs-china.com/rails/active_record_validations.html">Active Record 数据验证</a></li>
     
   
     
@@ -3212,7 +2877,7 @@ the database. If possible, use UTF-8 as the internal storage of your database.</
     
   
     
-      <li class=""><a href="http://docs-china.com/rails/security.html">Ruby on Rails Security Guide</a></li>
+      <li class=""><a href="http://docs-china.com/rails/security.html">Ruby on Rails 安全指南</a></li>
     
   
     

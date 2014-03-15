@@ -5,9 +5,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <title>Rails 路由全解 - Rails 指南</title>
     <meta name="viewport" content="width=device-width" />
-
+    <script src="http://docs-china.com/rails/scripts/docs.js"></script>
     <link rel="stylesheet" href="http://cdn.staticfile.org/twitter-bootstrap/3.1.1/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="http://docs-china.com/rails/styles/docs.css" />
+    <link rel="stylesheet" href="http://docs-china.com/rails/scripts/docs.css" />
 </head>
 <body>
     <a class="sr-only" href="#content">跳到正文</a>
@@ -24,7 +24,7 @@
         <div class="container">
             <h1 class="logo"><a href="http://docs-china.com/rails/" title="Rails 指南">Rails 指南</a></h1>
             
-            <iframe src="http://ghbtns.com/github-btn.html?user=docs-china&repo=rails&type=fork&count=false"
+            <iframe src="http://ghbtns.com/github-btn.html?user=docs-china&repo=&type=fork&count=false"
   allowtransparency="true" frameborder="0" scrolling="0" width="62" height="20"></iframe>
             
         </div>
@@ -124,7 +124,7 @@
 </div>
 <p>creates seven different routes in your application, all mapping to the <code>Photos</code> controller:</p>
 
-<div class="table"><table>
+<div class="table-responsive"><table>
   <thead>
     <tr>
       <th>HTTP Verb</th>
@@ -234,7 +234,7 @@
 </div>
 <p>creates six different routes in your application, all mapping to the <code>Geocoders</code> controller:</p>
 
-<div class="table"><table>
+<div class="table-responsive"><table>
   <thead>
     <tr>
       <th>HTTP Verb</th>
@@ -313,7 +313,7 @@
 </div>
 <p>This will create a number of routes for each of the <code>posts</code> and <code>comments</code> controller. For <code>Admin::PostsController</code>, Rails will create:</p>
 
-<div class="table"><table>
+<div class="table-responsive"><table>
   <thead>
     <tr>
       <th>HTTP Verb</th>
@@ -398,7 +398,7 @@
 </div>
 <p>In each of these cases, the named routes remain the same as if you did not use <code>scope</code>. In the last case, the following paths map to <code>PostsController</code>:</p>
 
-<div class="table"><table>
+<div class="table-responsive"><table>
   <thead>
     <tr>
       <th>HTTP Verb</th>
@@ -479,7 +479,7 @@
 </div>
 <p>In addition to the routes for magazines, this declaration will also route ads to an <code>AdsController</code>. The ad URLs require a magazine:</p>
 
-<div class="table"><table>
+<div class="table-responsive"><table>
   <thead>
     <tr>
       <th>HTTP Verb</th>
@@ -611,7 +611,7 @@
 </div>
 <p>The comments resource here will have the following routes generated for it:</p>
 
-<div class="table"><table>
+<div class="table-responsive"><table>
   <thead>
     <tr>
       <th>HTTP Verb</th>
@@ -678,7 +678,7 @@
 </div>
 <p>The comments resource here will have the following routes generated for it:</p>
 
-<div class="table"><table>
+<div class="table-responsive"><table>
   <thead>
     <tr>
       <th>HTTP Verb</th>
@@ -1194,7 +1194,7 @@ route, eliminating the block:</p>
 </div>
 <p>will recognize incoming paths beginning with <code>/photos</code> but route to the <code>Images</code> controller:</p>
 
-<div class="table"><table>
+<div class="table-responsive"><table>
   <thead>
     <tr>
       <th>HTTP Verb</th>
@@ -1297,7 +1297,7 @@ a warning.</p>
 </div>
 <p>will recognize incoming paths beginning with <code>/photos</code> and route the requests to <code>PhotosController</code>, but use the value of the :as option to name the helpers.</p>
 
-<div class="table"><table>
+<div class="table-responsive"><table>
   <thead>
     <tr>
       <th>HTTP Verb</th>
@@ -1447,7 +1447,7 @@ a warning.</p>
 </div>
 <p>Rails now creates routes to the <code>CategoriesController</code>.</p>
 
-<div class="table"><table>
+<div class="table-responsive"><table>
   <thead>
     <tr>
       <th>HTTP Verb</th>
@@ -1824,7 +1824,7 @@ edit_user GET    /users/:id/edit(.:format) users#edit
     
   
     
-      <li class=""><a href="http://docs-china.com/rails/migrations.html">Active Record Migrations</a></li>
+      <li class=""><a href="http://docs-china.com/rails/migrations.html">Active Record 数据库迁移</a></li>
     
   
     
@@ -1863,7 +1863,7 @@ edit_user GET    /users/:id/edit(.:format) users#edit
     
   
     
-      <li class=""><a href="http://docs-china.com/rails/active_record_validations.html">Active Record Validations</a></li>
+      <li class=""><a href="http://docs-china.com/rails/active_record_validations.html">Active Record 数据验证</a></li>
     
   
     
@@ -2820,7 +2820,7 @@ edit_user GET    /users/:id/edit(.:format) users#edit
     
   
     
-      <li class=""><a href="http://docs-china.com/rails/security.html">Ruby on Rails Security Guide</a></li>
+      <li class=""><a href="http://docs-china.com/rails/security.html">Ruby on Rails 安全指南</a></li>
     
   
     

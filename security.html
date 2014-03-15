@@ -3,11 +3,11 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-    <title>Ruby on Rails Security Guide - Rails 指南</title>
+    <title>Ruby on Rails 安全指南 - Rails 指南</title>
     <meta name="viewport" content="width=device-width" />
-
+    <script src="http://docs-china.com/rails/scripts/docs.js"></script>
     <link rel="stylesheet" href="http://cdn.staticfile.org/twitter-bootstrap/3.1.1/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="http://docs-china.com/rails/styles/docs.css" />
+    <link rel="stylesheet" href="http://docs-china.com/rails/scripts/docs.css" />
 </head>
 <body>
     <a class="sr-only" href="#content">跳到正文</a>
@@ -24,7 +24,7 @@
         <div class="container">
             <h1 class="logo"><a href="http://docs-china.com/rails/" title="Rails 指南">Rails 指南</a></h1>
             
-            <iframe src="http://ghbtns.com/github-btn.html?user=docs-china&repo=rails&type=fork&count=false"
+            <iframe src="http://ghbtns.com/github-btn.html?user=docs-china&repo=&type=fork&count=false"
   allowtransparency="true" frameborder="0" scrolling="0" width="62" height="20"></iframe>
             
         </div>
@@ -35,7 +35,7 @@
             <div class="row">
                 <main class="main col-sm-9 col-md-9">
                     <article class="entry">
-                        <h1>Ruby on Rails Security Guide</h1>
+                        <h1>Ruby on Rails 安全指南</h1>
                         <p>This manual describes common security problems in web applications and how to avoid them with Rails.</p>
 
 <p>After reading this guide, you will know:</p>
@@ -928,7 +928,7 @@ http://hi.com
 
 <p>NOTE: <em>Use user-supplied command line parameters with caution.</em></p>
 
-<div class="table"><table>
+<div class="table-responsive"><table>
   <tbody>
     <tr>
       <td>If your application has to execute commands in the underlying operating system, there are several methods in Ruby: exec(command), syscall(command), system(command) and <code>command</code>. You will have to be especially careful with these functions if the user may enter the whole command, or a part of it. This is because in most shells, you can execute another command at the end of the first one, concatenating them with a semicolon (;) or a vertical bar (</td>
@@ -1030,7 +1030,7 @@ wasn’t performed is:</p>
 <code>nil</code>. Below table shows what the parameters look like based on <code>JSON</code> sent in
 request:</p>
 
-<div class="table"><table>
+<div class="table-responsive"><table>
   <thead>
     <tr>
       <th>JSON</th>
@@ -1352,7 +1352,7 @@ Used to control which sites are allowed to bypass same origin policies and send 
     
   
     
-      <li class=""><a href="http://docs-china.com/rails/migrations.html">Active Record Migrations</a></li>
+      <li class=""><a href="http://docs-china.com/rails/migrations.html">Active Record 数据库迁移</a></li>
     
   
     
@@ -1391,7 +1391,7 @@ Used to control which sites are allowed to bypass same origin policies and send 
     
   
     
-      <li class=""><a href="http://docs-china.com/rails/active_record_validations.html">Active Record Validations</a></li>
+      <li class=""><a href="http://docs-china.com/rails/active_record_validations.html">Active Record 数据验证</a></li>
     
   
     
@@ -2348,7 +2348,7 @@ Used to control which sites are allowed to bypass same origin policies and send 
     
   
     
-      <li class="current"><a href="http://docs-china.com/rails/security.html">Ruby on Rails Security Guide</a></li>
+      <li class="current"><a href="http://docs-china.com/rails/security.html">Ruby on Rails 安全指南</a></li>
     
   
     

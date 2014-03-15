@@ -41,6 +41,11 @@
 .entry ol {
     font-size: 16px;
 }
+.entry img {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+}
 .entry code {
     padding: 0;
     color: #333;
