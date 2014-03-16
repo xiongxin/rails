@@ -41,6 +41,9 @@
 .entry ol {
     font-size: 16px;
 }
+.table-responsive {
+    margin: 20px 0;
+}
 .entry img {
     display: block;
     margin: 0 auto;
@@ -74,6 +77,22 @@
 }
 .section-nav {
     margin-top: 30px;
+}
+.sidebar {
+    margin-top: -20px;
+}
+.menu h4 {
+    border-bottom: 1px solid #ddd;
+    margin-top: 30px;
+    padding-bottom: 2px;
+}
+.menu ul {
+    list-style-type: none;
+    margin-left: 0;
+    padding-left: 0;
+}
+.menu li {
+    margin: 0 0 8px;
 }
 .footer {
     padding-top: 40px;

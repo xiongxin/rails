@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-    <title>A Guide to Testing Rails Applications - Rails 指南</title>
+    <title>Rails 程序测试指南 - Rails 指南</title>
     <meta name="viewport" content="width=device-width" />
     <script src="http://docs-china.com/rails/scripts/docs.js"></script>
     <link rel="stylesheet" href="http://cdn.staticfile.org/twitter-bootstrap/3.1.1/css/bootstrap.min.css" />
@@ -35,7 +35,7 @@
             <div class="row">
                 <main class="main col-sm-9 col-md-9">
                     <article class="entry">
-                        <h1>A Guide to Testing Rails Applications</h1>
+                        <h1>Rails 程序测试指南</h1>
                         <p>This guide covers built-in mechanisms in Rails for testing your application.</p>
 
 <p>After reading this guide, you will know:</p>
@@ -1331,7 +1331,7 @@ access to Rails’ helper methods such as <code>link_to</code> or <code>pluraliz
 
                 </main>
                 <div class="sidebar col-sm-3 col-md-3 hidden-xs">
-                    <aside>
+                    <aside class="menu">
     
     <h4>起跑</h4>
     
@@ -1431,7 +1431,7 @@ access to Rails’ helper methods such as <code>link_to</code> or <code>pluraliz
     
   
     
-      <li class=""><a href="http://docs-china.com/rails/active_record_basics.html">Active Record Basics</a></li>
+      <li class=""><a href="http://docs-china.com/rails/active_record_basics.html">Active Record 基础</a></li>
     
   
     
@@ -1719,7 +1719,7 @@ access to Rails’ helper methods such as <code>link_to</code> or <code>pluraliz
     
   
     
-      <li class=""><a href="http://docs-china.com/rails/association_basics.html">Active Record Associations</a></li>
+      <li class=""><a href="http://docs-china.com/rails/association_basics.html">Active Record 关联</a></li>
     
   
     
@@ -1779,6 +1779,8 @@ access to Rails’ helper methods such as <code>link_to</code> or <code>pluraliz
   
     
   
+    
+      <li class=""><a href="http://docs-china.com/rails/active_record_querying.html">Active Record 查询</a></li>
     
   
     
@@ -1849,7 +1851,7 @@ access to Rails’ helper methods such as <code>link_to</code> or <code>pluraliz
     
   
     
-      <li class=""><a href="http://docs-china.com/rails/action_view_overview.html">Action View Overview</a></li>
+      <li class=""><a href="http://docs-china.com/rails/action_view_overview.html">Action View 基础</a></li>
     
   
     
@@ -2013,7 +2015,7 @@ access to Rails’ helper methods such as <code>link_to</code> or <code>pluraliz
     
   
     
-      <li class=""><a href="http://docs-china.com/rails/form_helpers.html">Form Helpers</a></li>
+      <li class=""><a href="http://docs-china.com/rails/form_helpers.html">表单帮助方法</a></li>
     
   
     
@@ -2220,7 +2222,7 @@ access to Rails’ helper methods such as <code>link_to</code> or <code>pluraliz
     
   
     
-      <li class=""><a href="http://docs-china.com/rails/active_support_core_extensions.html">Active Support Core Extensions</a></li>
+      <li class=""><a href="http://docs-china.com/rails/active_support_core_extensions.html">Active Support 核心扩展</a></li>
     
   
     
@@ -2311,7 +2313,7 @@ access to Rails’ helper methods such as <code>link_to</code> or <code>pluraliz
     
   
     
-      <li class=""><a href="http://docs-china.com/rails/i18n.html">Rails Internationalization (I18n) API</a></li>
+      <li class=""><a href="http://docs-china.com/rails/i18n.html">Rails 国际化 API</a></li>
     
   
     
@@ -2346,7 +2348,7 @@ access to Rails’ helper methods such as <code>link_to</code> or <code>pluraliz
     
   
     
-      <li class=""><a href="http://docs-china.com/rails/action_mailer_basics.html">Action Mailer Basics</a></li>
+      <li class=""><a href="http://docs-china.com/rails/action_mailer_basics.html">Action Mailer 基础</a></li>
     
   
     
@@ -2465,7 +2467,7 @@ access to Rails’ helper methods such as <code>link_to</code> or <code>pluraliz
     
   
     
-      <li class="current"><a href="http://docs-china.com/rails/testing.html">A Guide to Testing Rails Applications</a></li>
+      <li class="current"><a href="http://docs-china.com/rails/testing.html">Rails 程序测试指南</a></li>
     
   
     
@@ -2577,7 +2579,7 @@ access to Rails’ helper methods such as <code>link_to</code> or <code>pluraliz
     
   
     
-      <li class=""><a href="http://docs-china.com/rails/debugging_rails_applications.html">Debugging Rails Applications</a></li>
+      <li class=""><a href="http://docs-china.com/rails/debugging_rails_applications.html">Rails 程序调试</a></li>
     
   
     
@@ -2644,7 +2646,7 @@ access to Rails’ helper methods such as <code>link_to</code> or <code>pluraliz
     
   
     
-      <li class=""><a href="http://docs-china.com/rails/configuring.html">Configuring Rails Applications</a></li>
+      <li class=""><a href="http://docs-china.com/rails/configuring.html">Rails 程序设置</a></li>
     
   
     
@@ -2711,7 +2713,7 @@ access to Rails’ helper methods such as <code>link_to</code> or <code>pluraliz
     
   
     
-      <li class=""><a href="http://docs-china.com/rails/command_line.html">The Rails Command Line</a></li>
+      <li class=""><a href="http://docs-china.com/rails/command_line.html">Rails 命令行</a></li>
     
   
     
@@ -2843,7 +2845,7 @@ access to Rails’ helper methods such as <code>link_to</code> or <code>pluraliz
     
   
     
-      <li class=""><a href="http://docs-china.com/rails/asset_pipeline.html">The Asset Pipeline</a></li>
+      <li class=""><a href="http://docs-china.com/rails/asset_pipeline.html">Asset Pipeline</a></li>
     
   
     
@@ -2950,7 +2952,7 @@ access to Rails’ helper methods such as <code>link_to</code> or <code>pluraliz
     
   
     
-      <li class=""><a href="http://docs-china.com/rails/working_with_javascript_in_rails.html">Working with JavaScript in Rails</a></li>
+      <li class=""><a href="http://docs-china.com/rails/working_with_javascript_in_rails.html">在 Rails 中使用 JavaScript</a></li>
     
   
 
@@ -3072,7 +3074,7 @@ access to Rails’ helper methods such as <code>link_to</code> or <code>pluraliz
     
   
     
-      <li class=""><a href="http://docs-china.com/rails/initialization.html">The Rails Initialization Process</a></li>
+      <li class=""><a href="http://docs-china.com/rails/initialization.html">Rails 初始化过程</a></li>
     
   
     
@@ -3155,7 +3157,7 @@ access to Rails’ helper methods such as <code>link_to</code> or <code>pluraliz
     
   
     
-      <li class=""><a href="http://docs-china.com/rails/plugins.html">The Basics of Creating Rails Plugins</a></li>
+      <li class=""><a href="http://docs-china.com/rails/plugins.html">Rails 插件开发基础</a></li>
     
   
     
