@@ -21,6 +21,12 @@
     color: #fff;
     font-size: 32px;
 }
+.menu-mobile {
+    width: 95%;
+}
+.menu-mobile select {
+    width: 100%;
+}
 .content {
     padding: 40px 0 0;
 }
