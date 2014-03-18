@@ -24,7 +24,7 @@
         <div class="container">
             <h1 class="logo"><a href="http://docs-china.com/rails/" title="Rails 指南">Rails 指南</a></h1>
             
-            <iframe src="http://ghbtns.com/github-btn.html?user=docs-china&repo=&type=fork&count=false"
+            <iframe src="http://ghbtns.com/github-btn.html?user=docs-china&repo=rails&type=fork&count=false"
   allowtransparency="true" frameborder="0" scrolling="0" width="62" height="20"></iframe>
             
         </div>
@@ -36,23 +36,26 @@
                 <main class="main col-sm-9 col-md-9">
                     <article class="entry">
                         <h1>Rails 命令行</h1>
-                        <p>After reading this guide, you will know:</p>
+                        <p>读完本文后，你将学会：</p>
 
 <ul>
-  <li>How to create a Rails application.</li>
-  <li>How to generate models, controllers, database migrations, and unit tests.</li>
-  <li>How to start a development server.</li>
-  <li>How to experiment with objects through an interactive shell.</li>
-  <li>How to profile and benchmark your new creation.</li>
+  <li>如何新建 Rails 程序；</li>
+  <li>如何生成模型、控制器、数据库迁移和单元测试；</li>
+  <li>如何启动开发服务器；</li>
+  <li>如果在交互 shell 中测试对象；</li>
+  <li>如何分析、评测程序；</li>
 </ul>
 
 <hr />
 
-<p>NOTE: This tutorial assumes you have basic Rails knowledge from reading the <a href="getting_started.html">Getting Started with Rails Guide</a>.</p>
+          <div class="box information-box">
+  <p>阅读本文前要具备一些 Rails 基础知识，可以阅读“<a href="http://docs-china.com/rails/getting_started.html">Rails 入门</a>”一文。</p>
+</div>
 
-<h2>Command Line Basics</h2>
 
-<p>There are a few commands that are absolutely critical to your everyday usage of Rails. In the order of how much you’ll probably use them are:</p>
+<h2 id="command-line-basics">命令行基础</h2>
+
+<p>有些命令在 Rails 开发过程中经常会用到，下面按照使用频率倒序列出：</p>
 
 <ul>
   <li><code>rails console</code></li>
@@ -63,15 +66,18 @@
   <li><code>rails new app_name</code></li>
 </ul>
 
-<p>All commands can run with <code>-h</code> or <code>--help</code> to list more information.</p>
+<p>这些命令都可指定 <code>-h</code> 或 <code>--help</code> 选项显示具体用法。</p>
 
-<p>Let’s create a simple Rails application to step through each of these commands in context.</p>
+<p>下面我们来新建一个 Rails 程序，介绍各命令的用法。</p>
 
-<h3><code>rails new</code></h3>
+<h3 id="rails-new"><code>rails new</code></h3>
 
-<p>The first thing we’ll want to do is create a new Rails application by running the <code>rails new</code> command after installing Rails.</p>
+<p>安装 Rails 后首先要做的就是使用 <code>rails new</code> 命令新建 Rails 程序。</p>
 
-<p>INFO: You can install the rails gem by typing <code>gem install rails</code>, if you don’t have it already.</p>
+          <div class="box information-box">
+  <p>如果还没安装 Rails ，可以执行 <code>gem install rails</code> 命令安装。</p>
+</div>
+
 
 <div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails new commandsapp
      create
@@ -88,13 +94,13 @@
 </pre>
 
 </div>
-<p>Rails will set you up with what seems like a huge amount of stuff for such a tiny command! You’ve got the entire Rails directory structure now with all the code you need to run our simple application right out of the box.</p>
+<p>这个简单的命令会生成很多文件，组成一个完整的 Rails 程序，直接就可运行。</p>
 
-<h3><code>rails server</code></h3>
+<h3 id="rails-server"><code>rails server</code></h3>
 
-<p>The <code>rails server</code> command launches a small web server named WEBrick which comes bundled with Ruby. You’ll use this any time you want to access your application through a web browser.</p>
+<p><code>rails server</code> 命令会启动 Ruby 内建的小型服务器 WEBrick。要想在浏览器中访问程序，就要执行这个命令。</p>
 
-<p>With no further work, <code>rails server</code> will run our new shiny Rails app:</p>
+<p>无需其他操作，执行 <code>rails server</code> 命令后就能运行刚创建的 Rails 程序：</p>
 
 <div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span><span class="nb">cd </span>commandsapp
 <span class="gp">$ </span>rails server
@@ -108,23 +114,29 @@
 </pre>
 
 </div>
-<p>With just three commands we whipped up a Rails server listening on port 3000. Go to your browser and open <a href="http://localhost:3000">http://localhost:3000</a>, you will see a basic Rails app running.</p>
+<p>只执行了三个命令，我们就启动了一个 Rails 服务器，监听端口 3000。打开浏览器，访问 <a href="http://localhost:3000">http://localhost:3000</a>，会看到一个简单的 Rails 程序。</p>
 
-<p>INFO: You can also use the alias “s” to start the server: <code>rails s</code>.</p>
+          <div class="box information-box">
+  <p>启动服务器的命令还可使用别名“s”：<code>rails s</code>。</p>
+</div>
 
-<p>The server can be run on a different port using the <code>-p</code> option. The default development environment can be changed using <code>-e</code>.</p>
+
+<p>如果想让服务器监听其他端口，可通过 <code>-p</code> 选项指定。所处的环境可由 <code>-e</code> 选项指定。</p>
 
 <div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails server -e production -p 4000
 </pre>
 
 </div>
-<p>The <code>-b</code> option binds Rails to the specified IP, by default it is 0.0.0.0. You can run a server as a daemon by passing a <code>-d</code> option.</p>
+<p><code>-b</code> 选项把 Rails 绑定到指定的 IP，默认 IP 是 0.0.0.0。指定 <code>-d</code> 选项后，服务器会以守护进程的形式运行。</p>
 
-<h3><code>rails generate</code></h3>
+<h3 id="rails-generate"><code>rails generate</code></h3>
 
-<p>The <code>rails generate</code> command uses templates to create a whole lot of things. Running <code>rails generate</code> by itself gives a list of available generators:</p>
+<p><code>rails generate</code> 使用模板生成很多东西。单独执行 <code>rails generate</code> 命令，会列出可用的生成器：</p>
 
-<p>INFO: You can also use the alias “g” to invoke the generator command: <code>rails g</code>.</p>
+          <div class="box information-box">
+  <p>还可使用别名“g”执行生成器命令：<code>rails g</code>。</p>
+</div>
+
 
 <div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails generate
 Usage: rails generate GENERATOR <span class="o">[</span>args] <span class="o">[</span>options]
@@ -143,13 +155,19 @@ Rails:
 </pre>
 
 </div>
-<p>NOTE: You can install more generators through generator gems, portions of plugins you’ll undoubtedly install, and you can even create your own!</p>
+          <div class="box information-box">
+  <p>使用其他生成器 gem 可以安装更多的生成器，或者使用插件中提供的生成器，甚至还可以自己编写生成器。</p>
+</div>
 
-<p>Using generators will save you a large amount of time by writing <strong>boilerplate code</strong>, code that is necessary for the app to work.</p>
 
-<p>Let’s make our own controller with the controller generator. But what command should we use? Let’s ask the generator:</p>
+<p>使用生成器可以节省大量编写程序骨架的时间。</p>
 
-<p>INFO: All Rails console utilities have help text. As with most *nix utilities, you can try adding <code>--help</code> or <code>-h</code> to the end, for example <code>rails server --help</code>.</p>
+<p>下面我们使用控制器生成器生成控制器。但应该使用哪个命令呢？我们问一下生成器：</p>
+
+          <div class="box information-box">
+  <p>所有的 Rails 命令都有帮助信息。和其他 *nix 命令一样，可以在命令后加上 <code>--help</code> 或 <code>-h</code> 选项，例如 <code>rails server --help</code>。</p>
+</div>
+
 
 <div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails generate controller
 Usage: rails generate controller NAME <span class="o">[</span>action action] <span class="o">[</span>options]
@@ -176,7 +194,7 @@ Example:
 </pre>
 
 </div>
-<p>The controller generator is expecting parameters in the form of <code>generate controller ControllerName action1 action2</code>. Let’s make a <code>Greetings</code> controller with an action of <strong>hello</strong>, which will say something nice to us.</p>
+<p>控制器生成器接受的参数形式是 <code>generate controller ControllerName action1 action2</code>。下面我们来生成 <code>Greetings</code> 控制器，包含一个动作 <code>hello</code>，跟读者打个招呼。</p>
 
 <div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails generate controller Greetings hello
      create  app/controllers/greetings_controller.rb
@@ -198,9 +216,9 @@ Example:
 </pre>
 
 </div>
-<p>What all did this generate? It made sure a bunch of directories were in our application, and created a controller file, a view file, a functional test file, a helper for the view, a JavaScript file and a stylesheet file.</p>
+<p>这个命令生成了什么呢？在程序中创建了一堆文件夹，还有控制器文件、视图文件、功能测试文件、视图帮助方法文件、JavaScript 文件盒样式表文件。</p>
 
-<p>Check out the controller and modify it a little (in <code>app/controllers/greetings_controller.rb</code>):</p>
+<p>打开控制器文件（<code>app/controllers/greetings_controller.rb</code>），做些改动：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">GreetingsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
   <span class="k">def</span> <span class="nf">hello</span>
@@ -210,25 +228,28 @@ Example:
 </pre>
 
 </div>
-<p>Then the view, to display our message (in <code>app/views/greetings/hello.html.erb</code>):</p>
+<p>然后修改视图文件（<code>app/views/greetings/hello.html.erb</code>），显示消息：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="nt">&lt;h1&gt;</span>A Greeting for You!<span class="nt">&lt;/h1&gt;</span>
 <span class="nt">&lt;p&gt;</span><span class="cp">&lt;%=</span> <span class="vi">@message</span> <span class="cp">%&gt;</span><span class="nt">&lt;/p&gt;</span>
 </pre>
 
 </div>
-<p>Fire up your server using <code>rails server</code>.</p>
+<p>执行 <code>rails server</code> 命令启动服务器：</p>
 
 <div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails server
 <span class="gp">=&gt; </span>Booting WEBrick...
 </pre>
 
 </div>
-<p>The URL will be <a href="http://localhost:3000/greetings/hello">http://localhost:3000/greetings/hello</a>.</p>
+<p>要查看的地址是 <a href="http://localhost:3000/greetings/hello">http://localhost:3000/greetings/hello</a>。</p>
 
-<p>INFO: With a normal, plain-old Rails application, your URLs will generally follow the pattern of http://(host)/(controller)/(action), and a URL like http://(host)/(controller) will hit the <strong>index</strong> action of that controller.</p>
+          <div class="box information-box">
+  <p>在常规的 Rails 程序中，URL 的格式是 http://(host)/(controller)/(action)，访问 http://(host)/(controller) 会进入控制器的 <code>index</code> 动作。</p>
+</div>
 
-<p>Rails comes with a generator for data models too.</p>
+
+<p>Rails 也为数据模型提供了生成器。</p>
 
 <div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails generate model
 Usage:
@@ -247,11 +268,14 @@ Description:
 </pre>
 
 </div>
-<p>NOTE: For a list of available field types, refer to the <a href="http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/TableDefinition.html#method-i-column">API documentation</a> for the column method for the <code>TableDefinition</code> class.</p>
+          <div class="box information-box">
+  <p>全部可用的字段类型，请查看 <code>TableDefinition#column</code> 方法的<a href="http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/TableDefinition.html#method-i-column">文档</a>。</p>
+</div>
 
-<p>But instead of generating a model directly (which we’ll be doing later), let’s set up a scaffold. A <strong>scaffold</strong> in Rails is a full set of model, database migration for that model, controller to manipulate it, views to view and manipulate the data, and a test suite for each of the above.</p>
 
-<p>We will set up a simple resource called “HighScore” that will keep track of our highest score on video games we play.</p>
+<p>不过我们暂且不单独生成模型（后文再生成），先使用脚手架。Rails 中的脚手架会生成资源所需的全部文件，包括：模型，模型所用的迁移，处理模型的控制器，查看数据的视图，以及测试组件。</p>
+
+<p>我们要创建一个名为“HighScore”的资源，记录视频游戏的最高分。</p>
 
 <div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails generate scaffold HighScore game:string score:integer
     invoke  active_record
@@ -975,7 +999,7 @@ development:
     
   
     
-      <li class=""><a href="http://docs-china.com/rails/active_record_callbacks.html">Active Record Callbacks</a></li>
+      <li class=""><a href="http://docs-china.com/rails/active_record_callbacks.html">Active Record 回调</a></li>
     
   
     
