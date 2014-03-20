@@ -1877,21 +1877,21 @@
                 <main class="main col-sm-9 col-md-9">
                     <article class="entry">
                         <h1>Active Record 关联</h1>
-                        <p>This guide covers the association features of Active Record.</p>
+                        <p>本文介绍 Active Record 中的关联功能。</p>
 
-<p>After reading this guide, you will know:</p>
+<p>读完后，你将学会：</p>
 
 <ul>
-  <li>How to declare associations between Active Record models.</li>
-  <li>How to understand the various types of Active Record associations.</li>
-  <li>How to use the methods added to your models by creating associations.</li>
+  <li>如何声明 Active Record 模型间的关联；</li>
+  <li>怎么理解不同的 Active Record 关联类型；</li>
+  <li>如何使用关联添加的方法；</li>
 </ul>
 
 <hr />
 
-<h2>Why Associations?</h2>
+<h2 id="why-associations">为什么要使用关联</h2>
 
-<p>Why do we need associations between models? Because they make common operations simpler and easier in your code. For example, consider a simple Rails application that includes a model for customers and a model for orders. Each customer can have many orders. Without associations, the model declarations would look like this:</p>
+<p>模型之间为什么要有关联？因为关联让常规操作更简单。例如，在一个简单的 Rails 程序中，有一个顾客模型和一个订单模型。每个顾客可以下多个订单。没用关联的模型定义如下：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Customer</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
 <span class="k">end</span>
@@ -1901,13 +1901,13 @@
 </pre>
 
 </div>
-<p>Now, suppose we wanted to add a new order for an existing customer. We’d need to do something like this:</p>
+<p>假如我们要为一个顾客添加一个订单，得这么做：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@order</span> <span class="o">=</span> <span class="no">Order</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">order_date: </span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">,</span> <span class="ss">customer_id: </span><span class="vi">@customer</span><span class="p">.</span><span class="nf">id</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>Or consider deleting a customer, and ensuring that all of its orders get deleted as well:</p>
+<p>或者说要删除一个顾客，确保他的所有订单都会被删除，得这么做：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@orders</span> <span class="o">=</span> <span class="no">Order</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">customer_id: </span><span class="vi">@customer</span><span class="p">.</span><span class="nf">id</span><span class="p">)</span>
 <span class="vi">@orders</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">order</span><span class="o">|</span>
@@ -1917,7 +1917,7 @@
 </pre>
 
 </div>
-<p>With Active Record associations, we can streamline these - and other - operations by declaratively telling Rails that there is a connection between the two models. Here’s the revised code for setting up customers and orders:</p>
+<p>使用 Active Record 关联，告诉 Rails 这两个模型是有一定联系的，就可以把这些操作连在一起。下面使用关联重新定义顾客和订单模型：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Customer</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:orders</span><span class="p">,</span> <span class="ss">dependent: :destroy</span>
@@ -1929,23 +1929,23 @@
 </pre>
 
 </div>
-<p>With this change, creating a new order for a particular customer is easier:</p>
+<p>这么修改之后，为某个顾客添加新订单就变得简单了：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@order</span> <span class="o">=</span> <span class="vi">@customer</span><span class="p">.</span><span class="nf">orders</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">order_date: </span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>Deleting a customer and all of its orders is <em>much</em> easier:</p>
+<p>删除顾客及其所有订单更容易：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@customer</span><span class="p">.</span><span class="nf">destroy</span>
 </pre>
 
 </div>
-<p>To learn more about the different types of associations, read the next section of this guide. That’s followed by some tips and tricks for working with associations, and then by a complete reference to the methods and options for associations in Rails.</p>
+<p>学习更多关联类型，请阅读下一节。下一节介绍了一些使用关联时的小技巧，然后列出了关联添加的所有方法和选项。</p>
 
-<h2>The Types of Associations</h2>
+<h2 id="the-types-of-associations">关联的类型</h2>
 
-<p>In Rails, an <em>association</em> is a connection between two Active Record models. Associations are implemented using macro-style calls, so that you can declaratively add features to your models. For example, by declaring that one model <code>belongs_to</code> another, you instruct Rails to maintain Primary Key-Foreign Key information between instances of the two models, and you also get a number of utility methods added to your model. Rails supports six types of associations:</p>
+<p>在 Rails 中，关联是两个 Active Record 模型之间的关系。关联使用宏的方式实现，用声明的形式为模型添加功能。例如，声明一个模型属于（<code>belongs_to</code>）另一个模型后，Rails 会维护两个模型之间的“主键-外键”关系，而且还向模型中添加了很多实用的方法。Rails 支持六种关联：</p>
 
 <ul>
   <li><code>belongs_to</code></li>
@@ -1956,11 +1956,11 @@
   <li><code>has_and_belongs_to_many</code></li>
 </ul>
 
-<p>In the remainder of this guide, you’ll learn how to declare and use the various forms of associations. But first, a quick introduction to the situations where each association type is appropriate.</p>
+<p>在后面的几节中，你会学到如何声明并使用这些关联。首先来看一下各种关联适用的场景。</p>
 
-<h3>The <code>belongs_to</code> Association</h3>
+<h3 id="the-belongs-to-association"><code>belongs_to</code> 关联</h3>
 
-<p>A <code>belongs_to</code> association sets up a one-to-one connection with another model, such that each instance of the declaring model “belongs to” one instance of the other model. For example, if your application includes customers and orders, and each order can be assigned to exactly one customer, you’d declare the order model this way:</p>
+<p><code>belongs_to</code> 关联创建两个模型之间一对一的关系，声明所在的模型实例属于另一个模型的实例。例如，如果程序中有顾客和订单两个模型，每个订单只能指定给一个顾客，就要这么声明订单模型：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Order</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">belongs_to</span> <span class="ss">:customer</span>
@@ -1968,11 +1968,14 @@
 </pre>
 
 </div>
-<p><img src="images/belongs_to.png" alt="belongs_to Association Diagram" /></p>
+<p><img src="http://docs-china.com/rails/images/belongs_to.png" alt="belongs_to 关联" /></p>
 
-<p>NOTE: <code>belongs_to</code> associations <em>must</em> use the singular term. If you used the pluralized form in the above example for the <code>customer</code> association in the <code>Order</code> model, you would be told that there was an “uninitialized constant Order::Customers”. This is because Rails automatically infers the class name from the association name. If the association name is wrongly pluralized, then the inferred class will be wrongly pluralized too.</p>
+          <div class="box information-box">
+  <p>在 <code>belongs_to</code> 关联声明中必须使用单数形式。如果在上面的代码中使用复数形式，程序会报错，提示未初始化常量 <code>Order::Customers</code>。因为 Rails 自动使用关联中的名字引用类名。如果关联中的名字错误的使用复数，引用的类也就变成了复数。</p>
+</div>
 
-<p>The corresponding migration might look like this:</p>
+
+<p>相应的迁移如下：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">CreateOrders</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
   <span class="k">def</span> <span class="nf">change</span>
@@ -1991,9 +1994,9 @@
 </pre>
 
 </div>
-<h3>The <code>has_one</code> Association</h3>
+<h3 id="the-has-one-association"><code>has_one</code> 关联</h3>
 
-<p>A <code>has_one</code> association also sets up a one-to-one connection with another model, but with somewhat different semantics (and consequences). This association indicates that each instance of a model contains or possesses one instance of another model. For example, if each supplier in your application has only one account, you’d declare the supplier model like this:</p>
+<p><code>has_one</code> 关联也会建立两个模型之间的一对一关系，但语义和结果有点不一样。这种关联表示模型的实例包含或拥有另一个模型的实例。例如，在程序中，每个供应商只有一个账户，可以这么定义供应商模型：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_one</span> <span class="ss">:account</span>
@@ -2001,9 +2004,9 @@
 </pre>
 
 </div>
-<p><img src="images/has_one.png" alt="has_one Association Diagram" /></p>
+<p><img src="http://docs-china.com/rails/images/has_one.png" alt="has_one 关联" /></p>
 
-<p>The corresponding migration might look like this:</p>
+<p>相应的迁移如下：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">CreateSuppliers</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
   <span class="k">def</span> <span class="nf">change</span>
@@ -2022,9 +2025,9 @@
 </pre>
 
 </div>
-<h3>The <code>has_many</code> Association</h3>
+<h3 id="the-has-many-association"><code>has_many</code> 关联</h3>
 
-<p>A <code>has_many</code> association indicates a one-to-many connection with another model. You’ll often find this association on the “other side” of a <code>belongs_to</code> association. This association indicates that each instance of the model has zero or more instances of another model. For example, in an application containing customers and orders, the customer model could be declared like this:</p>
+<p><code>has_many</code> 关联建立两个模型之间的一对多关系。在 <code>belongs_to</code> 关联的另一端经常会使用这个关联。<code>has_many</code> 关联表示模型的实例有零个或多个另一个模型的实例。例如，在程序中有顾客和订单两个模型，顾客模型可以这么定义：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Customer</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:orders</span>
@@ -2032,11 +2035,14 @@
 </pre>
 
 </div>
-<p>NOTE: The name of the other model is pluralized when declaring a <code>has_many</code> association.</p>
+          <div class="box information-box">
+  <p>声明 <code>has_many</code> 关联时，另一个模型使用复数形式。</p>
+</div>
 
-<p><img src="images/has_many.png" alt="has_many Association Diagram" /></p>
 
-<p>The corresponding migration might look like this:</p>
+<p><img src="http://docs-china.com/rails/images/has_many.png" alt="has_many 关联" /></p>
+
+<p>相应的迁移如下：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">CreateCustomers</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
   <span class="k">def</span> <span class="nf">change</span>
@@ -2055,9 +2061,9 @@
 </pre>
 
 </div>
-<h3>The <code>has_many :through</code> Association</h3>
+<h3 id="the-has-many-through-association"><code>has_many :through</code> 关联</h3>
 
-<p>A <code>has_many :through</code> association is often used to set up a many-to-many connection with another model. This association indicates that the declaring model can be matched with zero or more instances of another model by proceeding <em>through</em> a third model. For example, consider a medical practice where patients make appointments to see physicians. The relevant association declarations could look like this:</p>
+<p><code>has_many :through</code> 关联经常用来建立两个模型之间的多对多关联。这种关联表示一个模型的实例可以借由第三个模型，拥有零个和多个另一个模型的实例。例如，在医疗锻炼中，病人要和医生约定练习时间。这中间的关联声明如下：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Physician</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:appointments</span>
@@ -2076,9 +2082,9 @@
 </pre>
 
 </div>
-<p><img src="images/has_many_through.png" alt="has_many :through Association Diagram" /></p>
+<p><img src="http://docs-china.com/rails/images/has_many_through.png" alt="has_many :through 关联" /></p>
 
-<p>The corresponding migration might look like this:</p>
+<p>相应的迁移如下：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">CreateAppointments</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
   <span class="k">def</span> <span class="nf">change</span>
@@ -2103,17 +2109,20 @@
 </pre>
 
 </div>
-<p>The collection of join models can be managed via the API. For example, if you assign</p>
+<p>连接模型中的集合可以使用 API 关联。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">physician</span><span class="p">.</span><span class="nf">patients</span> <span class="o">=</span> <span class="n">patients</span>
 </pre>
 
 </div>
-<p>new join models are created for newly associated objects, and if some are gone their rows are deleted.</p>
+<p>会为新建立的关联对象创建连接模型实例，如果其中一个对象山粗了，相应的记录也会删除。</p>
 
-<p>WARNING: Automatic deletion of join models is direct, no destroy callbacks are triggered.</p>
+          <div class="box warning-box">
+  <p>自动删除连接模型的操作直接执行，不会触发 <code>*_destroy</code> 回调。</p>
+</div>
 
-<p>The <code>has_many :through</code> association is also useful for setting up “shortcuts” through nested <code>has_many</code> associations. For example, if a document has many sections, and a section has many paragraphs, you may sometimes want to get a simple collection of all paragraphs in the document. You could set that up this way:</p>
+
+<p><code>has_many :through</code> 还可用来简化嵌套的 <code>has_many</code> 关联。例如，一个文档分为多个部分，每一部分又有多个段落，如果想使用简单的方式获取文档中的所有段落，可以这么做：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Document</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:sections</span>
@@ -2131,18 +2140,15 @@
 </pre>
 
 </div>
-<p>With <code>through: :sections</code> specified, Rails will now understand:</p>
+<p>加上 <code>through: :sections</code> 后，Rails 就能理解这段代码：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@document</span><span class="p">.</span><span class="nf">paragraphs</span>
 </pre>
 
 </div>
-<h3>The <code>has_one :through</code> Association</h3>
+<h3 id="the-has-one-through-association"><code>has_one :through</code> 关联</h3>
 
-<p>A <code>has_one :through</code> association sets up a one-to-one connection with another model. This association indicates
-that the declaring model can be matched with one instance of another model by proceeding <em>through</em> a third model.
-For example, if each supplier has one account, and each account is associated with one account history, then the
-supplier model could look like this:</p>
+<p><code>has_one :through</code> 关联建立两个模型之间的一对一关系。这种关联表示一个模型通过第三个模型拥有另一个模型的实例。例如，每个供应商只有一个账户，而且每个账户都有一个历史账户，那么可以这么定义模型：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_one</span> <span class="ss">:account</span>
@@ -2160,9 +2166,9 @@ supplier model could look like this:</p>
 </pre>
 
 </div>
-<p><img src="images/has_one_through.png" alt="has_one :through Association Diagram" /></p>
+<p><img src="http://docs-china.com/rails/images/has_one_through.png" alt="has_one :through 关联" /></p>
 
-<p>The corresponding migration might look like this:</p>
+<p>相应的迁移如下：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">CreateAccountHistories</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
   <span class="k">def</span> <span class="nf">change</span>
@@ -2187,9 +2193,9 @@ supplier model could look like this:</p>
 </pre>
 
 </div>
-<h3>The <code>has_and_belongs_to_many</code> Association</h3>
+<h3 id="the-has-and-belongs-to-many-association"><code>has_and_belongs_to_many</code> 关联</h3>
 
-<p>A <code>has_and_belongs_to_many</code> association creates a direct many-to-many connection with another model, with no intervening model. For example, if your application includes assemblies and parts, with each assembly having many parts and each part appearing in many assemblies, you could declare the models this way:</p>
+<p><code>has_and_belongs_to_many</code> 关联之间建立两个模型之间的多对多关系，不借由第三个模型。例如，程序中有装配体和零件两个模型，每个装配体中有多个零件，每个零件又可用于多个装配体，这时可以按照下面的方式定义模型：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Assembly</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_and_belongs_to_many</span> <span class="ss">:parts</span>
@@ -2201,9 +2207,9 @@ supplier model could look like this:</p>
 </pre>
 
 </div>
-<p><img src="images/habtm.png" alt="has_and_belongs_to_many Association Diagram" /></p>
+<p><img src="http://docs-china.com/rails/images/habtm.png" alt="has_and_belongs_to_many 关联" /></p>
 
-<p>The corresponding migration might look like this:</p>
+<p>相应的迁移如下：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">CreateAssembliesAndParts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
   <span class="k">def</span> <span class="nf">change</span>
@@ -2226,11 +2232,11 @@ supplier model could look like this:</p>
 </pre>
 
 </div>
-<h3>Choosing Between <code>belongs_to</code> and <code>has_one</code></h3>
+<h3 id="choosing-between-belongs-to-and-has-one">使用 <code>belongs_to</code> 还是 <code>has_one</code></h3>
 
-<p>If you want to set up a one-to-one relationship between two models, you’ll need to add <code>belongs_to</code> to one, and <code>has_one</code> to the other. How do you know which is which?</p>
+<p>如果想建立两个模型之间的一对一关系，可以在一个模型中声明 <code>belongs_to</code>，然后在另一模型中声明 <code>has_one</code>。但是怎么知道在哪个模型中声明哪种关联？</p>
 
-<p>The distinction is in where you place the foreign key (it goes on the table for the class declaring the <code>belongs_to</code> association), but you should give some thought to the actual meaning of the data as well. The <code>has_one</code> relationship says that one of something is yours - that is, that something points back to you. For example, it makes more sense to say that a supplier owns an account than that an account owns a supplier. This suggests that the correct relationships are like this:</p>
+<p>不同的声明方式带来的区别是外键放在哪个模型对应的数据表中（外键在声明 <code>belongs_to</code> 关联所在模型对应的数据表中）。不过声明时要考虑一下语义，<code>has_one</code> 的意思是某样东西属于我。例如，说供应商有一个账户，比账户拥有供应商更合理，所以正确的关联应该这么声明：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_one</span> <span class="ss">:account</span>
@@ -2242,7 +2248,7 @@ supplier model could look like this:</p>
 </pre>
 
 </div>
-<p>The corresponding migration might look like this:</p>
+<p>相应的迁移如下：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">CreateSuppliers</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
   <span class="k">def</span> <span class="nf">change</span>
@@ -2261,11 +2267,14 @@ supplier model could look like this:</p>
 </pre>
 
 </div>
-<p>NOTE: Using <code>t.integer :supplier_id</code> makes the foreign key naming obvious and explicit. In current versions of Rails, you can abstract away this implementation detail by using <code>t.references :supplier</code> instead.</p>
+          <div class="box information-box">
+  <p><code>t.integer :supplier_id</code> 更明确的表明了外键的名字。在目前的 Rails 版本中，可以抽象实现的细节，使用 <code>t.references :supplier</code> 代替。</p>
+</div>
 
-<h3>Choosing Between <code>has_many :through</code> and <code>has_and_belongs_to_many</code></h3>
 
-<p>Rails offers two different ways to declare a many-to-many relationship between models. The simpler way is to use <code>has_and_belongs_to_many</code>, which allows you to make the association directly:</p>
+<h3 id="choosing-between-has-many-through-and-has-and-belongs-to-many">使用 <code>has_many :through</code> 还是 <code>has_and_belongs_to_many</code></h3>
+
+<p>Rails 提供了两种建立模型之间多对多关系的方法。其中比较简单的是 <code>has_and_belongs_to_many</code>，可以直接建立关联：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Assembly</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_and_belongs_to_many</span> <span class="ss">:parts</span>
@@ -2277,7 +2286,7 @@ supplier model could look like this:</p>
 </pre>
 
 </div>
-<p>The second way to declare a many-to-many relationship is to use <code>has_many :through</code>. This makes the association indirectly, through a join model:</p>
+<p>第二种方法是使用 <code>has_many :through</code>，但无法直接建立关联，要通过第三个模型：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Assembly</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:manifests</span>
@@ -2296,13 +2305,13 @@ supplier model could look like this:</p>
 </pre>
 
 </div>
-<p>The simplest rule of thumb is that you should set up a <code>has_many :through</code> relationship if you need to work with the relationship model as an independent entity. If you don’t need to do anything with the relationship model, it may be simpler to set up a <code>has_and_belongs_to_many</code> relationship (though you’ll need to remember to create the joining table in the database).</p>
+<p>根据经验，如果关联的第三个模型要作为独立实体使用，要用 <code>has_many :through</code> 关联；如果不需要使用第三个模型，用简单的 <code>has_and_belongs_to_many</code> 关联即可（不过要记得在数据库中创建连接数据表）。</p>
 
-<p>You should use <code>has_many :through</code> if you need validations, callbacks, or extra attributes on the join model.</p>
+<p>如果需要做数据验证、回调，或者连接模型上要用到其他属性，此时就要使用 <code>has_many :through</code> 关联。</p>
 
-<h3>Polymorphic Associations</h3>
+<h3 id="polymorphic-associations">多态关联</h3>
 
-<p>A slightly more advanced twist on associations is the <em>polymorphic association</em>. With polymorphic associations, a model can belong to more than one other model, on a single association. For example, you might have a picture model that belongs to either an employee model or a product model. Here’s how this could be declared:</p>
+<p>关联还有一种高级用法，“多态关联”。在多台关联中，在同一个关联中，模型可以属于其他多个模型。例如，图片模型可以属于雇员模型或者产品模型，模型的定义如下：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Picture</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">belongs_to</span> <span class="ss">:imageable</span><span class="p">,</span> <span class="ss">polymorphic: </span><span class="kp">true</span>
@@ -2318,11 +2327,9 @@ supplier model could look like this:</p>
 </pre>
 
 </div>
-<p>You can think of a polymorphic <code>belongs_to</code> declaration as setting up an interface that any other model can use. From an instance of the <code>Employee</code> model, you can retrieve a collection of pictures: <code>@employee.pictures</code>.</p>
+<p>在 <code>belongs_to</code> 中指定使用多态，可以理解成创建了一个借口，可供任何一个模型使用。在 <code>Employee</code> 模型实例上，可以使用 <code>@employee.pictures</code> 获取图片集合。类似地，可使用 <code>@product.pictures</code> 获取产品的图片。</p>
 
-<p>Similarly, you can retrieve <code>@product.pictures</code>.</p>
-
-<p>If you have an instance of the <code>Picture</code> model, you can get to its parent via <code>@picture.imageable</code>. To make this work, you need to declare both a foreign key column and a type column in the model that declares the polymorphic interface:</p>
+<p>在 <code>Picture</code> 模型的实例上，可以使用 <code>@picture.imageable</code> 获取父对象。不过事先要在声明多态接口的模型中创建外键字段和类型字段：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">CreatePictures</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
   <span class="k">def</span> <span class="nf">change</span>
@@ -2337,7 +2344,7 @@ supplier model could look like this:</p>
 </pre>
 
 </div>
-<p>This migration can be simplified by using the <code>t.references</code> form:</p>
+<p>上面的迁移可以使用 <code>t.references</code> 简化：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">CreatePictures</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
   <span class="k">def</span> <span class="nf">change</span>
@@ -2351,11 +2358,11 @@ supplier model could look like this:</p>
 </pre>
 
 </div>
-<p><img src="images/polymorphic.png" alt="Polymorphic Association Diagram" /></p>
+<p><img src="http://docs-china.com/rails/images/polymorphic.png" alt="多态关联" /></p>
 
-<h3>Self Joins</h3>
+<h3 id="self-joins">自连接</h3>
 
-<p>In designing a data model, you will sometimes find a model that should have a relation to itself. For example, you may want to store all employees in a single database model, but be able to trace relationships such as between manager and subordinates. This situation can be modeled with self-joining associations:</p>
+<p>设计数据模型时会发现，有时模型要和自己建立关联。例如，在一个数据表中保存所有雇员的信息，但要建立经理和下属之间的关系。这种情况可以使用自连接关联解决：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Employee</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:subordinates</span><span class="p">,</span> <span class="ss">class_name: </span><span class="s2">"Employee"</span><span class="p">,</span>
@@ -2366,9 +2373,9 @@ supplier model could look like this:</p>
 </pre>
 
 </div>
-<p>With this setup, you can retrieve <code>@employee.subordinates</code> and <code>@employee.manager</code>.</p>
+<p>这样定义模型后，就可以使用 <code>@employee.subordinates</code> 和 <code>@employee.manager</code> 了。</p>
 
-<p>In your migrations/schema, you will add a references column to the model itself.</p>
+<p>在迁移中，要添加一个引用字段，指向模型自身：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">CreateEmployees</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
   <span class="k">def</span> <span class="nf">change</span>
@@ -2381,21 +2388,21 @@ supplier model could look like this:</p>
 </pre>
 
 </div>
-<h2>Tips, Tricks, and Warnings</h2>
+<h2 id="tips-tricks-and-warnings">小技巧和注意事项</h2>
 
-<p>Here are a few things you should know to make efficient use of Active Record associations in your Rails applications:</p>
+<p>在 Rails 程序中高效地使用 Active Record 关联，要了解以下几个知识：</p>
 
 <ul>
-  <li>Controlling caching</li>
-  <li>Avoiding name collisions</li>
-  <li>Updating the schema</li>
-  <li>Controlling association scope</li>
+  <li>缓存控制</li>
+  <li>避免命名冲突</li>
+  <li>更新模式</li>
+  <li>控制关联的作用域</li>
   <li>Bi-directional associations</li>
 </ul>
 
-<h3>Controlling Caching</h3>
+<h3 id="controlling-caching">缓存控制</h3>
 
-<p>All of the association methods are built around caching, which keeps the result of the most recent query available for further operations. The cache is even shared across methods. For example:</p>
+<p>关联添加的方法都会使用缓存，记录最近一次查询结果，以备后用。缓存还会在方法之间共享。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">customer</span><span class="p">.</span><span class="nf">orders</span>                 <span class="c1"># retrieves orders from the database</span>
 <span class="n">customer</span><span class="p">.</span><span class="nf">orders</span><span class="p">.</span><span class="nf">size</span>            <span class="c1"># uses the cached copy of orders</span>
@@ -2403,7 +2410,7 @@ supplier model could look like this:</p>
 </pre>
 
 </div>
-<p>But what if you want to reload the cache, because data might have been changed by some other part of the application? Just pass <code>true</code> to the association call:</p>
+<p>程序的其他部分会修改数据，那么应该怎么重载缓存呢？调用关联方法时传入 <code>true</code> 参数即可：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">customer</span><span class="p">.</span><span class="nf">orders</span>                 <span class="c1"># retrieves orders from the database</span>
 <span class="n">customer</span><span class="p">.</span><span class="nf">orders</span><span class="p">.</span><span class="nf">size</span>            <span class="c1"># uses the cached copy of orders</span>
@@ -2412,17 +2419,17 @@ supplier model could look like this:</p>
 </pre>
 
 </div>
-<h3>Avoiding Name Collisions</h3>
+<h3 id="avoiding-name-collisions">避免命名冲突</h3>
 
-<p>You are not free to use just any name for your associations. Because creating an association adds a method with that name to the model, it is a bad idea to give an association a name that is already used for an instance method of <code>ActiveRecord::Base</code>. The association method would override the base method and break things. For instance, <code>attributes</code> or <code>connection</code> are bad names for associations.</p>
+<p>关联的名字并不能随意使用。因为创建关联时，会向模型添加同名方法，所以关联的名字不能和 <code>ActiveRecord::Base</code> 中的实例方法同名。如果同名，关联方法会覆盖 <code>ActiveRecord::Base</code> 中的实例方法，导致错误。例如，关联的名字不能为 <code>attributes</code> 或 <code>connection</code>。</p>
 
-<h3>Updating the Schema</h3>
+<h3 id="updating-the-schema">更新模式</h3>
 
-<p>Associations are extremely useful, but they are not magic. You are responsible for maintaining your database schema to match your associations. In practice, this means two things, depending on what sort of associations you are creating. For <code>belongs_to</code> associations you need to create foreign keys, and for <code>has_and_belongs_to_many</code> associations you need to create the appropriate join table.</p>
+<p>关联非常有用，但没什么魔法。关联对应的数据库模式需要你自己编写。不同的关联类型，要做的事也不同。对 <code>belongs_to</code> 关联来说，要创建外键；对 <code>has_and_belongs_to_many</code> 来说，要创建相应的连接数据表。</p>
 
-<h4>Creating Foreign Keys for <code>belongs_to</code> Associations</h4>
+<h4 id="creating-foreign-keys-for-belongs-to-associations">创建 <code>belongs_to</code> 关联所需的外键</h4>
 
-<p>When you declare a <code>belongs_to</code> association, you need to create foreign keys as appropriate. For example, consider this model:</p>
+<p>声明 <code>belongs_to</code> 关联后，要创建相应的外键。例如，有下面这个模型：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Order</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">belongs_to</span> <span class="ss">:customer</span>
@@ -2430,7 +2437,7 @@ supplier model could look like this:</p>
 </pre>
 
 </div>
-<p>This declaration needs to be backed up by the proper foreign key declaration on the orders table:</p>
+<p>这种关联需要在数据表中创建合适的外键：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">CreateOrders</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
   <span class="k">def</span> <span class="nf">change</span>
@@ -2444,15 +2451,18 @@ supplier model could look like this:</p>
 </pre>
 
 </div>
-<p>If you create an association some time after you build the underlying model, you need to remember to create an <code>add_column</code> migration to provide the necessary foreign key.</p>
+<p>如果声明关联之前已经定义了模型，则要在迁移中使用 <code>add_column</code> 创建外键。</p>
 
-<h4>Creating Join Tables for <code>has_and_belongs_to_many</code> Associations</h4>
+<h4 id="creating-join-tables-for-has-and-belongs-to-many-associations">创建 <code>has_and_belongs_to_many</code> 关联所需的连接数据表</h4>
 
-<p>If you create a <code>has_and_belongs_to_many</code> association, you need to explicitly create the joining table. Unless the name of the join table is explicitly specified by using the <code>:join_table</code> option, Active Record creates the name by using the lexical order of the class names. So a join between customer and order models will give the default join table name of “customers_orders” because “c” outranks “o” in lexical ordering.</p>
+<p>声明 <code>has_and_belongs_to_many</code> 关联后，必须手动创建连接数据表。除非在 <code>:join_table</code> 选项中指定了连接数据表的名字，否则 Active Record 会按照类名出现在字典中的顺序为数据表起名字。那么，顾客和订单模型使用的连接数据表默认名为“customers_orders”，因为在字典中，“c”在“o”前面。</p>
 
-<p>WARNING: The precedence between model names is calculated using the <code>&lt;</code> operator for <code>String</code>. This means that if the strings are of different lengths, and the strings are equal when compared up to the shortest length, then the longer string is considered of higher lexical precedence than the shorter one. For example, one would expect the tables “paper_boxes” and “papers” to generate a join table name of “papers_paper_boxes” because of the length of the name “paper_boxes”, but it in fact generates a join table name of “paper_boxes_papers” (because the underscore ‘_’ is lexicographically <em>less</em> than ‘s’ in common encodings).</p>
+          <div class="box warning-box">
+  <p>模型名的顺序使用字符串的 <code>&lt;</code> 操作符确定。所以，如果两个字符串的长度不同，比较最短长度时，两个字符串是相等的，但长字符串的排序比短字符串靠前。例如，你可能以为“”paper_boxes”和“papers”这两个表生成的连接表名为“papers_paper_boxes”，因为“paper_boxes”比“papers”长。其实生成的连接表名为“paper_boxes_papers”，因为在一般的编码方式中，“_”比“s”靠前。</p>
+</div>
 
-<p>Whatever the name, you must manually generate the join table with an appropriate migration. For example, consider these associations:</p>
+
+<p>不管名字是什么，你都要在迁移中手动创建连接数据表。例如下面的关联声明：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Assembly</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_and_belongs_to_many</span> <span class="ss">:parts</span>
@@ -2464,7 +2474,7 @@ supplier model could look like this:</p>
 </pre>
 
 </div>
-<p>These need to be backed up by a migration to create the <code>assemblies_parts</code> table. This table should be created without a primary key:</p>
+<p>需要在迁移中创建 <code>assemblies_parts</code> 数据表，而且该表无主键：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">CreateAssembliesPartsJoinTable</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
   <span class="k">def</span> <span class="nf">change</span>
@@ -2477,11 +2487,11 @@ supplier model could look like this:</p>
 </pre>
 
 </div>
-<p>We pass <code>id: false</code> to <code>create_table</code> because that table does not represent a model. That’s required for the association to work properly. If you observe any strange behavior in a <code>has_and_belongs_to_many</code> association like mangled models IDs, or exceptions about conflicting IDs, chances are you forgot that bit.</p>
+<p>我们把 <code>id: false</code> 选项传给 <code>create_table</code> 方法，因为这个表不对应模型。只有这样，关联才能正常建立。如果在使用 <code>has_and_belongs_to_many</code> 关联时遇到奇怪的表现，例如提示模型 ID 损坏，或 ID 冲突，有可能就是因为创建了主键。</p>
 
-<h3>Controlling Association Scope</h3>
+<h3 id="controlling-association-scope">控制关联的作用域</h3>
 
-<p>By default, associations look for objects only within the current module’s scope. This can be important when you declare Active Record models within a module. For example:</p>
+<p>默认情况下，关联只会查找当前模块作用域中的对象。如果在模块中定义 Active Record 模型，知道这一点很重要。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">module</span> <span class="nn">MyApplication</span>
   <span class="k">module</span> <span class="nn">Business</span>
@@ -2497,7 +2507,7 @@ supplier model could look like this:</p>
 </pre>
 
 </div>
-<p>This will work fine, because both the <code>Supplier</code> and the <code>Account</code> class are defined within the same scope. But the following will <em>not</em> work, because <code>Supplier</code> and <code>Account</code> are defined in different scopes:</p>
+<p>上面的代码能正常运行，因为 <code>Supplier</code> 和 <code>Account</code> 在同一个作用域内。但下面这段代码就不行了，因为 <code>Supplier</code> 和 <code>Account</code> 在不同的作用域中：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">module</span> <span class="nn">MyApplication</span>
   <span class="k">module</span> <span class="nn">Business</span>
@@ -2515,7 +2525,7 @@ supplier model could look like this:</p>
 </pre>
 
 </div>
-<p>To associate a model with a model in a different namespace, you must specify the complete class name in your association declaration:</p>
+<p>要想让处在不同命名空间中的模型正常建立关联，声明关联时要指定完整的类名：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">module</span> <span class="nn">MyApplication</span>
   <span class="k">module</span> <span class="nn">Business</span>
@@ -2535,9 +2545,9 @@ supplier model could look like this:</p>
 </pre>
 
 </div>
-<h3>Bi-directional Associations</h3>
+<h3 id="bi-directional-associations">双向关联</h3>
 
-<p>It’s normal for associations to work in two directions, requiring declaration on two different models:</p>
+<p>一般情况下，都要求能在关联的两端进行操作。例如，有下面的关联声明：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Customer</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:orders</span>
@@ -2549,7 +2559,7 @@ supplier model could look like this:</p>
 </pre>
 
 </div>
-<p>By default, Active Record doesn’t know about the connection between these associations. This can lead to two copies of an object getting out of sync:</p>
+<p>默认情况下，Active Record 并不知道这个关联中两个模型之间的联系。可能导致同一对象的两个副本不同步：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">c</span> <span class="o">=</span> <span class="no">Customer</span><span class="p">.</span><span class="nf">first</span>
 <span class="n">o</span> <span class="o">=</span> <span class="n">c</span><span class="p">.</span><span class="nf">orders</span><span class="p">.</span><span class="nf">first</span>
@@ -2559,7 +2569,7 @@ supplier model could look like this:</p>
 </pre>
 
 </div>
-<p>This happens because c and o.customer are two different in-memory representations of the same data, and neither one is automatically refreshed from changes to the other. Active Record provides the <code>:inverse_of</code> option so that you can inform it of these relations:</p>
+<p>之所以会发生这种情况，是因为 <code>c</code> 和 <code>o.customer</code> 在内存中是同一数据的两钟表示，修改其中一个并不会刷新另一个。Active Record 提供了 <code>:inverse_of</code> 选项，可以告知 Rails 两者之间的关系：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Customer</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:orders</span><span class="p">,</span> <span class="ss">inverse_of: :customer</span>
@@ -2571,7 +2581,7 @@ supplier model could look like this:</p>
 </pre>
 
 </div>
-<p>With these changes, Active Record will only load one copy of the customer object, preventing inconsistencies and making your application more efficient:</p>
+<p>这么修改之后，Active Record 就只会加载一个顾客对象，避免数据的不一致性，提高程序的执行效率：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">c</span> <span class="o">=</span> <span class="no">Customer</span><span class="p">.</span><span class="nf">first</span>
 <span class="n">o</span> <span class="o">=</span> <span class="n">c</span><span class="p">.</span><span class="nf">orders</span><span class="p">.</span><span class="nf">first</span>
@@ -2581,39 +2591,35 @@ supplier model could look like this:</p>
 </pre>
 
 </div>
-<p>There are a few limitations to <code>inverse_of</code> support:</p>
+<p><code>inverse_of</code> 有些限制：</p>
 
 <ul>
-  <li>They do not work with <code>:through</code> associations.</li>
-  <li>They do not work with <code>:polymorphic</code> associations.</li>
-  <li>They do not work with <code>:as</code> associations.</li>
-  <li>For <code>belongs_to</code> associations, <code>has_many</code> inverse associations are ignored.</li>
+  <li>不能和 <code>:through</code> 选项同时使用；</li>
+  <li>不能和 <code>:polymorphic</code> 选项同时使用；</li>
+  <li>不能和 <code>:as</code> 选项同时使用；</li>
+  <li>在 <code>belongs_to</code> 关联中，会忽略 <code>has_many</code> 关联的 <code>inverse_of</code> 选项；</li>
 </ul>
 
-<p>Every association will attempt to automatically find the inverse association
-and set the <code>:inverse_of</code> option heuristically (based on the association name).
-Most associations with standard names will be supported. However, associations
-that contain the following options will not have their inverses set
-automatically:</p>
+<p>每种关联都会尝试自动找到关联的另一端，设置 <code>:inverse_of</code> 选项（根据关联的名字）。使用标准名字的关联都有这种功能。但是，如果在关联中设置了下面这些选项，将无法自动设置 <code>:inverse_of</code>：</p>
 
 <ul>
-  <li>:conditions</li>
-  <li>:through</li>
-  <li>:polymorphic</li>
-  <li>:foreign_key</li>
+  <li><code>:conditions</code></li>
+  <li><code>:through</code></li>
+  <li><code>:polymorphic</code></li>
+  <li><code>:foreign_key</code></li>
 </ul>
 
-<h2>Detailed Association Reference</h2>
+<h2 id="detailed-association-reference">关联详解</h2>
 
-<p>The following sections give the details of each type of association, including the methods that they add and the options that you can use when declaring an association.</p>
+<p>下面几节详细说明各种关联，包括添加的方法和声明关联时可以使用的选项。</p>
 
-<h3><code>belongs_to</code> Association Reference</h3>
+<h3 id="belongs-to-association-reference"><code>belongs_to</code> 关联详解</h3>
 
-<p>The <code>belongs_to</code> association creates a one-to-one match with another model. In database terms, this association says that this class contains the foreign key. If the other class contains the foreign key, then you should use <code>has_one</code> instead.</p>
+<p><code>belongs_to</code> 关联创建一个模型与另一个模型之间的一对一关系。用数据库的行话来说，就是这个类中包含了外键。如果外键在另一个类中，就应该使用 <code>has_one</code> 关联。</p>
 
-<h4>Methods Added by <code>belongs_to</code></h4>
+<h4 id="methods-added-by-belongs-to"><code>belongs_to</code> 关联添加的方法</h4>
 
-<p>When you declare a <code>belongs_to</code> association, the declaring class automatically gains five methods related to the association:</p>
+<p>声明  <code>belongs_to</code> 关联后，所在的类自动获得了五个和关联相关的方法：</p>
 
 <ul>
   <li><code>association(force_reload = false)</code></li>
@@ -2623,7 +2629,7 @@ automatically:</p>
   <li><code>create_association!(attributes = {})</code></li>
 </ul>
 
-<p>In all of these methods, <code>association</code> is replaced with the symbol passed as the first argument to <code>belongs_to</code>. For example, given the declaration:</p>
+<p>这五个方法中的 <code>association</code> 要替换成传入 <code>belongs_to</code> 方法的第一个参数。例如，如下的声明：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Order</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">belongs_to</span> <span class="ss">:customer</span>
@@ -2631,7 +2637,7 @@ automatically:</p>
 </pre>
 
 </div>
-<p>Each instance of the order model will have these methods:</p>
+<p>每个 <code>Order</code> 模型实例都获得了这些方法：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">customer</span>
 <span class="n">customer</span><span class="o">=</span>
@@ -2641,51 +2647,54 @@ automatically:</p>
 </pre>
 
 </div>
-<p>NOTE: When initializing a new <code>has_one</code> or <code>belongs_to</code> association you must use the <code>build_</code> prefix to build the association, rather than the <code>association.build</code> method that would be used for <code>has_many</code> or <code>has_and_belongs_to_many</code> associations. To create one, use the <code>create_</code> prefix.</p>
+          <div class="box information-box">
+  <p>在 <code>has_one</code> 和 <code>belongs_to</code> 关联中，必须使用 <code>build_*</code> 方法构建关联对象。<code>association.build</code> 方法是在 <code>has_many</code> 和 <code>has_and_belongs_to_many</code> 关联中使用的。创建关联对象要使用 <code>create_*</code> 方法。</p>
+</div>
 
-<h5><code>association(force_reload = false)</code></h5>
 
-<p>The <code>association</code> method returns the associated object, if any. If no associated object is found, it returns <code>nil</code>.</p>
+<h5 id="methods-added-by-belongs-to-association-force-reload-false"><code>association(force_reload = false)</code></h5>
+
+<p>如果关联的对象存在，<code>association</code> 方法会返回关联对象。如果找不到关联对象，则返回 <code>nil</code>。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@customer</span> <span class="o">=</span> <span class="vi">@order</span><span class="p">.</span><span class="nf">customer</span>
 </pre>
 
 </div>
-<p>If the associated object has already been retrieved from the database for this object, the cached version will be returned. To override this behavior (and force a database read), pass <code>true</code> as the <code>force_reload</code> argument.</p>
+<p>如果关联对象之前已经取回，会返回缓存版本。如果不想使用缓存版本，强制重新从数据库中读取，可以把 <code>force_reload</code> 参数设为 <code>true</code>。</p>
 
-<h5><code>association=(associate)</code></h5>
+<h5 id="methods-added-by-belongs-to-association-associate"><code>association=(associate)</code></h5>
 
-<p>The <code>association=</code> method assigns an associated object to this object. Behind the scenes, this means extracting the primary key from the associate object and setting this object’s foreign key to the same value.</p>
+<p><code>association=</code> 方法用来赋值关联的对象。这个方法的底层操作是，从关联对象上读取主键，然后把值赋给该主键对应的对象。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@order</span><span class="p">.</span><span class="nf">customer</span> <span class="o">=</span> <span class="vi">@customer</span>
 </pre>
 
 </div>
-<h5><code>build_association(attributes = {})</code></h5>
+<h5 id="methods-added-by-belongs-to-build-association-attributes"><code>build_association(attributes = {})</code></h5>
 
-<p>The <code>build_association</code> method returns a new object of the associated type. This object will be instantiated from the passed attributes, and the link through this object’s foreign key will be set, but the associated object will <em>not</em> yet be saved.</p>
+<p><code>build_association</code> 方法返回该关联类型的一个新对象。这个对象使用传入的属性初始化，和对象连接的外键会自动设置，但关联对象不会存入数据库。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@customer</span> <span class="o">=</span> <span class="vi">@order</span><span class="p">.</span><span class="nf">build_customer</span><span class="p">(</span><span class="ss">customer_number: </span><span class="mi">123</span><span class="p">,</span>
                                   <span class="ss">customer_name: </span><span class="s2">"John Doe"</span><span class="p">)</span>
 </pre>
 
 </div>
-<h5><code>create_association(attributes = {})</code></h5>
+<h5 id="methods-added-by-belongs-to-create-association-attributes"><code>create_association(attributes = {})</code></h5>
 
-<p>The <code>create_association</code> method returns a new object of the associated type. This object will be instantiated from the passed attributes, the link through this object’s foreign key will be set, and, once it passes all of the validations specified on the associated model, the associated object <em>will</em> be saved.</p>
+<p><code>create_association</code> 方法返回该关联类型的一个新对象。这个对象使用传入的属性初始化，和对象连接的外键会自动设置，只要能通过所有数据验证，就会把关联对象存入数据库。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@customer</span> <span class="o">=</span> <span class="vi">@order</span><span class="p">.</span><span class="nf">create_customer</span><span class="p">(</span><span class="ss">customer_number: </span><span class="mi">123</span><span class="p">,</span>
                                    <span class="ss">customer_name: </span><span class="s2">"John Doe"</span><span class="p">)</span>
 </pre>
 
 </div>
-<h5><code>create_association!(attributes = {})</code></h5>
+<h5 id="methods-added-by-belongs-to-create-association-bang-attributes"><code>create_association!(attributes = {})</code></h5>
 
-<p>Does the same as <code>create_association</code> above, but raises <code>ActiveRecord::RecordInvalid</code> if the record is invalid.</p>
+<p>和 <code>create_association</code> 方法作用相同，但是如果记录不合法，会抛出 <code>ActiveRecord::RecordInvalid</code> 异常。</p>
 
-<h4>Options for <code>belongs_to</code></h4>
+<h4 id="options-for-belongs-to"><code>belongs_to</code> 方法的选项</h4>
 
-<p>While Rails uses intelligent defaults that will work well in most situations, there may be times when you want to customize the behavior of the <code>belongs_to</code> association reference. Such customizations can easily be accomplished by passing options and scope blocks when you create the association. For example, this association uses two such options:</p>
+<p>Rails 的默认设置足够智能，能满足常见需求。但有时还是需要定制 <code>belongs_to</code> 关联的行为。定制的方法很简单，声明关联时传入选项或者使用代码块即可。例如，下面的关联使用了两个选项：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Order</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">belongs_to</span> <span class="ss">:customer</span><span class="p">,</span> <span class="ss">dependent: :destroy</span><span class="p">,</span>
@@ -2694,7 +2703,7 @@ automatically:</p>
 </pre>
 
 </div>
-<p>The <code>belongs_to</code> association supports these options:</p>
+<p><code>belongs_to</code> 关联支持以下选项：</p>
 
 <ul>
   <li><code>:autosave</code></li>
@@ -2708,13 +2717,13 @@ automatically:</p>
   <li><code>:validate</code></li>
 </ul>
 
-<h5><code>:autosave</code></h5>
+<h5 id="options-for-belongs-to-autosave"><code>:autosave</code></h5>
 
-<p>If you set the <code>:autosave</code> option to <code>true</code>, Rails will save any loaded members and destroy members that are marked for destruction whenever you save the parent object.</p>
+<p>如果把 <code>:autosave</code> 选项设为 <code>true</code>，保存父对象时，会自动保存所有子对象，并把标记为析构的子对象销毁。</p>
 
-<h5><code>:class_name</code></h5>
+<h5 id="options-for-belongs-to-class-name"><code>:class_name</code></h5>
 
-<p>If the name of the other model cannot be derived from the association name, you can use the <code>:class_name</code> option to supply the model name. For example, if an order belongs to a customer, but the actual name of the model containing customers is <code>Patron</code>, you’d set things up this way:</p>
+<p>如果另一个模型无法从关联的名字获取，可以使用 <code>:class_name</code> 选项指定模型名。例如，如果订单属于顾客，但表示顾客的模型是 <code>Patron</code>，就可以这样声明关联：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Order</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">belongs_to</span> <span class="ss">:customer</span><span class="p">,</span> <span class="ss">class_name: </span><span class="s2">"Patron"</span>
@@ -2722,9 +2731,9 @@ automatically:</p>
 </pre>
 
 </div>
-<h5><code>:counter_cache</code></h5>
+<h5 id="options-for-belongs-to-counter-cache"><code>:counter_cache</code></h5>
 
-<p>The <code>:counter_cache</code> option can be used to make finding the number of belonging objects more efficient. Consider these models:</p>
+<p><code>:counter_cache</code> 选项可以提高统计所属对象数量操作的效率。假如如下的模型：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Order</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">belongs_to</span> <span class="ss">:customer</span>
@@ -2735,7 +2744,7 @@ automatically:</p>
 </pre>
 
 </div>
-<p>With these declarations, asking for the value of <code>@customer.orders.size</code> requires making a call to the database to perform a <code>COUNT(*)</code> query. To avoid this call, you can add a counter cache to the <em>belonging</em> model:</p>
+<p>这样声明关联后，如果想知道 <code>@customer.orders.size</code> 的结果，就要在数据库中执行 <code>COUNT(*)</code> 查询。如果不想执行这个查询，可以在声明 <code>belongs_to</code> 关联的模型中加入计数缓存功能：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Order</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">belongs_to</span> <span class="ss">:customer</span><span class="p">,</span> <span class="ss">counter_cache: </span><span class="kp">true</span>
@@ -2746,9 +2755,9 @@ automatically:</p>
 </pre>
 
 </div>
-<p>With this declaration, Rails will keep the cache value up to date, and then return that value in response to the <code>size</code> method.</p>
+<p>这样声明关联后，Rails 会及时更新缓存，调用 <code>size</code> 方法时返回缓存中的值。</p>
 
-<p>Although the <code>:counter_cache</code> option is specified on the model that includes the <code>belongs_to</code> declaration, the actual column must be added to the <em>associated</em> model. In the case above, you would need to add a column named <code>orders_count</code> to the <code>Customer</code> model. You can override the default column name if you need to:</p>
+<p>虽然 <code>:counter_cache</code> 选项在声明 <code>belongs_to</code> 关联的模型中设置，但实际使用的字段要添加到关联的模型中。针对上面的例子，要把 <code>orders_count</code> 字段加入 <code>Customer</code> 模型。这个字段的默认名也是可以设置的：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Order</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">belongs_to</span> <span class="ss">:customer</span><span class="p">,</span> <span class="ss">counter_cache: :count_of_orders</span>
@@ -2759,23 +2768,25 @@ automatically:</p>
 </pre>
 
 </div>
-<p>Counter cache columns are added to the containing model’s list of read-only attributes through <code>attr_readonly</code>.</p>
+<p>计数缓存字段通过 <code>attr_readonly</code> 方法加入关联模型的只读属性列表中。</p>
 
-<h5><code>:dependent</code></h5>
-<p>If you set the <code>:dependent</code> option to:</p>
+<h5 id="options-for-belongs-to-dependent"><code>:dependent</code></h5>
+
+<p><code>:dependent</code> 选项的值有两个：</p>
 
 <ul>
-  <li><code>:destroy</code>, when the object is destroyed, <code>destroy</code> will be called on its
-associated objects.</li>
-  <li><code>:delete</code>, when the object is destroyed, all its associated objects will be
-deleted directly from the database without calling their <code>destroy</code> method.</li>
+  <li><code>:destroy</code>：销毁对象时，也会在关联对象上调用 <code>destroy</code> 方法；</li>
+  <li><code>:delete</code>：销毁对象时，关联的对象不会调用 <code>destroy</code> 方法，而是直接从数据库中删除；</li>
 </ul>
 
-<p>WARNING: You should not specify this option on a <code>belongs_to</code> association that is connected with a <code>has_many</code> association on the other class. Doing so can lead to orphaned records in your database.</p>
+          <div class="box warning-box">
+  <p>在 <code>belongs_to</code> 关联和 <code>has_many</code> 关联配对时，不应该设置这个选项，否则会导致数据库中出现孤儿记录。</p>
+</div>
 
-<h5><code>:foreign_key</code></h5>
 
-<p>By convention, Rails assumes that the column used to hold the foreign key on this model is the name of the association with the suffix <code>_id</code> added. The <code>:foreign_key</code> option lets you set the name of the foreign key directly:</p>
+<h5 id="options-for-belongs-to-foreign-key"><code>:foreign_key</code></h5>
+
+<p>按照约定，用来存储外键的字段名是关联名后加 <code>_id</code>。<code>:foreign_key</code> 选项可以设置要使用的外键名：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Order</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">belongs_to</span> <span class="ss">:customer</span><span class="p">,</span> <span class="ss">class_name: </span><span class="s2">"Patron"</span><span class="p">,</span>
@@ -2784,11 +2795,14 @@ deleted directly from the database without calling their <code>destroy</code> me
 </pre>
 
 </div>
-<p>TIP: In any case, Rails will not create foreign key columns for you. You need to explicitly define them as part of your migrations.</p>
+          <div class="box tip-box">
+  <p>不管怎样，Rails 都不会自动创建外键字段，你要自己在迁移中创建。</p>
+</div>
 
-<h5><code>:inverse_of</code></h5>
 
-<p>The <code>:inverse_of</code> option specifies the name of the <code>has_many</code> or <code>has_one</code> association that is the inverse of this association. Does not work in combination with the <code>:polymorphic</code> options.</p>
+<h5 id="options-for-belongs-to-inverse-of"><code>:inverse_of</code></h5>
+
+<p><code>:inverse_of</code> 选项指定 <code>belongs_to</code> 关联另一端的 <code>has_many</code> 和 <code>has_one</code> 关联名。不能和 <code>:polymorphic</code> 选项一起使用。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Customer</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:orders</span><span class="p">,</span> <span class="ss">inverse_of: :customer</span>
@@ -2800,13 +2814,13 @@ deleted directly from the database without calling their <code>destroy</code> me
 </pre>
 
 </div>
-<h5><code>:polymorphic</code></h5>
+<h5 id="polymorphic"><code>:polymorphic</code></h5>
 
-<p>Passing <code>true</code> to the <code>:polymorphic</code> option indicates that this is a polymorphic association. Polymorphic associations were discussed in detail <a href="#polymorphic-associations">earlier in this guide</a>.</p>
+<p><code>:polymorphic</code> 选项为 <code>true</code> 时表明这是个多态关联。<a href="#polymorphic-associations">前文</a>已经详细介绍过多态关联。</p>
 
-<h5><code>:touch</code></h5>
+<h5 id="touch"><code>:touch</code></h5>
 
-<p>If you set the <code>:touch</code> option to <code>:true</code>, then the <code>updated_at</code> or <code>updated_on</code> timestamp on the associated object will be set to the current time whenever this object is saved or destroyed:</p>
+<p>如果把 <code>:touch</code> 选项设为 <code>true</code>，保存或销毁对象时，关联对象的 <code>updated_at</code> 或 <code>updated_on</code> 字段会自动设为当前时间戳。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Order</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">belongs_to</span> <span class="ss">:customer</span><span class="p">,</span> <span class="ss">touch: </span><span class="kp">true</span>
@@ -2818,7 +2832,7 @@ deleted directly from the database without calling their <code>destroy</code> me
 </pre>
 
 </div>
-<p>In this case, saving or destroying an order will update the timestamp on the associated customer. You can also specify a particular timestamp attribute to update:</p>
+<p>在这个例子中，保存或销毁订单后，会更新关联的顾客中的时间戳。还可指定要更新哪个字段的时间戳：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Order</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">belongs_to</span> <span class="ss">:customer</span><span class="p">,</span> <span class="ss">touch: :orders_updated_at</span>
@@ -2826,13 +2840,13 @@ deleted directly from the database without calling their <code>destroy</code> me
 </pre>
 
 </div>
-<h5><code>:validate</code></h5>
+<h5 id="options-for-belongs-to-validate"><code>:validate</code></h5>
 
-<p>If you set the <code>:validate</code> option to <code>true</code>, then associated objects will be validated whenever you save this object. By default, this is <code>false</code>: associated objects will not be validated when this object is saved.</p>
+<p>如果把 <code>:validate</code> 选项设为 <code>true</code>，保存对象时，会同时验证关联对象。该选项的默认值是 <code>false</code>，保存对象时不验证关联对象。</p>
 
-<h4>Scopes for <code>belongs_to</code></h4>
+<h4 id="scopes-for-belongs-to"><code>belongs_to</code> 的作用域</h4>
 
-<p>There may be times when you wish to customize the query used by <code>belongs_to</code>. Such customizations can be achieved via a scope block. For example:</p>
+<p>有时可能需要定制 <code>belongs_to</code> 关联使用的查询方式，定制的查询可在作用域代码块中指定。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Order</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">belongs_to</span> <span class="ss">:customer</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span> <span class="ss">active: </span><span class="kp">true</span> <span class="p">},</span>
@@ -2841,7 +2855,7 @@ deleted directly from the database without calling their <code>destroy</code> me
 </pre>
 
 </div>
-<p>You can use any of the standard <a href="active_record_querying.html">querying methods</a> inside the scope block. The following ones are discussed below:</p>
+<p>在作用域代码块中可以使用任何一个标准的<a href="http://docs-china.com/rails/active_record_querying.html">查询方法</a>。下面分别介绍这几个方法：</p>
 
 <ul>
   <li><code>where</code></li>
@@ -2850,9 +2864,9 @@ deleted directly from the database without calling their <code>destroy</code> me
   <li><code>select</code></li>
 </ul>
 
-<h5><code>where</code></h5>
+<h5 id="scopes-for-belongs-to-where"><code>where</code></h5>
 
-<p>The <code>where</code> method lets you specify the conditions that the associated object must meet.</p>
+<p><code>where</code> 方法指定关联对象必须满足的条件。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Order</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">belongs_to</span> <span class="ss">:customer</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span> <span class="ss">active: </span><span class="kp">true</span> <span class="p">}</span>
@@ -2860,9 +2874,9 @@ deleted directly from the database without calling their <code>destroy</code> me
 </pre>
 
 </div>
-<h5><code>includes</code></h5>
+<h5 id="scopes-for-belongs-to-includes"><code>includes</code></h5>
 
-<p>You can use the <code>includes</code> method to specify second-order associations that should be eager-loaded when this association is used. For example, consider these models:</p>
+<p><code>includes</code> 方法指定使用关联时要按需加载的间接关联。例如，有如下的模型：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">LineItem</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">belongs_to</span> <span class="ss">:order</span>
@@ -2879,7 +2893,7 @@ deleted directly from the database without calling their <code>destroy</code> me
 </pre>
 
 </div>
-<p>If you frequently retrieve customers directly from line items (<code>@line_item.order.customer</code>), then you can make your code somewhat more efficient by including customers in the association from line items to orders:</p>
+<p>如果经常要直接从商品上获取顾客对象（<code>@line_item.order.customer</code>），就可以把顾客引入商品和订单的关联中：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">LineItem</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">belongs_to</span> <span class="ss">:order</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">includes</span> <span class="ss">:customer</span> <span class="p">}</span>
@@ -2896,21 +2910,27 @@ deleted directly from the database without calling their <code>destroy</code> me
 </pre>
 
 </div>
-<p>NOTE: There’s no need to use <code>includes</code> for immediate associations - that is, if you have <code>Order belongs_to :customer</code>, then the customer is eager-loaded automatically when it’s needed.</p>
+          <div class="box information-box">
+  <p>直接关联没必要使用 <code>includes</code>。如果 <code>Order belongs_to :customer</code>，那么顾客会自动按需加载。</p>
+</div>
 
-<h5><code>readonly</code></h5>
 
-<p>If you use <code>readonly</code>, then the associated object will be read-only when retrieved via the association.</p>
+<h5 id="scopes-for-belongs-to-readonly"><code>readonly</code></h5>
 
-<h5><code>select</code></h5>
+<p>如果使用 <code>readonly</code>，通过关联获取的对象就是只读的。</p>
 
-<p>The <code>select</code> method lets you override the SQL <code>SELECT</code> clause that is used to retrieve data about the associated object. By default, Rails retrieves all columns.</p>
+<h5 id="scopes-for-belongs-to-select"><code>select</code></h5>
 
-<p>TIP: If you use the <code>select</code> method on a <code>belongs_to</code> association, you should also set the <code>:foreign_key</code> option to guarantee the correct results.</p>
+<p><code>select</code> 方法会覆盖获取关联对象使用的 SQL <code>SELECT</code> 子句。默认情况下，Rails 会读取所有字段。</p>
 
-<h4>Do Any Associated Objects Exist?</h4>
+          <div class="box tip-box">
+  <p>如果在 <code>belongs_to</code> 关联中使用 <code>select</code> 方法，应该同时设置 <code>:foreign_key</code> 选项，确保返回正确的结果。</p>
+</div>
 
-<p>You can see if any associated objects exist by using the <code>association.nil?</code> method:</p>
+
+<h4 id="belongs-to-association-reference-do-any-associated-objects-exist-questionmark">检查关联的对象是否存在</h4>
+
+<p>检查关联的对象是否存在可以使用 <code>association.nil?</code> 方法：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">if</span> <span class="vi">@order</span><span class="p">.</span><span class="nf">customer</span><span class="p">.</span><span class="nf">nil?</span>
   <span class="vi">@msg</span> <span class="o">=</span> <span class="s2">"No customer found for this order"</span>
@@ -2918,17 +2938,17 @@ deleted directly from the database without calling their <code>destroy</code> me
 </pre>
 
 </div>
-<h4>When are Objects Saved?</h4>
+<h4 id="belongs-to-association-reference-when-are-objects-saved-questionmark">什么时候保存对象</h4>
 
-<p>Assigning an object to a <code>belongs_to</code> association does <em>not</em> automatically save the object. It does not save the associated object either.</p>
+<p>把对象赋值给 <code>belongs_to</code> 关联不会自动保存对象，也不会保存关联的对象。</p>
 
-<h3><code>has_one</code> Association Reference</h3>
+<h3 id="has-one-association-reference"><code>has_one</code> 关联详解</h3>
 
-<p>The <code>has_one</code> association creates a one-to-one match with another model. In database terms, this association says that the other class contains the foreign key. If this class contains the foreign key, then you should use <code>belongs_to</code> instead.</p>
+<p><code>has_one</code> 关联建立两个模型之间的一对一关系。用数据库的行话说，这种关联的意思是外键在另一个类中。如果外键在这个类中，应该使用 <code>belongs_to</code> 关联。</p>
 
-<h4>Methods Added by <code>has_one</code></h4>
+<h4 id="methods-added-by-has-one"><code>has_one</code> 关联添加的方法</h4>
 
-<p>When you declare a <code>has_one</code> association, the declaring class automatically gains five methods related to the association:</p>
+<p>声明 <code>has_one</code> 关联后，声明所在的类自动获得了五个关联相关的方法：</p>
 
 <ul>
   <li><code>association(force_reload = false)</code></li>
@@ -2938,7 +2958,7 @@ deleted directly from the database without calling their <code>destroy</code> me
   <li><code>create_association!(attributes = {})</code></li>
 </ul>
 
-<p>In all of these methods, <code>association</code> is replaced with the symbol passed as the first argument to <code>has_one</code>. For example, given the declaration:</p>
+<p>这五个方法中的 <code>association</code> 要替换成传入 <code>has_one</code> 方法的第一个参数。例如，如下的声明：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_one</span> <span class="ss">:account</span>
@@ -2946,7 +2966,7 @@ deleted directly from the database without calling their <code>destroy</code> me
 </pre>
 
 </div>
-<p>Each instance of the <code>Supplier</code> model will have these methods:</p>
+<p>每个 <code>Supplier</code> 模型实例都获得了这些方法：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">account</span>
 <span class="n">account</span><span class="o">=</span>
@@ -2956,49 +2976,52 @@ deleted directly from the database without calling their <code>destroy</code> me
 </pre>
 
 </div>
-<p>NOTE: When initializing a new <code>has_one</code> or <code>belongs_to</code> association you must use the <code>build_</code> prefix to build the association, rather than the <code>association.build</code> method that would be used for <code>has_many</code> or <code>has_and_belongs_to_many</code> associations. To create one, use the <code>create_</code> prefix.</p>
+          <div class="box information-box">
+  <p>在 <code>has_one</code> 和 <code>belongs_to</code> 关联中，必须使用 <code>build_*</code> 方法构建关联对象。<code>association.build</code> 方法是在 <code>has_many</code> 和 <code>has_and_belongs_to_many</code> 关联中使用的。创建关联对象要使用 <code>create_*</code> 方法。</p>
+</div>
 
-<h5><code>association(force_reload = false)</code></h5>
 
-<p>The <code>association</code> method returns the associated object, if any. If no associated object is found, it returns <code>nil</code>.</p>
+<h5 id="methods-added-by-has-one-association-force-reload-false"><code>association(force_reload = false)</code></h5>
+
+<p>如果关联的对象存在，<code>association</code> 方法会返回关联对象。如果找不到关联对象，则返回 <code>nil</code>。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@account</span> <span class="o">=</span> <span class="vi">@supplier</span><span class="p">.</span><span class="nf">account</span>
 </pre>
 
 </div>
-<p>If the associated object has already been retrieved from the database for this object, the cached version will be returned. To override this behavior (and force a database read), pass <code>true</code> as the <code>force_reload</code> argument.</p>
+<p>如果关联对象之前已经取回，会返回缓存版本。如果不想使用缓存版本，强制重新从数据库中读取，可以把 <code>force_reload</code> 参数设为 <code>true</code>。</p>
 
-<h5><code>association=(associate)</code></h5>
+<h5 id="methods-added-by-has-one-association-associate"><code>association=(associate)</code></h5>
 
-<p>The <code>association=</code> method assigns an associated object to this object. Behind the scenes, this means extracting the primary key from this object and setting the associate object’s foreign key to the same value.</p>
+<p><code>association=</code> 方法用来赋值关联的对象。这个方法的底层操作是，从关联对象上读取主键，然后把值赋给该主键对应的关联对象。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@supplier</span><span class="p">.</span><span class="nf">account</span> <span class="o">=</span> <span class="vi">@account</span>
 </pre>
 
 </div>
-<h5><code>build_association(attributes = {})</code></h5>
+<h5 id="methods-added-by-has-one-build-association-attributes"><code>build_association(attributes = {})</code></h5>
 
-<p>The <code>build_association</code> method returns a new object of the associated type. This object will be instantiated from the passed attributes, and the link through its foreign key will be set, but the associated object will <em>not</em> yet be saved.</p>
+<p><code>build_association</code> 方法返回该关联类型的一个新对象。这个对象使用传入的属性初始化，和对象连接的外键会自动设置，但关联对象不会存入数据库。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@account</span> <span class="o">=</span> <span class="vi">@supplier</span><span class="p">.</span><span class="nf">build_account</span><span class="p">(</span><span class="ss">terms: </span><span class="s2">"Net 30"</span><span class="p">)</span>
 </pre>
 
 </div>
-<h5><code>create_association(attributes = {})</code></h5>
+<h5 id="methods-added-by-has-one-create-association-attributes"><code>create_association(attributes = {})</code></h5>
 
-<p>The <code>create_association</code> method returns a new object of the associated type. This object will be instantiated from the passed attributes, the link through its foreign key will be set, and, once it passes all of the validations specified on the associated model, the associated object <em>will</em> be saved.</p>
+<p><code>create_association</code> 方法返回该关联类型的一个新对象。这个对象使用传入的属性初始化，和对象连接的外键会自动设置，只要能通过所有数据验证，就会把关联对象存入数据库。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@account</span> <span class="o">=</span> <span class="vi">@supplier</span><span class="p">.</span><span class="nf">create_account</span><span class="p">(</span><span class="ss">terms: </span><span class="s2">"Net 30"</span><span class="p">)</span>
 </pre>
 
 </div>
-<h5><code>create_association!(attributes = {})</code></h5>
+<h5 id="methods-added-by-has-one-create-association-bang-attributes"><code>create_association!(attributes = {})</code></h5>
 
-<p>Does the same as <code>create_association</code> above, but raises <code>ActiveRecord::RecordInvalid</code> if the record is invalid.</p>
+<p>和 <code>create_association</code> 方法作用相同，但是如果记录不合法，会抛出 <code>ActiveRecord::RecordInvalid</code> 异常。</p>
 
-<h4>Options for <code>has_one</code></h4>
+<h4 id="options-for-has-one"><code>has_one</code> 方法的选项</h4>
 
-<p>While Rails uses intelligent defaults that will work well in most situations, there may be times when you want to customize the behavior of the <code>has_one</code> association reference. Such customizations can easily be accomplished by passing options when you create the association. For example, this association uses two such options:</p>
+<p>Rails 的默认设置足够智能，能满足常见需求。但有时还是需要定制 <code>has_one</code> 关联的行为。定制的方法很简单，声明关联时传入选项即可。例如，下面的关联使用了两个选项：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_one</span> <span class="ss">:account</span><span class="p">,</span> <span class="ss">class_name: </span><span class="s2">"Billing"</span><span class="p">,</span> <span class="ss">dependent: :nullify</span>
@@ -3006,7 +3029,7 @@ deleted directly from the database without calling their <code>destroy</code> me
 </pre>
 
 </div>
-<p>The <code>has_one</code> association supports these options:</p>
+<p><code>has_one</code> 关联支持以下选项：</p>
 
 <ul>
   <li><code>:as</code></li>
@@ -3022,17 +3045,17 @@ deleted directly from the database without calling their <code>destroy</code> me
   <li><code>:validate</code></li>
 </ul>
 
-<h5><code>:as</code></h5>
+<h5 id="options-for-has-one-as"><code>:as</code></h5>
 
-<p>Setting the <code>:as</code> option indicates that this is a polymorphic association. Polymorphic associations were discussed in detail <a href="#polymorphic-associations">earlier in this guide</a>.</p>
+<p><code>:as</code> 选项表明这是多态关联。<a href="#polymorphic-associations">前文</a>已经详细介绍过多态关联。</p>
 
-<h5><code>:autosave</code></h5>
+<h5 id="options-for-has-one-autosave"><code>:autosave</code></h5>
 
-<p>If you set the <code>:autosave</code> option to <code>true</code>, Rails will save any loaded members and destroy members that are marked for destruction whenever you save the parent object.</p>
+<p>如果把 <code>:autosave</code> 选项设为 <code>true</code>，保存父对象时，会自动保存所有子对象，并把标记为析构的子对象销毁。</p>
 
-<h5><code>:class_name</code></h5>
+<h5 id="options-for-has-one-class-name"><code>:class_name</code></h5>
 
-<p>If the name of the other model cannot be derived from the association name, you can use the <code>:class_name</code> option to supply the model name. For example, if a supplier has an account, but the actual name of the model containing accounts is <code>Billing</code>, you’d set things up this way:</p>
+<p>如果另一个模型无法从关联的名字获取，可以使用 <code>:class_name</code> 选项指定模型名。例如，供应商有一个账户，但表示账户的模型是 <code>Billing</code>，就可以这样声明关联：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_one</span> <span class="ss">:account</span><span class="p">,</span> <span class="ss">class_name: </span><span class="s2">"Billing"</span>
@@ -3040,27 +3063,23 @@ deleted directly from the database without calling their <code>destroy</code> me
 </pre>
 
 </div>
-<h5><code>:dependent</code></h5>
+<h5 id="options-for-has-one-dependent"><code>:dependent</code></h5>
 
-<p>Controls what happens to the associated object when its owner is destroyed:</p>
+<p>设置销毁拥有者时要怎么处理关联对象：</p>
 
 <ul>
-  <li><code>:destroy</code> causes the associated object to also be destroyed</li>
-  <li><code>:delete</code> causes the associated object to be deleted directly from the database (so callbacks will not execute)</li>
-  <li><code>:nullify</code> causes the foreign key to be set to <code>NULL</code>. Callbacks are not executed.</li>
-  <li><code>:restrict_with_exception</code> causes an exception to be raised if there is an associated record</li>
-  <li><code>:restrict_with_error</code> causes an error to be added to the owner if there is an associated object</li>
+  <li><code>:destroy</code>：也销毁关联对象；</li>
+  <li><code>:delete</code>：直接把关联对象对数据库中删除，因此不会执行回调；</li>
+  <li><code>:nullify</code>：把外键设为 <code>NULL</code>，不会执行回调；</li>
+  <li><code>:restrict_with_exception</code>：有关联的对象时抛出异常；</li>
+  <li><code>:restrict_with_error</code>：有关联的对象时，向拥有者添加一个错误；</li>
 </ul>
 
-<p>It’s necessary not to set or leave <code>:nullify</code> option for those associations
-that have <code>NOT NULL</code> database constraints. If you don’t set <code>dependent</code> to
-destroy such associations you won’t be able to change the associated object
-because initial associated object foreign key will be set to unallowed <code>NULL</code>
-value.</p>
+<p>如果在数据库层设置了 <code>NOT NULL</code> 约束，就不能使用 <code>:nullify</code> 选项。如果 <code>:dependent</code> 选项没有销毁关联，就无法修改关联对象，因为关联对象的外键设置为不接受 <code>NULL</code>。</p>
 
-<h5><code>:foreign_key</code></h5>
+<h5 id="options-for-has-one-foreign-key"><code>:foreign_key</code></h5>
 
-<p>By convention, Rails assumes that the column used to hold the foreign key on the other model is the name of this model with the suffix <code>_id</code> added. The <code>:foreign_key</code> option lets you set the name of the foreign key directly:</p>
+<p>按照约定，在另一个模型中用来存储外键的字段名是模型名后加 <code>_id</code>。<code>:foreign_key</code> 选项可以设置要使用的外键名：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_one</span> <span class="ss">:account</span><span class="p">,</span> <span class="ss">foreign_key: </span><span class="s2">"supp_id"</span>
@@ -3068,11 +3087,14 @@ value.</p>
 </pre>
 
 </div>
-<p>TIP: In any case, Rails will not create foreign key columns for you. You need to explicitly define them as part of your migrations.</p>
+          <div class="box tip-box">
+  <p>不管怎样，Rails 都不会自动创建外键字段，你要自己在迁移中创建。</p>
+</div>
 
-<h5><code>:inverse_of</code></h5>
 
-<p>The <code>:inverse_of</code> option specifies the name of the <code>belongs_to</code> association that is the inverse of this association. Does not work in combination with the <code>:through</code> or <code>:as</code> options.</p>
+<h5 id="options-for-has-one-inverse-of"><code>:inverse_of</code></h5>
+
+<p><code>:inverse_of</code> 选项指定 <code>has_one</code> 关联另一端的 <code>belongs_to</code> 关联名。不能和 <code>:through</code> 或 <code>:as</code> 选项一起使用。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_one</span> <span class="ss">:account</span><span class="p">,</span> <span class="ss">inverse_of: :supplier</span>
@@ -3084,29 +3106,29 @@ value.</p>
 </pre>
 
 </div>
-<h5><code>:primary_key</code></h5>
+<h5 id="options-for-has-one-primary-key"><code>:primary_key</code></h5>
 
-<p>By convention, Rails assumes that the column used to hold the primary key of this model is <code>id</code>. You can override this and explicitly specify the primary key with the <code>:primary_key</code> option.</p>
+<p>按照约定，用来存储该模型主键的字段名 <code>id</code>。<code>:primary_key</code> 选项可以设置要使用的主键名。</p>
 
-<h5><code>:source</code></h5>
+<h5 id="options-for-has-one-source"><code>:source</code></h5>
 
-<p>The <code>:source</code> option specifies the source association name for a <code>has_one :through</code> association.</p>
+<p><code>:source</code> 选项指定 <code>has_one :through</code> 关联的关联源名字。</p>
 
-<h5><code>:source_type</code></h5>
+<h5 id="options-for-has-one-source-type"><code>:source_type</code></h5>
 
-<p>The <code>:source_type</code> option specifies the source association type for a <code>has_one :through</code> association that proceeds through a polymorphic association.</p>
+<p><code>:source_type</code> 选项指定 <code>has_one :through</code> 关联中用来处理多态关联的关联源类型。</p>
 
-<h5><code>:through</code></h5>
+<h5 id="options-for-has-one-through"><code>:through</code></h5>
 
-<p>The <code>:through</code> option specifies a join model through which to perform the query. <code>has_one :through</code> associations were discussed in detail <a href="#the-has-one-through-association">earlier in this guide</a>.</p>
+<p><code>:through</code> 选项指定用来执行查询的连接模型。<a href="#the-has-one-through-association">前文</a>详细介绍过 <code>has_one :through</code> 关联。</p>
 
-<h5><code>:validate</code></h5>
+<h5 id="options-for-has-one-validate"><code>:validate</code></h5>
 
-<p>If you set the <code>:validate</code> option to <code>true</code>, then associated objects will be validated whenever you save this object. By default, this is <code>false</code>: associated objects will not be validated when this object is saved.</p>
+<p>如果把 <code>:validate</code> 选项设为 <code>true</code>，保存对象时，会同时验证关联对象。该选项的默认值是 <code>false</code>，保存对象时不验证关联对象。</p>
 
-<h4>Scopes for <code>has_one</code></h4>
+<h4 id="scopes-for-has-one"><code>has_one</code> 的作用域</h4>
 
-<p>There may be times when you wish to customize the query used by <code>has_one</code>. Such customizations can be achieved via a scope block. For example:</p>
+<p>有时可能需要定制 <code>has_one</code> 关联使用的查询方式，定制的查询可在作用域代码块中指定。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_one</span> <span class="ss">:account</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span> <span class="ss">active: </span><span class="kp">true</span> <span class="p">}</span>
@@ -3114,7 +3136,7 @@ value.</p>
 </pre>
 
 </div>
-<p>You can use any of the standard <a href="active_record_querying.html">querying methods</a> inside the scope block. The following ones are discussed below:</p>
+<p>在作用域代码块中可以使用任何一个标准的<a href="http://docs-china.com/rails/active_record_querying.html">查询方法</a>。下面分别介绍这几个方法：</p>
 
 <ul>
   <li><code>where</code></li>
@@ -3123,9 +3145,9 @@ value.</p>
   <li><code>select</code></li>
 </ul>
 
-<h5><code>where</code></h5>
+<h5 id="scopes-for-has-one-where"><code>where</code></h5>
 
-<p>The <code>where</code> method lets you specify the conditions that the associated object must meet.</p>
+<p><code>where</code> 方法指定关联对象必须满足的条件。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_one</span> <span class="ss">:account</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span> <span class="s2">"confirmed = 1"</span> <span class="p">}</span>
@@ -3133,9 +3155,9 @@ value.</p>
 </pre>
 
 </div>
-<h5><code>includes</code></h5>
+<h5 id="scopes-for-has-one-includes"><code>includes</code></h5>
 
-<p>You can use the <code>includes</code> method to specify second-order associations that should be eager-loaded when this association is used. For example, consider these models:</p>
+<p><code>includes</code> 方法指定使用关联时要按需加载的间接关联。例如，有如下的模型：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_one</span> <span class="ss">:account</span>
@@ -3152,7 +3174,7 @@ value.</p>
 </pre>
 
 </div>
-<p>If you frequently retrieve representatives directly from suppliers (<code>@supplier.account.representative</code>), then you can make your code somewhat more efficient by including representatives in the association from suppliers to accounts:</p>
+<p>如果经常要直接获取供应商代表（<code>@supplier.account.representative</code>），就可以把代表引入供应商和账户的关联中：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_one</span> <span class="ss">:account</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">includes</span> <span class="ss">:representative</span> <span class="p">}</span>
@@ -3169,17 +3191,17 @@ value.</p>
 </pre>
 
 </div>
-<h5><code>readonly</code></h5>
+<h5 id="scopes-for-has-one-readonly"><code>readonly</code></h5>
 
-<p>If you use the <code>readonly</code> method, then the associated object will be read-only when retrieved via the association.</p>
+<p>如果使用 <code>readonly</code>，通过关联获取的对象就是只读的。</p>
 
-<h5><code>select</code></h5>
+<h5 id="scopes-for-has-one-select"><code>select</code></h5>
 
-<p>The <code>select</code> method lets you override the SQL <code>SELECT</code> clause that is used to retrieve data about the associated object. By default, Rails retrieves all columns.</p>
+<p><code>select</code> 方法会覆盖获取关联对象使用的 SQL <code>SELECT</code> 子句。默认情况下，Rails 会读取所有字段。</p>
 
-<h4>Do Any Associated Objects Exist?</h4>
+<h4 id="has-one-association-reference-do-any-associated-objects-exist-questionmark">检查关联的对象是否存在</h4>
 
-<p>You can see if any associated objects exist by using the <code>association.nil?</code> method:</p>
+<p>检查关联的对象是否存在可以使用 <code>association.nil?</code> 方法：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">if</span> <span class="vi">@supplier</span><span class="p">.</span><span class="nf">account</span><span class="p">.</span><span class="nf">nil?</span>
   <span class="vi">@msg</span> <span class="o">=</span> <span class="s2">"No account found for this supplier"</span>
@@ -3187,23 +3209,23 @@ value.</p>
 </pre>
 
 </div>
-<h4>When are Objects Saved?</h4>
+<h4 id="has-one-association-reference-when-are-objects-saved-questionmark">什么时候保存对象</h4>
 
-<p>When you assign an object to a <code>has_one</code> association, that object is automatically saved (in order to update its foreign key). In addition, any object being replaced is also automatically saved, because its foreign key will change too.</p>
+<p>把对象赋值给 <code>has_one</code> 关联时，会自动保存对象（因为要更新外键）。而且所有被替换的对象也会自动保存，因为外键也变了。</p>
 
-<p>If either of these saves fails due to validation errors, then the assignment statement returns <code>false</code> and the assignment itself is cancelled.</p>
+<p>如果无法通过验证，随便哪一次保存失败了，赋值语句就会返回 <code>false</code>，赋值操作会取消。</p>
 
-<p>If the parent object (the one declaring the <code>has_one</code> association) is unsaved (that is, <code>new_record?</code> returns <code>true</code>) then the child objects are not saved. They will automatically when the parent object is saved.</p>
+<p>如果父对象（<code>has_one</code> 关联声明所在的模型）没保存（<code>new_record?</code> 方法返回 <code>true</code>），那么子对象也不会保存。只有保存了父对象，才会保存子对象。</p>
 
-<p>If you want to assign an object to a <code>has_one</code> association without saving the object, use the <code>association.build</code> method.</p>
+<p>如果赋值给 <code>has_one</code> 关联时不想保存对象，可以使用 <code>association.build</code> 方法。</p>
 
-<h3><code>has_many</code> Association Reference</h3>
+<h3 id="has-many-association-reference"><code>has_many</code> 关联详解</h3>
 
-<p>The <code>has_many</code> association creates a one-to-many relationship with another model. In database terms, this association says that the other class will have a foreign key that refers to instances of this class.</p>
+<p><code>has_many</code> 关联建立两个模型之间的一对多关系。用数据库的行话说，这种关联的意思是外键在另一个类中，指向这个类的实例。</p>
 
-<h4>Methods Added by <code>has_many</code></h4>
+<h4 id="methods-added-by-has-many"><code>has_many</code> 关联添加的方法</h4>
 
-<p>When you declare a <code>has_many</code> association, the declaring class automatically gains 16 methods related to the association:</p>
+<p>声明 <code>has_many</code> 关联后，声明所在的类自动获得了 16 个关联相关的方法：</p>
 
 <ul>
   <li><code>collection(force_reload = false)</code></li>
@@ -3224,7 +3246,7 @@ value.</p>
   <li><code>collection.create!(attributes = {})</code></li>
 </ul>
 
-<p>In all of these methods, <code>collection</code> is replaced with the symbol passed as the first argument to <code>has_many</code>, and <code>collection_singular</code> is replaced with the singularized version of that symbol. For example, given the declaration:</p>
+<p>这些个方法中的 <code>collection</code> 要替换成传入 <code>has_many</code> 方法的第一个参数。<code>collection_singular</code> 要替换成第一个参数的单数形式。例如，如下的声明：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Customer</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:orders</span>
@@ -3232,7 +3254,7 @@ value.</p>
 </pre>
 
 </div>
-<p>Each instance of the customer model will have these methods:</p>
+<p>每个 <code>Customer</code> 模型实例都获得了这些方法：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">orders</span><span class="p">(</span><span class="n">force_reload</span> <span class="o">=</span> <span class="kp">false</span><span class="p">)</span>
 <span class="n">orders</span><span class="o">&lt;&lt;</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span><span class="p">)</span>
@@ -3253,65 +3275,71 @@ value.</p>
 </pre>
 
 </div>
-<h5><code>collection(force_reload = false)</code></h5>
+<h5 id="methods-added-by-has-many-collection-force-reload-false"><code>collection(force_reload = false)</code></h5>
 
-<p>The <code>collection</code> method returns an array of all of the associated objects. If there are no associated objects, it returns an empty array.</p>
+<p><code>collection</code> 方法返回一个数组，包含所有关联的对象。如果没有关联的对象，则返回空数组。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@orders</span> <span class="o">=</span> <span class="vi">@customer</span><span class="p">.</span><span class="nf">orders</span>
 </pre>
 
 </div>
-<h5><code>collection&lt;&lt;(object, ...)</code></h5>
+<h5 id="methods-added-by-has-many-collection-object"><code>collection&lt;&lt;(object, ...)</code></h5>
 
-<p>The <code>collection&lt;&lt;</code> method adds one or more objects to the collection by setting their foreign keys to the primary key of the calling model.</p>
+<p><code>collection&lt;&lt;</code> 方法向关联对象数组中添加一个或多个对象，并把各所加对象的外键设为调用此方法的模型的主键。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@customer</span><span class="p">.</span><span class="nf">orders</span> <span class="o">&lt;&lt;</span> <span class="vi">@order1</span>
 </pre>
 
 </div>
-<h5><code>collection.delete(object, ...)</code></h5>
+<h5 id="methods-added-by-has-many-collection-delete-object"><code>collection.delete(object, ...)</code></h5>
 
-<p>The <code>collection.delete</code> method removes one or more objects from the collection by setting their foreign keys to <code>NULL</code>.</p>
+<p><code>collection.delete</code> 方法从关联对象数组中删除一个或多个对象，并把删除的对象外键设为 <code>NULL</code>。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@customer</span><span class="p">.</span><span class="nf">orders</span><span class="p">.</span><span class="nf">delete</span><span class="p">(</span><span class="vi">@order1</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>WARNING: Additionally, objects will be destroyed if they’re associated with <code>dependent: :destroy</code>, and deleted if they’re associated with <code>dependent: :delete_all</code>.</p>
+          <div class="box warning-box">
+  <p>如果关联设置了 <code>dependent: :destroy</code>，还会销毁关联对象；如果关联设置了 <code>dependent: :delete_all</code>，还会删除关联对象。</p>
+</div>
 
-<h5><code>collection.destroy(object, ...)</code></h5>
 
-<p>The <code>collection.destroy</code> method removes one or more objects from the collection by running <code>destroy</code> on each object.</p>
+<h5 id="methods-added-by-has-many-collection-destroy-object"><code>collection.destroy(object, ...)</code></h5>
+
+<p><code>collection.destroy</code> 方法在关联对象上调用 <code>destroy</code> 方法，从关联对象数组中删除一个或多个对象。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@customer</span><span class="p">.</span><span class="nf">orders</span><span class="p">.</span><span class="nf">destroy</span><span class="p">(</span><span class="vi">@order1</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>WARNING: Objects will <em>always</em> be removed from the database, ignoring the <code>:dependent</code> option.</p>
+          <div class="box warning-box">
+  <p>对象会从数据库中删除，忽略 <code>:dependent</code> 选项。</p>
+</div>
 
-<h5><code>collection=objects</code></h5>
 
-<p>The <code>collection=</code> method makes the collection contain only the supplied objects, by adding and deleting as appropriate.</p>
+<h5 id="methods-added-by-has-many-collection-objects"><code>collection=objects</code></h5>
 
-<h5><code>collection_singular_ids</code></h5>
+<p><code>collection=</code> 让关联对象数组只包含指定的对象，根据需求会添加或删除对象。</p>
 
-<p>The <code>collection_singular_ids</code> method returns an array of the ids of the objects in the collection.</p>
+<h5 id="methods-added-by-has-many-collection-singular-ids"><code>collection_singular_ids</code></h5>
+
+<p><code>collection_singular_ids</code> 返回一个数组，包含关联对象数组中各对象的 ID。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@order_ids</span> <span class="o">=</span> <span class="vi">@customer</span><span class="p">.</span><span class="nf">order_ids</span>
 </pre>
 
 </div>
-<h5><code>collection_singular_ids=ids</code></h5>
+<h5 id="methods-added-by-has-many-collection-singular-ids-ids"><code>collection_singular_ids=ids</code></h5>
 
-<p>The <code>collection_singular_ids=</code> method makes the collection contain only the objects identified by the supplied primary key values, by adding and deleting as appropriate.</p>
+<p><code>collection_singular_ids=</code> 方法让数组中只包含指定的主键，根据需要增删 ID。</p>
 
-<h5><code>collection.clear</code></h5>
+<h5 id="methods-added-by-has-many-collection-clear"><code>collection.clear</code></h5>
 
-<p>The <code>collection.clear</code> method removes every object from the collection. This destroys the associated objects if they are associated with <code>dependent: :destroy</code>, deletes them directly from the database if <code>dependent: :delete_all</code>, and otherwise sets their foreign keys to <code>NULL</code>.</p>
+<p><code>collection.clear</code> 方法删除数组中的所有对象。如果关联中指定了 <code>dependent: :destroy</code> 选项，会销毁关联对象；如果关联中指定了 <code>dependent: :delete_all</code> 选项，会直接从数据库中删除对象，然后再把外键设为 <code>NULL</code>。</p>
 
-<h5><code>collection.empty?</code></h5>
+<h5 id="methods-added-by-has-many-collection-empty-questionmark"><code>collection.empty?</code></h5>
 
-<p>The <code>collection.empty?</code> method returns <code>true</code> if the collection does not contain any associated objects.</p>
+<p>如果关联数组中没有关联对象，<code>collection.empty?</code> 方法返回 <code>true</code>。</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%</span> <span class="k">if</span> <span class="vi">@customer</span><span class="p">.</span><span class="nf">orders</span><span class="p">.</span><span class="nf">empty?</span> <span class="cp">%&gt;</span>
   No Orders Found
@@ -3319,60 +3347,60 @@ value.</p>
 </pre>
 
 </div>
-<h5><code>collection.size</code></h5>
+<h5 id="methods-added-by-has-many-collection-size"><code>collection.size</code></h5>
 
-<p>The <code>collection.size</code> method returns the number of objects in the collection.</p>
+<p><code>collection.size</code> 返回关联对象数组中的对象数量。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@order_count</span> <span class="o">=</span> <span class="vi">@customer</span><span class="p">.</span><span class="nf">orders</span><span class="p">.</span><span class="nf">size</span>
 </pre>
 
 </div>
-<h5><code>collection.find(...)</code></h5>
+<h5 id="methods-added-by-has-many-collection-find"><code>collection.find(...)</code></h5>
 
-<p>The <code>collection.find</code> method finds objects within the collection. It uses the same syntax and options as <code>ActiveRecord::Base.find</code>.</p>
+<p><code>collection.find</code> 方法在关联对象数组中查找对象，句法和可用选项跟 <code>ActiveRecord::Base.find</code> 方法一样。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@open_orders</span> <span class="o">=</span> <span class="vi">@customer</span><span class="p">.</span><span class="nf">orders</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </pre>
 
 </div>
-<h5><code>collection.where(...)</code></h5>
+<h5 id="methods-added-by-has-many-collection-where"><code>collection.where(...)</code></h5>
 
-<p>The <code>collection.where</code> method finds objects within the collection based on the conditions supplied but the objects are loaded lazily meaning that the database is queried only when the object(s) are accessed.</p>
+<p><code>collection.where</code> 方法根据指定的条件在关联对象数组中查找对象，但会惰性加载对象，用到对象时才会执行查询。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@open_orders</span> <span class="o">=</span> <span class="vi">@customer</span><span class="p">.</span><span class="nf">orders</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="nb">open</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span> <span class="c1"># No query yet</span>
 <span class="vi">@open_order</span> <span class="o">=</span> <span class="vi">@open_orders</span><span class="p">.</span><span class="nf">first</span> <span class="c1"># Now the database will be queried</span>
 </pre>
 
 </div>
-<h5><code>collection.exists?(...)</code></h5>
+<h5 id="methods-added-by-has-many-collection-exists-questionmark"><code>collection.exists?(...)</code></h5>
 
-<p>The <code>collection.exists?</code> method checks whether an object meeting the supplied conditions exists in the collection. It uses the same syntax and options as <code>ActiveRecord::Base.exists?</code>.</p>
+<p><code>collection.exists?</code> 方法根据指定的条件检查关联对象数组中是否有符合条件的对象，句法和可用选项跟 <code>ActiveRecord::Base.exists?</code> 方法一样。</p>
 
-<h5><code>collection.build(attributes = {}, ...)</code></h5>
+<h5 id="methods-added-by-has-many-collection-build-attributes"><code>collection.build(attributes = {}, ...)</code></h5>
 
-<p>The <code>collection.build</code> method returns one or more new objects of the associated type. These objects will be instantiated from the passed attributes, and the link through their foreign key will be created, but the associated objects will <em>not</em> yet be saved.</p>
+<p><code>collection.build</code> 方法返回一个或多个此种关联类型的新对象。这些对象会使用传入的属性初始化，还会创建对应的外键，但不会保存关联对象。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@order</span> <span class="o">=</span> <span class="vi">@customer</span><span class="p">.</span><span class="nf">orders</span><span class="p">.</span><span class="nf">build</span><span class="p">(</span><span class="ss">order_date: </span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">,</span>
                                 <span class="ss">order_number: </span><span class="s2">"A12345"</span><span class="p">)</span>
 </pre>
 
 </div>
-<h5><code>collection.create(attributes = {})</code></h5>
+<h5 id="methods-added-by-has-many-collection-create-attributes"><code>collection.create(attributes = {})</code></h5>
 
-<p>The <code>collection.create</code> method returns a new object of the associated type. This object will be instantiated from the passed attributes, the link through its foreign key will be created, and, once it passes all of the validations specified on the associated model, the associated object <em>will</em> be saved.</p>
+<p><code>collection.create</code> 方法返回一个此种关联类型的新对象。这个对象会使用传入的属性初始化，还会创建对应的外键，只要能通过所有数据验证，就会保存关联对象。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@order</span> <span class="o">=</span> <span class="vi">@customer</span><span class="p">.</span><span class="nf">orders</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">order_date: </span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">,</span>
                                  <span class="ss">order_number: </span><span class="s2">"A12345"</span><span class="p">)</span>
 </pre>
 
 </div>
-<h5><code>collection.create!(attributes = {})</code></h5>
+<h5 id="methods-added-by-has-many-collection-create-bang-attributes"><code>collection.create!(attributes = {})</code></h5>
 
-<p>Does the same as <code>collection.create</code> above, but raises <code>ActiveRecord::RecordInvalid</code> if the record is invalid.</p>
+<p>作用和 <code>collection.create</code> 相同，但如果记录不合法会抛出 <code>ActiveRecord::RecordInvalid</code> 异常。</p>
 
-<h4>Options for <code>has_many</code></h4>
+<h4 id="options-for-has-many"><code>has_many</code> 方法的选项</h4>
 
-<p>While Rails uses intelligent defaults that will work well in most situations, there may be times when you want to customize the behavior of the <code>has_many</code> association reference. Such customizations can easily be accomplished by passing options when you create the association. For example, this association uses two such options:</p>
+<p>Rails 的默认设置足够智能，能满足常见需求。但有时还是需要定制 <code>has_many</code> 关联的行为。定制的方法很简单，声明关联时传入选项即可。例如，下面的关联使用了两个选项：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Customer</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:orders</span><span class="p">,</span> <span class="ss">dependent: :delete_all</span><span class="p">,</span> <span class="ss">validate: :false</span>
@@ -3380,7 +3408,7 @@ value.</p>
 </pre>
 
 </div>
-<p>The <code>has_many</code> association supports these options:</p>
+<p><code>has_many</code> 关联支持以下选项：</p>
 
 <ul>
   <li><code>:as</code></li>
@@ -3396,17 +3424,17 @@ value.</p>
   <li><code>:validate</code></li>
 </ul>
 
-<h5><code>:as</code></h5>
+<h5 id="options-for-has-many-as"><code>:as</code></h5>
 
-<p>Setting the <code>:as</code> option indicates that this is a polymorphic association, as discussed <a href="#polymorphic-associations">earlier in this guide</a>.</p>
+<p><code>:as</code> 选项表明这是多态关联。<a href="#polymorphic-associations">前文</a>已经详细介绍过多态关联。</p>
 
-<h5><code>:autosave</code></h5>
+<h5 id="options-for-has-many-autosave"><code>:autosave</code></h5>
 
-<p>If you set the <code>:autosave</code> option to <code>true</code>, Rails will save any loaded members and destroy members that are marked for destruction whenever you save the parent object.</p>
+<p>如果把 <code>:autosave</code> 选项设为 <code>true</code>，保存父对象时，会自动保存所有子对象，并把标记为析构的子对象销毁。</p>
 
-<h5><code>:class_name</code></h5>
+<h5 id="options-for-has-many-class-name"><code>:class_name</code></h5>
 
-<p>If the name of the other model cannot be derived from the association name, you can use the <code>:class_name</code> option to supply the model name. For example, if a customer has many orders, but the actual name of the model containing orders is <code>Transaction</code>, you’d set things up this way:</p>
+<p>如果另一个模型无法从关联的名字获取，可以使用 <code>:class_name</code> 选项指定模型名。例如，顾客有多个订单，但表示订单的模型是 <code>Transaction</code>，就可以这样声明关联：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Customer</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:orders</span><span class="p">,</span> <span class="ss">class_name: </span><span class="s2">"Transaction"</span>
@@ -3414,23 +3442,26 @@ value.</p>
 </pre>
 
 </div>
-<h5><code>:dependent</code></h5>
+<h5 id="dependent"><code>:dependent</code></h5>
 
-<p>Controls what happens to the associated objects when their owner is destroyed:</p>
+<p>设置销毁拥有者时要怎么处理关联对象：</p>
 
 <ul>
-  <li><code>:destroy</code> causes all the associated objects to also be destroyed</li>
-  <li><code>:delete_all</code> causes all the associated objects to be deleted directly from the database (so callbacks will not execute)</li>
-  <li><code>:nullify</code> causes the foreign keys to be set to <code>NULL</code>. Callbacks are not executed.</li>
-  <li><code>:restrict_with_exception</code> causes an exception to be raised if there are any associated records</li>
-  <li><code>:restrict_with_error</code> causes an error to be added to the owner if there are any associated objects</li>
+  <li><code>:destroy</code>：也销毁所有关联的对象；</li>
+  <li><code>:delete_all</code>：直接把所有关联对象对数据库中删除，因此不会执行回调；</li>
+  <li><code>:nullify</code>：把外键设为 <code>NULL</code>，不会执行回调；</li>
+  <li><code>:restrict_with_exception</code>：有关联的对象时抛出异常；</li>
+  <li><code>:restrict_with_error</code>：有关联的对象时，向拥有者添加一个错误；</li>
 </ul>
 
-<p>NOTE: This option is ignored when you use the <code>:through</code> option on the association.</p>
+          <div class="box information-box">
+  <p>如果声明关联时指定了 <code>:through</code> 选项，会忽略这个选项。</p>
+</div>
 
-<h5><code>:foreign_key</code></h5>
 
-<p>By convention, Rails assumes that the column used to hold the foreign key on the other model is the name of this model with the suffix <code>_id</code> added. The <code>:foreign_key</code> option lets you set the name of the foreign key directly:</p>
+<h5 id="options-for-has-many-foreign-key"><code>:foreign_key</code></h5>
+
+<p>按照约定，另一个模型中用来存储外键的字段名是模型名后加 <code>_id</code>。<code>:foreign_key</code> 选项可以设置要使用的外键名：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Customer</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:orders</span><span class="p">,</span> <span class="ss">foreign_key: </span><span class="s2">"cust_id"</span>
@@ -3438,11 +3469,14 @@ value.</p>
 </pre>
 
 </div>
-<p>TIP: In any case, Rails will not create foreign key columns for you. You need to explicitly define them as part of your migrations.</p>
+          <div class="box tip-box">
+  <p>不管怎样，Rails 都不会自动创建外键字段，你要自己在迁移中创建。</p>
+</div>
 
-<h5><code>:inverse_of</code></h5>
 
-<p>The <code>:inverse_of</code> option specifies the name of the <code>belongs_to</code> association that is the inverse of this association. Does not work in combination with the <code>:through</code> or <code>:as</code> options.</p>
+<h5 id="inverse-of"><code>:inverse_of</code></h5>
+
+<p><code>:inverse_of</code> 选项指定 <code>has_many</code> 关联另一端的 <code>belongs_to</code> 关联名。不能和 <code>:through</code> 或 <code>:as</code> 选项一起使用。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Customer</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:orders</span><span class="p">,</span> <span class="ss">inverse_of: :customer</span>
@@ -3454,13 +3488,11 @@ value.</p>
 </pre>
 
 </div>
-<h5><code>:primary_key</code></h5>
+<h5 id="options-for-has-many-primary-key"><code>:primary_key</code></h5>
 
-<p>By convention, Rails assumes that the column used to hold the primary key of the association is <code>id</code>. You can override this and explicitly specify the primary key with the <code>:primary_key</code> option.</p>
+<p>按照约定，用来存储该模型主键的字段名 <code>id</code>。<code>:primary_key</code> 选项可以设置要使用的主键名。</p>
 
-<p>Let’s say that <code>users</code> table has <code>id</code> as the primary_key but it also has
-<code>guid</code> column. And the requirement is that <code>todos</code> table should hold
-<code>guid</code> column value and not <code>id</code> value. This can be achieved like this</p>
+<p>假设 <code>users</code> 表的主键是 <code>id</code>，但还有一个 <code>guid</code> 字段。根据要求，<code>todos</code> 表中应该使用 <code>guid</code> 字段，而不是 <code>id</code> 字段。这种需求可以这么实现：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:todos</span><span class="p">,</span> <span class="ss">primary_key: :guid</span>
@@ -3468,28 +3500,27 @@ value.</p>
 </pre>
 
 </div>
-<p>Now if we execute <code>@user.todos.create</code> then <code>@todo</code> record will have
-<code>user_id</code> value as the <code>guid</code> value of <code>@user</code>.</p>
+<p>如果执行 <code>@user.todos.create</code> 创建新的待办事项，那么 <code>@todo.user_id</code> 就是 <code>guid</code> 字段中的值。</p>
 
-<h5><code>:source</code></h5>
+<h5 id="options-for-has-many-source"><code>:source</code></h5>
 
-<p>The <code>:source</code> option specifies the source association name for a <code>has_many :through</code> association. You only need to use this option if the name of the source association cannot be automatically inferred from the association name.</p>
+<p><code>:source</code> 选项指定 <code>has_many :through</code> 关联的关联源名字。只有无法从关联名种解出关联源的名字时才需要设置这个选项。</p>
 
-<h5><code>:source_type</code></h5>
+<h5 id="options-for-has-many-source-type"><code>:source_type</code></h5>
 
-<p>The <code>:source_type</code> option specifies the source association type for a <code>has_many :through</code> association that proceeds through a polymorphic association.</p>
+<p><code>:source_type</code> 选项指定 <code>has_many :through</code> 关联中用来处理多态关联的关联源类型。</p>
 
-<h5><code>:through</code></h5>
+<h5 id="options-for-has-many-through"><code>:through</code></h5>
 
-<p>The <code>:through</code> option specifies a join model through which to perform the query. <code>has_many :through</code> associations provide a way to implement many-to-many relationships, as discussed <a href="#the-has-many-through-association">earlier in this guide</a>.</p>
+<p><code>:through</code> 选项指定用来执行查询的连接模型。<code>has_many :through</code> 关联是实现多对多关联的一种方式，<a href="#the-has-many-through-association">前文</a>已经介绍过。</p>
 
-<h5><code>:validate</code></h5>
+<h5 id="options-for-has-many-validate"><code>:validate</code></h5>
 
-<p>If you set the <code>:validate</code> option to <code>false</code>, then associated objects will not be validated whenever you save this object. By default, this is <code>true</code>: associated objects will be validated when this object is saved.</p>
+<p>如果把 <code>:validate</code> 选项设为 <code>false</code>，保存对象时，不会验证关联对象。该选项的默认值是 <code>true</code>，保存对象验证关联的对象。</p>
 
-<h4>Scopes for <code>has_many</code></h4>
+<h4 id="scopes-for-has-many"><code>has_many</code> 的作用域</h4>
 
-<p>There may be times when you wish to customize the query used by <code>has_many</code>. Such customizations can be achieved via a scope block. For example:</p>
+<p>有时可能需要定制 <code>has_many</code> 关联使用的查询方式，定制的查询可在作用域代码块中指定。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Customer</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:orders</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span> <span class="ss">processed: </span><span class="kp">true</span> <span class="p">}</span>
@@ -3497,7 +3528,7 @@ value.</p>
 </pre>
 
 </div>
-<p>You can use any of the standard <a href="active_record_querying.html">querying methods</a> inside the scope block. The following ones are discussed below:</p>
+<p>在作用域代码块中可以使用任何一个标准的<a href="http://docs-china.com/rails/active_record_querying.html">查询方法</a>。下面分别介绍这几个方法：</p>
 
 <ul>
   <li><code>where</code></li>
@@ -3512,9 +3543,9 @@ value.</p>
   <li><code>uniq</code></li>
 </ul>
 
-<h5><code>where</code></h5>
+<h5 id="scopes-for-has-many-where"><code>where</code></h5>
 
-<p>The <code>where</code> method lets you specify the conditions that the associated object must meet.</p>
+<p><code>where</code> 方法指定关联对象必须满足的条件。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Customer</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:confirmed_orders</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span> <span class="s2">"confirmed = 1"</span> <span class="p">},</span>
@@ -3523,7 +3554,7 @@ value.</p>
 </pre>
 
 </div>
-<p>You can also set conditions via a hash:</p>
+<p>条件还可以使用 Hash 的形式指定：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Customer</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:confirmed_orders</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span> <span class="ss">confirmed: </span><span class="kp">true</span> <span class="p">},</span>
@@ -3532,15 +3563,15 @@ value.</p>
 </pre>
 
 </div>
-<p>If you use a hash-style <code>where</code> option, then record creation via this association will be automatically scoped using the hash. In this case, using <code>@customer.confirmed_orders.create</code> or <code>@customer.confirmed_orders.build</code> will create orders where the confirmed column has the value <code>true</code>.</p>
+<p>如果 <code>where</code> 使用 Hash 形式，通过这个关联创建的记录会自动使用 Hash 中的作用域。针对上面的例子，使用 <code>@customer.confirmed_orders.create</code> 或 <code>@customer.confirmed_orders.build</code> 创建订单时，会自动把 <code>confirmed</code> 字段的值设为 <code>true</code>。</p>
 
-<h5><code>extending</code></h5>
+<h5 id="scopes-for-has-many-extending"><code>extending</code></h5>
 
-<p>The <code>extending</code> method specifies a named module to extend the association proxy. Association extensions are discussed in detail <a href="#association-extensions">later in this guide</a>.</p>
+<p><code>extending</code> 方法指定一个模块名，用来扩展关联代理。<a href="#association-extensions">后文</a>会详细介绍关联扩展。</p>
 
-<h5><code>group</code></h5>
+<h5 id="scopes-for-has-many-group"><code>group</code></h5>
 
-<p>The <code>group</code> method supplies an attribute name to group the result set by, using a <code>GROUP BY</code> clause in the finder SQL.</p>
+<p><code>group</code> 方法指定一个属性名，用在 SQL <code>GROUP BY</code> 子句中，分组查询结果。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Customer</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:line_items</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">group</span> <span class="s1">'orders.id'</span> <span class="p">},</span>
@@ -3549,9 +3580,9 @@ value.</p>
 </pre>
 
 </div>
-<h5><code>includes</code></h5>
+<h5 id="scopes-for-has-many-includes"><code>includes</code></h5>
 
-<p>You can use the <code>includes</code> method to specify second-order associations that should be eager-loaded when this association is used. For example, consider these models:</p>
+<p><code>includes</code> 方法指定使用关联时要按需加载的间接关联。例如，有如下的模型：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Customer</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:orders</span>
@@ -3568,7 +3599,7 @@ value.</p>
 </pre>
 
 </div>
-<p>If you frequently retrieve line items directly from customers (<code>@customer.orders.line_items</code>), then you can make your code somewhat more efficient by including line items in the association from customers to orders:</p>
+<p>如果经常要直接获取顾客购买的商品（<code>@customer.orders.line_items</code>），就可以把商品引入顾客和订单的关联中：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Customer</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:orders</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">includes</span> <span class="ss">:line_items</span> <span class="p">}</span>
@@ -3585,9 +3616,9 @@ value.</p>
 </pre>
 
 </div>
-<h5><code>limit</code></h5>
+<h5 id="scopes-for-has-many-limit"><code>limit</code></h5>
 
-<p>The <code>limit</code> method lets you restrict the total number of objects that will be fetched through an association.</p>
+<p><code>limit</code> 方法限制通过关联获取的对象数量。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Customer</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:recent_orders</span><span class="p">,</span>
@@ -3597,13 +3628,13 @@ value.</p>
 </pre>
 
 </div>
-<h5><code>offset</code></h5>
+<h5 id="scopes-for-has-many-offset"><code>offset</code></h5>
 
-<p>The <code>offset</code> method lets you specify the starting offset for fetching objects via an association. For example, <code>-&gt; { offset(11) }</code> will skip the first 11 records.</p>
+<p><code>offset</code> 方法指定通过关联获取对象时的偏移量。例如，<code>-&gt; { offset(11) }</code> 会跳过前 11 个记录。</p>
 
-<h5><code>order</code></h5>
+<h5 id="scopes-for-has-many-order"><code>order</code></h5>
 
-<p>The <code>order</code> method dictates the order in which associated objects will be received (in the syntax used by an SQL <code>ORDER BY</code> clause).</p>
+<p><code>order</code> 方法指定获取关联对象时使用的排序方式，用于 SQL <code>ORDER BY</code> 子句。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Customer</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:orders</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">order</span> <span class="s2">"date_confirmed DESC"</span> <span class="p">}</span>
@@ -3611,20 +3642,22 @@ value.</p>
 </pre>
 
 </div>
-<h5><code>readonly</code></h5>
+<h5 id="scopes-for-has-many-readonly"><code>readonly</code></h5>
 
-<p>If you use the <code>readonly</code> method, then the associated objects will be read-only when retrieved via the association.</p>
+<p>如果使用 <code>readonly</code>，通过关联获取的对象就是只读的。</p>
 
-<h5><code>select</code></h5>
+<h5 id="scopes-for-has-many-select"><code>select</code></h5>
 
-<p>The <code>select</code> method lets you override the SQL <code>SELECT</code> clause that is used to retrieve data about the associated objects. By default, Rails retrieves all columns.</p>
+<p><code>select</code> 方法用来覆盖获取关联对象数据的 SQL <code>SELECT</code> 子句。默认情况下，Rails 会读取所有字段。</p>
 
-<p>WARNING: If you specify your own <code>select</code>, be sure to include the primary key and foreign key columns of the associated model. If you do not, Rails will throw an error.</p>
+          <div class="box warning-box">
+  <p>如果设置了 <code>select</code>，记得要包含主键和关联模型的外键。否则，Rails 会抛出异常。</p>
+</div>
+
 
 <h5><code>distinct</code></h5>
 
-<p>Use the <code>distinct</code> method to keep the collection free of duplicates. This is
-mostly useful together with the <code>:through</code> option.</p>
+<p>使用 <code>distinct</code> 方法可以确保集合中没有重复的对象，和 <code>:through</code> 选项一起使用最有用。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Person</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:readings</span>
@@ -3640,10 +3673,9 @@ mostly useful together with the <code>:through</code> option.</p>
 </pre>
 
 </div>
-<p>In the above case there are two readings and <code>person.posts</code> brings out both of
-them even though these records are pointing to the same post.</p>
+<p>在上面的代码中，读者读了两篇文章，即使是同一篇文章，<code>person.posts</code> 也会返回两个对象。</p>
 
-<p>Now let’s set <code>distinct</code>:</p>
+<p>下面我们加入 <code>distinct</code> 方法：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Person</span>
   <span class="n">has_many</span> <span class="ss">:readings</span>
@@ -3659,47 +3691,37 @@ them even though these records are pointing to the same post.</p>
 </pre>
 
 </div>
-<p>In the above case there are still two readings. However <code>person.posts</code> shows
-only one post because the collection loads only unique records.</p>
+<p>在这段代码中，读者还是读了两篇文章，但 <code>person.posts</code> 只返回一个对象，因为加载的集合已经去除了重复元素。</p>
 
-<p>If you want to make sure that, upon insertion, all of the records in the
-persisted association are distinct (so that you can be sure that when you
-inspect the association that you will never find duplicate records), you should
-add a unique index on the table itself. For example, if you have a table named
-<code>person_posts</code> and you want to make sure all the posts are unique, you could
-add the following in a migration:</p>
+<p>如果要确保只把不重复的记录写入关联模型的数据表（这样就不会从数据库中获取重复记录了），需要在数据表上添加唯一性索引。例如，数据表名为 <code>person_posts</code>，我们要保证其中所有的文章都没重复，可以在迁移中加入以下代码：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">add_index</span> <span class="ss">:person_posts</span><span class="p">,</span> <span class="ss">:post</span><span class="p">,</span> <span class="ss">unique: </span><span class="kp">true</span>
 </pre>
 
 </div>
-<p>Note that checking for uniqueness using something like <code>include?</code> is subject
-to race conditions. Do not attempt to use <code>include?</code> to enforce distinctness
-in an association. For instance, using the post example from above, the
-following code would be racy because multiple users could be attempting this
-at the same time:</p>
+<p>注意，使用 <code>include?</code> 等方法检查唯一性可能导致条件竞争。不要使用 <code>include?</code> 确保关联的唯一性。还是以前面的文章模型为例，下面的代码会导致条件竞争，因为多个用户可能会同时执行这一操作：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">person</span><span class="p">.</span><span class="nf">posts</span> <span class="o">&lt;&lt;</span> <span class="n">post</span> <span class="k">unless</span> <span class="n">person</span><span class="p">.</span><span class="nf">posts</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="n">post</span><span class="p">)</span>
 </pre>
 
 </div>
-<h4>When are Objects Saved?</h4>
+<h4 id="has-many-association-reference-when-are-objects-saved-questionmark">什么时候保存对象</h4>
 
-<p>When you assign an object to a <code>has_many</code> association, that object is automatically saved (in order to update its foreign key). If you assign multiple objects in one statement, then they are all saved.</p>
+<p>把对象赋值给 <code>has_many</code> 关联时，会自动保存对象（因为要更新外键）。如果一次赋值多个对象，所有对象都会自动保存。</p>
 
-<p>If any of these saves fails due to validation errors, then the assignment statement returns <code>false</code> and the assignment itself is cancelled.</p>
+<p>如果无法通过验证，随便哪一次保存失败了，赋值语句就会返回 <code>false</code>，赋值操作会取消。</p>
 
-<p>If the parent object (the one declaring the <code>has_many</code> association) is unsaved (that is, <code>new_record?</code> returns <code>true</code>) then the child objects are not saved when they are added. All unsaved members of the association will automatically be saved when the parent is saved.</p>
+<p>如果父对象（<code>has_many</code> 关联声明所在的模型）没保存（<code>new_record?</code> 方法返回 <code>true</code>），那么子对象也不会保存。只有保存了父对象，才会保存子对象。</p>
 
-<p>If you want to assign an object to a <code>has_many</code> association without saving the object, use the <code>collection.build</code> method.</p>
+<p>如果赋值给 <code>has_many</code> 关联时不想保存对象，可以使用 <code>collection.build</code> 方法。</p>
 
-<h3><code>has_and_belongs_to_many</code> Association Reference</h3>
+<h3 id="has-and-belongs-to-many-association-reference"><code>has_and_belongs_to_many</code> 关联详解</h3>
 
-<p>The <code>has_and_belongs_to_many</code> association creates a many-to-many relationship with another model. In database terms, this associates two classes via an intermediate join table that includes foreign keys referring to each of the classes.</p>
+<p><code>has_and_belongs_to_many</code> 关联建立两个模型之间的多对多关系。用数据库的行话说，这种关联的意思是有个连接数据表包含指向这两个类的外键。</p>
 
-<h4>Methods Added by <code>has_and_belongs_to_many</code></h4>
+<h4 id="methods-added-by-has-and-belongs-to-many"><code>has_and_belongs_to_many</code> 关联添加的方法</h4>
 
-<p>When you declare a <code>has_and_belongs_to_many</code> association, the declaring class automatically gains 16 methods related to the association:</p>
+<p>声明 <code>has_and_belongs_to_many</code> 关联后，声明所在的类自动获得了 16 个关联相关的方法：</p>
 
 <ul>
   <li><code>collection(force_reload = false)</code></li>
@@ -3720,7 +3742,7 @@ at the same time:</p>
   <li><code>collection.create!(attributes = {})</code></li>
 </ul>
 
-<p>In all of these methods, <code>collection</code> is replaced with the symbol passed as the first argument to <code>has_and_belongs_to_many</code>, and <code>collection_singular</code> is replaced with the singularized version of that symbol. For example, given the declaration:</p>
+<p>这些个方法中的 <code>collection</code> 要替换成传入 <code>has_and_belongs_to_many</code> 方法的第一个参数。<code>collection_singular</code> 要替换成第一个参数的单数形式。例如，如下的声明：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Part</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_and_belongs_to_many</span> <span class="ss">:assemblies</span>
@@ -3728,7 +3750,7 @@ at the same time:</p>
 </pre>
 
 </div>
-<p>Each instance of the part model will have these methods:</p>
+<p>每个 <code>Part</code> 模型实例都获得了这些方法：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">assemblies</span><span class="p">(</span><span class="n">force_reload</span> <span class="o">=</span> <span class="kp">false</span><span class="p">)</span>
 <span class="n">assemblies</span><span class="o">&lt;&lt;</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span><span class="p">)</span>
@@ -3749,71 +3771,80 @@ at the same time:</p>
 </pre>
 
 </div>
-<h5>Additional Column Methods</h5>
+<h5 id="additional-column-methods">额外的字段方法</h5>
 
-<p>If the join table for a <code>has_and_belongs_to_many</code> association has additional columns beyond the two foreign keys, these columns will be added as attributes to records retrieved via that association. Records returned with additional attributes will always be read-only, because Rails cannot save changes to those attributes.</p>
+<p>如果 <code>has_and_belongs_to_many</code> 关联使用的连接数据表中，除了两个外键之外还有其他字段，通过关联获取的记录中会包含这些字段，但是只读字段，因为 Rails 不知道如何保存对这些字段的改动。</p>
 
-<p>WARNING: The use of extra attributes on the join table in a <code>has_and_belongs_to_many</code> association is deprecated. If you require this sort of complex behavior on the table that joins two models in a many-to-many relationship, you should use a <code>has_many :through</code> association instead of <code>has_and_belongs_to_many</code>.</p>
+          <div class="box warning-box">
+  <p>在 <code>has_and_belongs_to_many</code> 关联的连接数据表中使用其他字段的功能已经废弃。如果在多对多关联中需要使用这么复杂的数据表，可以用 <code>has_many :through</code> 关联代替 <code>has_and_belongs_to_many</code> 关联。</p>
+</div>
 
-<h5><code>collection(force_reload = false)</code></h5>
 
-<p>The <code>collection</code> method returns an array of all of the associated objects. If there are no associated objects, it returns an empty array.</p>
+<h5 id="methods-added-by-has-and-belongs-to-many-collection-force-reload-false"><code>collection(force_reload = false)</code></h5>
+
+<p><code>collection</code> 方法返回一个数组，包含所有关联的对象。如果没有关联的对象，则返回空数组。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@assemblies</span> <span class="o">=</span> <span class="vi">@part</span><span class="p">.</span><span class="nf">assemblies</span>
 </pre>
 
 </div>
-<h5><code>collection&lt;&lt;(object, ...)</code></h5>
+<h5 id="methods-added-by-has-and-belongs-to-many-collection-object"><code>collection&lt;&lt;(object, ...)</code></h5>
 
-<p>The <code>collection&lt;&lt;</code> method adds one or more objects to the collection by creating records in the join table.</p>
+<p><code>collection&lt;&lt;</code> 方法向关联对象数组中添加一个或多个对象，并在连接数据表中创建相应的记录。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@part</span><span class="p">.</span><span class="nf">assemblies</span> <span class="o">&lt;&lt;</span> <span class="vi">@assembly1</span>
 </pre>
 
 </div>
-<p>NOTE: This method is aliased as <code>collection.concat</code> and <code>collection.push</code>.</p>
+          <div class="box information-box">
+  <p>这个方法与 <code>collection.concat</code> 和 <code>collection.push</code> 是同名方法。</p>
+</div>
 
-<h5><code>collection.delete(object, ...)</code></h5>
 
-<p>The <code>collection.delete</code> method removes one or more objects from the collection by deleting records in the join table. This does not destroy the objects.</p>
+<h5 id="methods-added-by-has-and-belongs-to-many-collection-delete-object"><code>collection.delete(object, ...)</code></h5>
+
+<p><code>collection.delete</code> 方法从关联对象数组中删除一个或多个对象，并删除连接数据表中相应的记录。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@part</span><span class="p">.</span><span class="nf">assemblies</span><span class="p">.</span><span class="nf">delete</span><span class="p">(</span><span class="vi">@assembly1</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>WARNING: This does not trigger callbacks on the join records.</p>
+          <div class="box warning-box">
+  <p>这个方法不会触发连接记录上的回调。</p>
+</div>
 
-<h5><code>collection.destroy(object, ...)</code></h5>
 
-<p>The <code>collection.destroy</code> method removes one or more objects from the collection by running <code>destroy</code> on each record in the join table, including running callbacks. This does not destroy the objects.</p>
+<h5 id="methods-added-by-has-and-belongs-to-many-collection-destroy-object"><code>collection.destroy(object, ...)</code></h5>
+
+<p><code>collection.destroy</code> 方法在连接数据表中的记录上调用 <code>destroy</code> 方法，从关联对象数组中删除一个或多个对象，还会触发回调。这个方法不会销毁对象本身。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@part</span><span class="p">.</span><span class="nf">assemblies</span><span class="p">.</span><span class="nf">destroy</span><span class="p">(</span><span class="vi">@assembly1</span><span class="p">)</span>
 </pre>
 
 </div>
-<h5><code>collection=objects</code></h5>
+<h5 id="methods-added-by-has-and-belongs-to-many-collection-objects"><code>collection=objects</code></h5>
 
-<p>The <code>collection=</code> method makes the collection contain only the supplied objects, by adding and deleting as appropriate.</p>
+<p><code>collection=</code> 让关联对象数组只包含指定的对象，根据需求会添加或删除对象。</p>
 
-<h5><code>collection_singular_ids</code></h5>
+<h5 id="methods-added-by-has-and-belongs-to-many-collection-singular-ids"><code>collection_singular_ids</code></h5>
 
-<p>The <code>collection_singular_ids</code> method returns an array of the ids of the objects in the collection.</p>
+<p><code>collection_singular_ids</code> 返回一个数组，包含关联对象数组中各对象的 ID。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@assembly_ids</span> <span class="o">=</span> <span class="vi">@part</span><span class="p">.</span><span class="nf">assembly_ids</span>
 </pre>
 
 </div>
-<h5><code>collection_singular_ids=ids</code></h5>
+<h5 id="methods-added-by-has-and-belongs-to-many-collection-singular-ids-ids"><code>collection_singular_ids=ids</code></h5>
 
-<p>The <code>collection_singular_ids=</code> method makes the collection contain only the objects identified by the supplied primary key values, by adding and deleting as appropriate.</p>
+<p><code>collection_singular_ids=</code> 方法让数组中只包含指定的主键，根据需要增删 ID。</p>
 
-<h5><code>collection.clear</code></h5>
+<h5 id="methods-added-by-has-and-belongs-to-many-collection-clear"><code>collection.clear</code></h5>
 
-<p>The <code>collection.clear</code> method removes every object from the collection by deleting the rows from the joining table. This does not destroy the associated objects.</p>
+<p><code>collection.clear</code> 方法删除数组中的所有对象，并把连接数据表中的相应记录删除。这个方法不会销毁关联对象。</p>
 
-<h5><code>collection.empty?</code></h5>
+<h5 id="methods-added-by-has-and-belongs-to-many-collection-empty-questionmark"><code>collection.empty?</code></h5>
 
-<p>The <code>collection.empty?</code> method returns <code>true</code> if the collection does not contain any associated objects.</p>
+<p>如果关联数组中没有关联对象，<code>collection.empty?</code> 方法返回 <code>true</code>。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="o">&lt;</span><span class="sx">% if </span><span class="vi">@part</span><span class="p">.</span><span class="nf">assemblies</span><span class="p">.</span><span class="nf">empty?</span> <span class="sx">%&gt;
   This part is not used in any assemblies
@@ -3821,57 +3852,57 @@ at the same time:</p>
 </pre>
 
 </div>
-<h5><code>collection.size</code></h5>
+<h5 id="methods-added-by-has-and-belongs-to-many-collection-size"><code>collection.size</code></h5>
 
-<p>The <code>collection.size</code> method returns the number of objects in the collection.</p>
+<p><code>collection.size</code> 返回关联对象数组中的对象数量。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@assembly_count</span> <span class="o">=</span> <span class="vi">@part</span><span class="p">.</span><span class="nf">assemblies</span><span class="p">.</span><span class="nf">size</span>
 </pre>
 
 </div>
-<h5><code>collection.find(...)</code></h5>
+<h5 id="methods-added-by-has-and-belongs-to-many-collection-find"><code>collection.find(...)</code></h5>
 
-<p>The <code>collection.find</code> method finds objects within the collection. It uses the same syntax and options as <code>ActiveRecord::Base.find</code>. It also adds the additional condition that the object must be in the collection.</p>
+<p><code>collection.find</code> 方法在关联对象数组中查找对象，句法和可用选项跟 <code>ActiveRecord::Base.find</code> 方法一样。同时还限制对象必须在集合中。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@assembly</span> <span class="o">=</span> <span class="vi">@part</span><span class="p">.</span><span class="nf">assemblies</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </pre>
 
 </div>
-<h5><code>collection.where(...)</code></h5>
+<h5 id="methods-added-by-has-and-belongs-to-many-collection-where"><code>collection.where(...)</code></h5>
 
-<p>The <code>collection.where</code> method finds objects within the collection based on the conditions supplied but the objects are loaded lazily meaning that the database is queried only when the object(s) are accessed. It also adds the additional condition that the object must be in the collection.</p>
+<p><code>collection.where</code> 方法根据指定的条件在关联对象数组中查找对象，但会惰性加载对象，用到对象时才会执行查询。同时还限制对象必须在集合中。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@new_assemblies</span> <span class="o">=</span> <span class="vi">@part</span><span class="p">.</span><span class="nf">assemblies</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s2">"created_at &gt; ?"</span><span class="p">,</span> <span class="mi">2</span><span class="p">.</span><span class="nf">days</span><span class="p">.</span><span class="nf">ago</span><span class="p">)</span>
 </pre>
 
 </div>
-<h5><code>collection.exists?(...)</code></h5>
+<h5 id="methods-added-by-has-and-belongs-to-many-collection-exists-questionmark"><code>collection.exists?(...)</code></h5>
 
-<p>The <code>collection.exists?</code> method checks whether an object meeting the supplied conditions exists in the collection. It uses the same syntax and options as <code>ActiveRecord::Base.exists?</code>.</p>
+<p><code>collection.exists?</code> 方法根据指定的条件检查关联对象数组中是否有符合条件的对象，句法和可用选项跟 <code>ActiveRecord::Base.exists?</code> 方法一样。</p>
 
-<h5><code>collection.build(attributes = {})</code></h5>
+<h5 id="methods-added-by-has-and-belongs-to-many-collection-build-attributes"><code>collection.build(attributes = {})</code></h5>
 
-<p>The <code>collection.build</code> method returns a new object of the associated type. This object will be instantiated from the passed attributes, and the link through the join table will be created, but the associated object will <em>not</em> yet be saved.</p>
+<p><code>collection.build</code> 方法返回一个此种关联类型的新对象。这个对象会使用传入的属性初始化，还会在连接数据表中创建对应的记录，但不会保存关联对象。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@assembly</span> <span class="o">=</span> <span class="vi">@part</span><span class="p">.</span><span class="nf">assemblies</span><span class="p">.</span><span class="nf">build</span><span class="p">({</span><span class="ss">assembly_name: </span><span class="s2">"Transmission housing"</span><span class="p">})</span>
 </pre>
 
 </div>
-<h5><code>collection.create(attributes = {})</code></h5>
+<h5 id="methods-added-by-has-and-belongs-to-many-collection-create-attributes"><code>collection.create(attributes = {})</code></h5>
 
-<p>The <code>collection.create</code> method returns a new object of the associated type. This object will be instantiated from the passed attributes, the link through the join table will be created, and, once it passes all of the validations specified on the associated model, the associated object <em>will</em> be saved.</p>
+<p><code>collection.create</code> 方法返回一个此种关联类型的新对象。这个对象会使用传入的属性初始化，还会在连接数据表中创建对应的记录，只要能通过所有数据验证，就会保存关联对象。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="vi">@assembly</span> <span class="o">=</span> <span class="vi">@part</span><span class="p">.</span><span class="nf">assemblies</span><span class="p">.</span><span class="nf">create</span><span class="p">({</span><span class="ss">assembly_name: </span><span class="s2">"Transmission housing"</span><span class="p">})</span>
 </pre>
 
 </div>
-<h5><code>collection.create!(attributes = {})</code></h5>
+<h5 id="methods-added-by-has-and-belongs-to-many-collection-create-bang-attributes"><code>collection.create!(attributes = {})</code></h5>
 
-<p>Does the same as <code>collection.create</code>, but raises <code>ActiveRecord::RecordInvalid</code> if the record is invalid.</p>
+<p>作用和 <code>collection.create</code> 相同，但如果记录不合法会抛出 <code>ActiveRecord::RecordInvalid</code> 异常。</p>
 
-<h4>Options for <code>has_and_belongs_to_many</code></h4>
+<h4 id="options-for-has-and-belongs-to-many"><code>has_and_belongs_to_many</code> 方法的选项</h4>
 
-<p>While Rails uses intelligent defaults that will work well in most situations, there may be times when you want to customize the behavior of the <code>has_and_belongs_to_many</code> association reference. Such customizations can easily be accomplished by passing options when you create the association. For example, this association uses two such options:</p>
+<p>Rails 的默认设置足够智能，能满足常见需求。但有时还是需要定制 <code>has_and_belongs_to_many</code> 关联的行为。定制的方法很简单，声明关联时传入选项即可。例如，下面的关联使用了两个选项：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Parts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_and_belongs_to_many</span> <span class="ss">:assemblies</span><span class="p">,</span> <span class="ss">autosave: </span><span class="kp">true</span><span class="p">,</span>
@@ -3880,7 +3911,7 @@ at the same time:</p>
 </pre>
 
 </div>
-<p>The <code>has_and_belongs_to_many</code> association supports these options:</p>
+<p><code>has_and_belongs_to_many</code> 关联支持以下选项：</p>
 
 <ul>
   <li><code>:association_foreign_key</code></li>
@@ -3892,11 +3923,14 @@ at the same time:</p>
   <li><code>:readonly</code></li>
 </ul>
 
-<h5><code>:association_foreign_key</code></h5>
+<h5 id="association-foreign-key"><code>:association_foreign_key</code></h5>
 
-<p>By convention, Rails assumes that the column in the join table used to hold the foreign key pointing to the other model is the name of that model with the suffix <code>_id</code> added. The <code>:association_foreign_key</code> option lets you set the name of the foreign key directly:</p>
+<p>按照约定，在连接数据表中用来指向另一个模型的外键名是模型名后加 <code>_id</code>。<code>:association_foreign_key</code> 选项可以设置要使用的外键名：</p>
 
-<p>TIP: The <code>:foreign_key</code> and <code>:association_foreign_key</code> options are useful when setting up a many-to-many self-join. For example:</p>
+          <div class="box tip-box">
+  <p><code>:foreign_key</code> 和 <code>:association_foreign_key</code> 这两个选项在设置多对多自连接时很有用。</p>
+</div>
+
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_and_belongs_to_many</span> <span class="ss">:friends</span><span class="p">,</span>
@@ -3907,13 +3941,13 @@ at the same time:</p>
 </pre>
 
 </div>
-<h5><code>:autosave</code></h5>
+<h5 id="options-for-has-and-belongs-to-many-autosave"><code>:autosave</code></h5>
 
-<p>If you set the <code>:autosave</code> option to <code>true</code>, Rails will save any loaded members and destroy members that are marked for destruction whenever you save the parent object.</p>
+<p>如果把 <code>:autosave</code> 选项设为 <code>true</code>，保存父对象时，会自动保存所有子对象，并把标记为析构的子对象销毁。</p>
 
-<h5><code>:class_name</code></h5>
+<h5 id="options-for-has-and-belongs-to-many-class-name"><code>:class_name</code></h5>
 
-<p>If the name of the other model cannot be derived from the association name, you can use the <code>:class_name</code> option to supply the model name. For example, if a part has many assemblies, but the actual name of the model containing assemblies is <code>Gadget</code>, you’d set things up this way:</p>
+<p>如果另一个模型无法从关联的名字获取，可以使用 <code>:class_name</code> 选项指定模型名。例如，一个部件由多个装配件组成，但表示装配件的模型是 <code>Gadget</code>，就可以这样声明关联：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Parts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_and_belongs_to_many</span> <span class="ss">:assemblies</span><span class="p">,</span> <span class="ss">class_name: </span><span class="s2">"Gadget"</span>
@@ -3921,9 +3955,9 @@ at the same time:</p>
 </pre>
 
 </div>
-<h5><code>:foreign_key</code></h5>
+<h5 id="options-for-has-and-belongs-to-many-foreign-key"><code>:foreign_key</code></h5>
 
-<p>By convention, Rails assumes that the column in the join table used to hold the foreign key pointing to this model is the name of this model with the suffix <code>_id</code> added. The <code>:foreign_key</code> option lets you set the name of the foreign key directly:</p>
+<p>按照约定，在连接数据表中用来指向模型的外键名是模型名后加 <code>_id</code>。<code>:foreign_key</code> 选项可以设置要使用的外键名：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_and_belongs_to_many</span> <span class="ss">:friends</span><span class="p">,</span>
@@ -3934,17 +3968,17 @@ at the same time:</p>
 </pre>
 
 </div>
-<h5><code>:join_table</code></h5>
+<h5 id="join-table"><code>:join_table</code></h5>
 
-<p>If the default name of the join table, based on lexical ordering, is not what you want, you can use the <code>:join_table</code> option to override the default.</p>
+<p>如果默认按照字典顺序生成的默认名不能满足要求，可以使用 <code>:join_table</code> 选项指定。</p>
 
-<h5><code>:validate</code></h5>
+<h5 id="options-for-has-and-belongs-to-many-validate"><code>:validate</code></h5>
 
-<p>If you set the <code>:validate</code> option to <code>false</code>, then associated objects will not be validated whenever you save this object. By default, this is <code>true</code>: associated objects will be validated when this object is saved.</p>
+<p>如果把 <code>:validate</code> 选项设为 <code>false</code>，保存对象时，不会验证关联对象。该选项的默认值是 <code>true</code>，保存对象验证关联的对象。</p>
 
-<h4>Scopes for <code>has_and_belongs_to_many</code></h4>
+<h4 id="scopes-for-has-and-belongs-to-many"><code>has_and_belongs_to_many</code> 的作用域</h4>
 
-<p>There may be times when you wish to customize the query used by <code>has_and_belongs_to_many</code>. Such customizations can be achieved via a scope block. For example:</p>
+<p>有时可能需要定制 <code>has_and_belongs_to_many</code> 关联使用的查询方式，定制的查询可在作用域代码块中指定。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Parts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_and_belongs_to_many</span> <span class="ss">:assemblies</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span> <span class="ss">active: </span><span class="kp">true</span> <span class="p">}</span>
@@ -3952,7 +3986,7 @@ at the same time:</p>
 </pre>
 
 </div>
-<p>You can use any of the standard <a href="active_record_querying.html">querying methods</a> inside the scope block. The following ones are discussed below:</p>
+<p>在作用域代码块中可以使用任何一个标准的<a href="http://docs-china.com/rails/active_record_querying.html">查询方法</a>。下面分别介绍这几个方法：</p>
 
 <ul>
   <li><code>where</code></li>
@@ -3967,9 +4001,9 @@ at the same time:</p>
   <li><code>uniq</code></li>
 </ul>
 
-<h5><code>where</code></h5>
+<h5 id="scopes-for-has-and-belongs-to-many-where"><code>where</code></h5>
 
-<p>The <code>where</code> method lets you specify the conditions that the associated object must meet.</p>
+<p><code>where</code> 方法指定关联对象必须满足的条件。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Parts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_and_belongs_to_many</span> <span class="ss">:assemblies</span><span class="p">,</span>
@@ -3978,7 +4012,7 @@ at the same time:</p>
 </pre>
 
 </div>
-<p>You can also set conditions via a hash:</p>
+<p>条件还可以使用 Hash 的形式指定：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Parts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_and_belongs_to_many</span> <span class="ss">:assemblies</span><span class="p">,</span>
@@ -3987,15 +4021,15 @@ at the same time:</p>
 </pre>
 
 </div>
-<p>If you use a hash-style <code>where</code>, then record creation via this association will be automatically scoped using the hash. In this case, using <code>@parts.assemblies.create</code> or <code>@parts.assemblies.build</code> will create orders where the <code>factory</code> column has the value “Seattle”.</p>
+<p>如果 <code>where</code> 使用 Hash 形式，通过这个关联创建的记录会自动使用 Hash 中的作用域。针对上面的例子，使用 <code>@parts.assemblies.create</code> 或 <code>@parts.assemblies.build</code> 创建订单时，会自动把 <code>factory</code> 字段的值设为 <code>"Seattle"</code>。</p>
 
-<h5><code>extending</code></h5>
+<h5 id="scopes-for-has-and-belongs-to-many-extending"><code>extending</code></h5>
 
-<p>The <code>extending</code> method specifies a named module to extend the association proxy. Association extensions are discussed in detail <a href="#association-extensions">later in this guide</a>.</p>
+<p><code>extending</code> 方法指定一个模块名，用来扩展关联代理。<a href="#association-extensions">后文</a>会详细介绍关联扩展。</p>
 
-<h5><code>group</code></h5>
+<h5 id="scopes-for-has-and-belongs-to-many-group"><code>group</code></h5>
 
-<p>The <code>group</code> method supplies an attribute name to group the result set by, using a <code>GROUP BY</code> clause in the finder SQL.</p>
+<p><code>group</code> 方法指定一个属性名，用在 SQL <code>GROUP BY</code> 子句中，分组查询结果。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Parts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_and_belongs_to_many</span> <span class="ss">:assemblies</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">group</span> <span class="s2">"factory"</span> <span class="p">}</span>
@@ -4003,13 +4037,13 @@ at the same time:</p>
 </pre>
 
 </div>
-<h5><code>includes</code></h5>
+<h5 id="scopes-for-has-and-belongs-to-many-includes"><code>includes</code></h5>
 
-<p>You can use the <code>includes</code> method to specify second-order associations that should be eager-loaded when this association is used.</p>
+<p><code>includes</code> 方法指定使用关联时要按需加载的间接关联。</p>
 
-<h5><code>limit</code></h5>
+<h5 id="scopes-for-has-and-belongs-to-many-limit"><code>limit</code></h5>
 
-<p>The <code>limit</code> method lets you restrict the total number of objects that will be fetched through an association.</p>
+<p><code>limit</code> 方法限制通过关联获取的对象数量。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Parts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_and_belongs_to_many</span> <span class="ss">:assemblies</span><span class="p">,</span>
@@ -4018,13 +4052,13 @@ at the same time:</p>
 </pre>
 
 </div>
-<h5><code>offset</code></h5>
+<h5 id="scopes-for-has-and-belongs-to-many-offset"><code>offset</code></h5>
 
-<p>The <code>offset</code> method lets you specify the starting offset for fetching objects via an association. For example, if you set <code>offset(11)</code>, it will skip the first 11 records.</p>
+<p><code>offset</code> 方法指定通过关联获取对象时的偏移量。例如，<code>-&gt; { offset(11) }</code> 会跳过前 11 个记录。</p>
 
-<h5><code>order</code></h5>
+<h5 id="scopes-for-has-and-belongs-to-many-order"><code>order</code></h5>
 
-<p>The <code>order</code> method dictates the order in which associated objects will be received (in the syntax used by an SQL <code>ORDER BY</code> clause).</p>
+<p><code>order</code> 方法指定获取关联对象时使用的排序方式，用于 SQL <code>ORDER BY</code> 子句。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Parts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_and_belongs_to_many</span> <span class="ss">:assemblies</span><span class="p">,</span>
@@ -4033,33 +4067,33 @@ at the same time:</p>
 </pre>
 
 </div>
-<h5><code>readonly</code></h5>
+<h5 id="scopes-for-has-and-belongs-to-many-readonly"><code>readonly</code></h5>
 
-<p>If you use the <code>readonly</code> method, then the associated objects will be read-only when retrieved via the association.</p>
+<p>如果使用 <code>readonly</code>，通过关联获取的对象就是只读的。</p>
 
-<h5><code>select</code></h5>
+<h5 id="scopes-for-has-and-belongs-to-many-select"><code>select</code></h5>
 
-<p>The <code>select</code> method lets you override the SQL <code>SELECT</code> clause that is used to retrieve data about the associated objects. By default, Rails retrieves all columns.</p>
+<p><code>select</code> 方法用来覆盖获取关联对象数据的 SQL <code>SELECT</code> 子句。默认情况下，Rails 会读取所有字段。</p>
 
-<h5><code>uniq</code></h5>
+<h5 id="uniq"><code>uniq</code></h5>
 
-<p>Use the <code>uniq</code> method to remove duplicates from the collection.</p>
+<p><code>uniq</code> 方法用来删除集合中重复的对象。</p>
 
-<h4>When are Objects Saved?</h4>
+<h4 id="has-and-belongs-to-many-association-reference-when-are-objects-saved-questionmark">什么时候保存对象</h4>
 
-<p>When you assign an object to a <code>has_and_belongs_to_many</code> association, that object is automatically saved (in order to update the join table). If you assign multiple objects in one statement, then they are all saved.</p>
+<p>把对象赋值给 <code>has_and_belongs_to_many</code> 关联时，会自动保存对象（因为要更新外键）。如果一次赋值多个对象，所有对象都会自动保存。</p>
 
-<p>If any of these saves fails due to validation errors, then the assignment statement returns <code>false</code> and the assignment itself is cancelled.</p>
+<p>如果无法通过验证，随便哪一次保存失败了，赋值语句就会返回 <code>false</code>，赋值操作会取消。</p>
 
-<p>If the parent object (the one declaring the <code>has_and_belongs_to_many</code> association) is unsaved (that is, <code>new_record?</code> returns <code>true</code>) then the child objects are not saved when they are added. All unsaved members of the association will automatically be saved when the parent is saved.</p>
+<p>如果父对象（<code>has_and_belongs_to_many</code> 关联声明所在的模型）没保存（<code>new_record?</code> 方法返回 <code>true</code>），那么子对象也不会保存。只有保存了父对象，才会保存子对象。</p>
 
-<p>If you want to assign an object to a <code>has_and_belongs_to_many</code> association without saving the object, use the <code>collection.build</code> method.</p>
+<p>如果赋值给 <code>has_and_belongs_to_many</code> 关联时不想保存对象，可以使用 <code>collection.build</code> 方法。</p>
 
-<h3>Association Callbacks</h3>
+<h3 id="association-callbacks">关联回调</h3>
 
-<p>Normal callbacks hook into the life cycle of Active Record objects, allowing you to work with those objects at various points. For example, you can use a <code>:before_save</code> callback to cause something to happen just before an object is saved.</p>
+<p>普通回调会介入 Active Record 对象的生命周期，在很多时刻处理对象。例如，可以使用 <code>:before_save</code> 回调在保存对象之前处理对象。</p>
 
-<p>Association callbacks are similar to normal callbacks, but they are triggered by events in the life cycle of a collection. There are four available association callbacks:</p>
+<p>关联回调和普通回调差不多，只不过由集合生命周期中的事件触发。关联回调有四种：</p>
 
 <ul>
   <li><code>before_add</code></li>
@@ -4068,7 +4102,7 @@ at the same time:</p>
   <li><code>after_remove</code></li>
 </ul>
 
-<p>You define association callbacks by adding options to the association declaration. For example:</p>
+<p>关联回调在声明关联时定义。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Customer</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:orders</span><span class="p">,</span> <span class="ss">before_add: :check_credit_limit</span>
@@ -4080,9 +4114,9 @@ at the same time:</p>
 </pre>
 
 </div>
-<p>Rails passes the object being added or removed to the callback.</p>
+<p>Rails 会把添加或删除的对象传入回调。</p>
 
-<p>You can stack callbacks on a single event by passing them as an array:</p>
+<p>同一事件可触发多个回调，多个回调使用数组指定：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Customer</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:orders</span><span class="p">,</span>
@@ -4099,11 +4133,11 @@ at the same time:</p>
 </pre>
 
 </div>
-<p>If a <code>before_add</code> callback throws an exception, the object does not get added to the collection. Similarly, if a <code>before_remove</code> callback throws an exception, the object does not get removed from the collection.</p>
+<p>如果 <code>before_add</code> 回调抛出异常，不会把对象加入集合。类似地，如果 <code>before_remove</code> 抛出异常，对象不会从集合中删除。</p>
 
-<h3>Association Extensions</h3>
+<h3 id="association-extensions">关联扩展</h3>
 
-<p>You’re not limited to the functionality that Rails automatically builds into association proxy objects. You can also extend these objects through anonymous modules, adding new finders, creators, or other methods. For example:</p>
+<p>Rails 基于关联代理对象自动创建的功能是死的，但是可以通过匿名模块、新的查询方法、创建对象的方法等进行扩展。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Customer</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:orders</span> <span class="k">do</span>
@@ -4115,7 +4149,7 @@ at the same time:</p>
 </pre>
 
 </div>
-<p>If you have an extension that should be shared by many associations, you can use a named extension module. For example:</p>
+<p>如果扩展要在多个关联中使用，可以将其写入具名扩展模块。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">module</span> <span class="nn">FindRecentExtension</span>
   <span class="k">def</span> <span class="nf">find_recent</span>
@@ -4133,12 +4167,12 @@ at the same time:</p>
 </pre>
 
 </div>
-<p>Extensions can refer to the internals of the association proxy using these three attributes of the <code>proxy_association</code> accessor:</p>
+<p>在扩展中可以使用如下 <code>proxy_association</code> 方法的三个属性获取关联代理的内部信息：</p>
 
 <ul>
-  <li><code>proxy_association.owner</code> returns the object that the association is a part of.</li>
-  <li><code>proxy_association.reflection</code> returns the reflection object that describes the association.</li>
-  <li><code>proxy_association.target</code> returns the associated object for <code>belongs_to</code> or <code>has_one</code>, or the collection of associated objects for <code>has_many</code> or <code>has_and_belongs_to_many</code>.</li>
+  <li><code>proxy_association.owner</code>：返回关联所属的对象；</li>
+  <li><code>proxy_association.reflection</code>：返回描述关联的反射对象；</li>
+  <li><code>proxy_association.target</code>：返回 <code>belongs_to</code> 或 <code>has_one</code> 关联的关联对象，或者 <code>has_many</code> 或 <code>has_and_belongs_to_many</code> 关联的关联对象集合；</li>
 </ul>
 
                     </article>

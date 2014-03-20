@@ -1877,27 +1877,30 @@
                 <main class="main col-sm-9 col-md-9">
                     <article class="entry">
                         <h1>Active Record 查询</h1>
-                        <p>This guide covers different ways to retrieve data from the database using Active Record.</p>
+                        <p>本文介绍使用 Active Record 从数据库中获取数据的不同方法。</p>
 
-<p>After reading this guide, you will know:</p>
+<p>读完后，你将学会：</p>
 
 <ul>
-  <li>How to find records using a variety of methods and conditions.</li>
-  <li>How to specify the order, retrieved attributes, grouping, and other properties of the found records.</li>
-  <li>How to use eager loading to reduce the number of database queries needed for data retrieval.</li>
-  <li>How to use dynamic finders methods.</li>
-  <li>How to check for the existence of particular records.</li>
-  <li>How to perform various calculations on Active Record models.</li>
+  <li>如何使用各种方法查找满足条件的记录；</li>
+  <li>如何指定查找记录的排序方式，获取哪些属性，分组等；</li>
+  <li>获取数据时如何使用按需加载介绍数据库查询数；</li>
+  <li>如何使用动态查询方法；</li>
+  <li>如何检查某个记录是否存在；</li>
+  <li>如何在 Active Record 模型中做各种计算；</li>
   <li>How to run EXPLAIN on relations.</li>
 </ul>
 
 <hr />
 
-<p>If you’re used to using raw SQL to find database records, then you will generally find that there are better ways to carry out the same operations in Rails. Active Record insulates you from the need to use SQL in most cases.</p>
+<p>如果习惯使用 SQL 查询数据库，会发现在 Rails 中执行相同的查询有更好的方式。大多数情况下，在 Active Record 中无需直接使用 SQL。</p>
 
-<p>Code examples throughout this guide will refer to one or more of the following models:</p>
+<p>文中的实例代码会用到下面一个或多个模型：</p>
 
-<p>TIP: All of the following models use <code>id</code> as the primary key, unless specified otherwise.</p>
+          <div class="box tip-box">
+  <p>下面所有的模型除非有特别说明之外，都使用 <code>id</code> 做主键。</p>
+</div>
+
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Client</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_one</span> <span class="ss">:address</span>
@@ -1925,13 +1928,13 @@
 </pre>
 
 </div>
-<p>Active Record will perform queries on the database for you and is compatible with most database systems (MySQL, PostgreSQL and SQLite to name a few). Regardless of which database system you’re using, the Active Record method format will always be the same.</p>
+<p>Active Record 会代你执行数据库查询，可以兼容大多数数据库（MySQL，PostgreSQL 和 SQLite 等）。不管使用哪种数据库，所用的 Active Record 方法都是一样的。</p>
 
-<h2>Retrieving Objects from the Database</h2>
+<h2 id="retrieving-objects-from-the-database">从数据库中获取对象</h2>
 
-<p>To retrieve objects from the database, Active Record provides several finder methods. Each finder method allows you to pass arguments into it to perform certain queries on your database without writing raw SQL.</p>
+<p>Active Record 提供了很多查询方法，用来从数据库中获取对象。每个查询方法都接可接受参数，不用直接写 SQL 就能在数据库中执行指定的查询。</p>
 
-<p>The methods are:</p>
+<p>这些方法是：</p>
 
 <ul>
   <li><code>bind</code></li>
@@ -1959,24 +1962,24 @@
   <li><code>where</code></li>
 </ul>
 
-<p>All of the above methods return an instance of <code>ActiveRecord::Relation</code>.</p>
+<p>上述所有方法都返回一个 <code>ActiveRecord::Relation</code> 实例。</p>
 
-<p>The primary operation of <code>Model.find(options)</code> can be summarized as:</p>
+<p><code>Model.find(options)</code> 方法执行的主要操作概括如下：</p>
 
 <ul>
-  <li>Convert the supplied options to an equivalent SQL query.</li>
-  <li>Fire the SQL query and retrieve the corresponding results from the database.</li>
-  <li>Instantiate the equivalent Ruby object of the appropriate model for every resulting row.</li>
-  <li>Run <code>after_find</code> callbacks, if any.</li>
+  <li>把指定的选项转换成等价的 SQL 查询语句；</li>
+  <li>执行 SQL 查询，从数据库中获取结果；</li>
+  <li>为每个查询结果实例化一个对应的模型对象；</li>
+  <li>如果有 <code>after_find</code> 回调，再执行 <code>after_find</code> 回调；</li>
 </ul>
 
-<h3>Retrieving a Single Object</h3>
+<h3 id="retrieving-a-single-object">获取单个对象</h3>
 
-<p>Active Record provides several different ways of retrieving a single object.</p>
+<p>在 Active Record 中获取单个对象有好几种方法。</p>
 
-<h4>Using a Primary Key</h4>
+<h4 id="using-a-primary-key">使用主键</h4>
 
-<p>Using <code>Model.find(primary_key)</code>, you can retrieve the object corresponding to the specified <em>primary key</em> that matches any supplied options. For example:</p>
+<p>使用 <code>Model.find(primary_key)</code> 方法可以获取指定主键对应的对象。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="c1"># Find the client with primary key (id) 10.</span>
 <span class="n">client</span> <span class="o">=</span> <span class="no">Client</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
@@ -1984,70 +1987,73 @@
 </pre>
 
 </div>
-<p>The SQL equivalent of the above is:</p>
+<p>和上述方法等价的 SQL 查询是：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">clients</span> <span class="k">WHERE</span> <span class="p">(</span><span class="n">clients</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="k">LIMIT</span> <span class="mi">1</span>
 </pre>
 
 </div>
-<p><code>Model.find(primary_key)</code> will raise an <code>ActiveRecord::RecordNotFound</code> exception if no matching record is found.</p>
+<p>如果未找到匹配的记录，<code>Model.find(primary_key)</code> 会抛出 <code>ActiveRecord::RecordNotFound</code> 异常。</p>
 
-<h4><code>take</code></h4>
+<h4 id="retrieving-a-single-object-take"><code>take</code></h4>
 
-<p><code>Model.take</code> retrieves a record without any implicit ordering. For example:</p>
+<p><code>Model.take</code> 方法会获取一个记录，不考虑任何顺序。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">client</span> <span class="o">=</span> <span class="no">Client</span><span class="p">.</span><span class="nf">take</span>
 <span class="c1"># =&gt; #&lt;Client id: 1, first_name: "Lifo"&gt;</span>
 </pre>
 
 </div>
-<p>The SQL equivalent of the above is:</p>
+<p>和上述方法等价的 SQL 查询是：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">clients</span> <span class="k">LIMIT</span> <span class="mi">1</span>
 </pre>
 
 </div>
-<p><code>Model.take</code> returns <code>nil</code> if no record is found and no exception will be raised.</p>
+<p>如果没找到记录，<code>Model.take</code> 不会抛出异常，而是返回 <code>nil</code>。</p>
 
-<p>TIP: The retrieved record may vary depending on the database engine.</p>
+          <div class="box tip-box">
+  <p>获取的记录根据所用的数据库引擎会有所不同。</p>
+</div>
 
-<h4><code>first</code></h4>
 
-<p><code>Model.first</code> finds the first record ordered by the primary key. For example:</p>
+<h4 id="retrieving-a-single-object-first"><code>first</code></h4>
+
+<p><code>Model.first</code> 获取按主键排序得到的第一个记录。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">client</span> <span class="o">=</span> <span class="no">Client</span><span class="p">.</span><span class="nf">first</span>
 <span class="c1"># =&gt; #&lt;Client id: 1, first_name: "Lifo"&gt;</span>
 </pre>
 
 </div>
-<p>The SQL equivalent of the above is:</p>
+<p>和上述方法等价的 SQL 查询是：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">clients</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">clients</span><span class="p">.</span><span class="n">id</span> <span class="k">ASC</span> <span class="k">LIMIT</span> <span class="mi">1</span>
 </pre>
 
 </div>
-<p><code>Model.first</code> returns <code>nil</code> if no matching record is found and no exception will be raised.</p>
+<p><code>Model.first</code> 如果没找到匹配的记录，不会抛出异常，而是返回 <code>nil</code>。</p>
 
-<h4><code>last</code></h4>
+<h4 id="retrieving-a-single-object-last"><code>last</code></h4>
 
-<p><code>Model.last</code> finds the last record ordered by the primary key. For example:</p>
+<p><code>Model.last</code> 获取按主键排序得到的最后一个记录。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">client</span> <span class="o">=</span> <span class="no">Client</span><span class="p">.</span><span class="nf">last</span>
 <span class="c1"># =&gt; #&lt;Client id: 221, first_name: "Russel"&gt;</span>
 </pre>
 
 </div>
-<p>The SQL equivalent of the above is:</p>
+<p>和上述方法等价的 SQL 查询是：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">clients</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">clients</span><span class="p">.</span><span class="n">id</span> <span class="k">DESC</span> <span class="k">LIMIT</span> <span class="mi">1</span>
 </pre>
 
 </div>
-<p><code>Model.last</code> returns <code>nil</code> if no matching record is found and no exception will be raised.</p>
+<p><code>Model.last</code> 如果没找到匹配的记录，不会抛出异常，而是返回 <code>nil</code>。</p>
 
-<h4><code>find_by</code></h4>
+<h4 id="find-by"><code>find_by</code></h4>
 
-<p><code>Model.find_by</code> finds the first record matching some conditions. For example:</p>
+<p><code>Model.find_by</code> 获取满足条件的第一个记录。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">find_by</span> <span class="ss">first_name: </span><span class="s1">'Lifo'</span>
 <span class="c1"># =&gt; #&lt;Client id: 1, first_name: "Lifo"&gt;</span>
@@ -2057,66 +2063,66 @@
 </pre>
 
 </div>
-<p>It is equivalent to writing:</p>
+<p>等价于：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">first_name: </span><span class="s1">'Lifo'</span><span class="p">).</span><span class="nf">take</span>
 </pre>
 
 </div>
-<h4><code>take!</code></h4>
+<h4 id="take-bang"><code>take!</code></h4>
 
-<p><code>Model.take!</code> retrieves a record without any implicit ordering. For example:</p>
+<p><code>Model.take!</code> 方法会获取一个记录，不考虑任何顺序。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">client</span> <span class="o">=</span> <span class="no">Client</span><span class="p">.</span><span class="nf">take!</span>
 <span class="c1"># =&gt; #&lt;Client id: 1, first_name: "Lifo"&gt;</span>
 </pre>
 
 </div>
-<p>The SQL equivalent of the above is:</p>
+<p>和上述方法等价的 SQL 查询是：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">clients</span> <span class="k">LIMIT</span> <span class="mi">1</span>
 </pre>
 
 </div>
-<p><code>Model.take!</code> raises <code>ActiveRecord::RecordNotFound</code> if no matching record is found.</p>
+<p>如果未找到匹配的记录，<code>Model.take!</code> 会抛出 <code>ActiveRecord::RecordNotFound</code> 异常。</p>
 
-<h4><code>first!</code></h4>
+<h4 id="first-bang"><code>first!</code></h4>
 
-<p><code>Model.first!</code> finds the first record ordered by the primary key. For example:</p>
+<p><code>Model.first!</code> 获取按主键排序得到的第一个记录。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">client</span> <span class="o">=</span> <span class="no">Client</span><span class="p">.</span><span class="nf">first!</span>
 <span class="c1"># =&gt; #&lt;Client id: 1, first_name: "Lifo"&gt;</span>
 </pre>
 
 </div>
-<p>The SQL equivalent of the above is:</p>
+<p>和上述方法等价的 SQL 查询是：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">clients</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">clients</span><span class="p">.</span><span class="n">id</span> <span class="k">ASC</span> <span class="k">LIMIT</span> <span class="mi">1</span>
 </pre>
 
 </div>
-<p><code>Model.first!</code> raises <code>ActiveRecord::RecordNotFound</code> if no matching record is found.</p>
+<p>如果未找到匹配的记录，<code>Model.first!</code> 会抛出 <code>ActiveRecord::RecordNotFound</code> 异常。</p>
 
-<h4><code>last!</code></h4>
+<h4 id="last-bang"><code>last!</code></h4>
 
-<p><code>Model.last!</code> finds the last record ordered by the primary key. For example:</p>
+<p><code>Model.last!</code> 获取按主键排序得到的最后一个记录。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">client</span> <span class="o">=</span> <span class="no">Client</span><span class="p">.</span><span class="nf">last!</span>
 <span class="c1"># =&gt; #&lt;Client id: 221, first_name: "Russel"&gt;</span>
 </pre>
 
 </div>
-<p>The SQL equivalent of the above is:</p>
+<p>和上述方法等价的 SQL 查询是：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">clients</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">clients</span><span class="p">.</span><span class="n">id</span> <span class="k">DESC</span> <span class="k">LIMIT</span> <span class="mi">1</span>
 </pre>
 
 </div>
-<p><code>Model.last!</code> raises <code>ActiveRecord::RecordNotFound</code> if no matching record is found.</p>
+<p>如果未找到匹配的记录，<code>Model.last!</code> 会抛出 <code>ActiveRecord::RecordNotFound</code> 异常。</p>
 
-<h4><code>find_by!</code></h4>
+<h4 id="find-by-bang"><code>find_by!</code></h4>
 
-<p><code>Model.find_by!</code> finds the first record matching some conditions. It raises <code>ActiveRecord::RecordNotFound</code> if no matching record is found. For example:</p>
+<p><code>Model.find_by!</code> 获取满足条件的第一个记录。如果没找到匹配的记录，会抛出 <code>ActiveRecord::RecordNotFound</code> 异常。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">find_by!</span> <span class="ss">first_name: </span><span class="s1">'Lifo'</span>
 <span class="c1"># =&gt; #&lt;Client id: 1, first_name: "Lifo"&gt;</span>
@@ -2126,17 +2132,17 @@
 </pre>
 
 </div>
-<p>It is equivalent to writing:</p>
+<p>等价于：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">first_name: </span><span class="s1">'Lifo'</span><span class="p">).</span><span class="nf">take!</span>
 </pre>
 
 </div>
-<h3>Retrieving Multiple Objects</h3>
+<h3 id="retrieving-multiple-objects">获取多个对象</h3>
 
-<h4>Using Multiple Primary Keys</h4>
+<h4 id="using-multiple-primary-keys">使用多个主键</h4>
 
-<p><code>Model.find(array_of_primary_key)</code> accepts an array of <em>primary keys</em>, returning an array containing all of the matching records for the supplied <em>primary keys</em>. For example:</p>
+<p><code>Model.find(array_of_primary_key)</code> 方法可接受一个由主键组成的数组，返回一个由主键对应记录组成的数组。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="c1"># Find the clients with primary keys 1 and 10.</span>
 <span class="n">client</span> <span class="o">=</span> <span class="no">Client</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="o">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="o">]</span><span class="p">)</span> <span class="c1"># Or even Client.find(1, 10)</span>
@@ -2144,17 +2150,20 @@
 </pre>
 
 </div>
-<p>The SQL equivalent of the above is:</p>
+<p>上述方法等价的 SQL 查询是：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">clients</span> <span class="k">WHERE</span> <span class="p">(</span><span class="n">clients</span><span class="p">.</span><span class="n">id</span> <span class="k">IN</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
 </pre>
 
 </div>
-<p>WARNING: <code>Model.find(array_of_primary_key)</code> will raise an <code>ActiveRecord::RecordNotFound</code> exception unless a matching record is found for <strong>all</strong> of the supplied primary keys.</p>
+          <div class="box warning-box">
+  <p>只要有一个主键的对应的记录未找到，<code>Model.find(array_of_primary_key)</code> 方法就会抛出 <code>ActiveRecord::RecordNotFound</code> 异常。</p>
+</div>
 
-<h4>take</h4>
 
-<p><code>Model.take(limit)</code> retrieves the first number of records specified by <code>limit</code> without any explicit ordering:</p>
+<h4 id="retrieving-multiple-objects-take">take</h4>
+
+<p><code>Model.take(limit)</code> 方法获取 <code>limit</code> 个记录，不考虑任何顺序：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">take</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 <span class="c1"># =&gt; [#&lt;Client id: 1, first_name: "Lifo"&gt;,</span>
@@ -2162,15 +2171,15 @@
 </pre>
 
 </div>
-<p>The SQL equivalent of the above is:</p>
+<p>和上述方法等价的 SQL 查询是：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">clients</span> <span class="k">LIMIT</span> <span class="mi">2</span>
 </pre>
 
 </div>
-<h4>first</h4>
+<h4 id="retrieving-multiple-objects-first">first</h4>
 
-<p><code>Model.first(limit)</code> finds the first number of records specified by <code>limit</code> ordered by primary key:</p>
+<p><code>Model.first(limit)</code> 方法获取按主键排序的前 <code>limit</code> 个记录：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">first</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 <span class="c1"># =&gt; [#&lt;Client id: 1, first_name: "Lifo"&gt;,</span>
@@ -2178,15 +2187,15 @@
 </pre>
 
 </div>
-<p>The SQL equivalent of the above is:</p>
+<p>和上述方法等价的 SQL 查询是：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">clients</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">id</span> <span class="k">ASC</span> <span class="k">LIMIT</span> <span class="mi">2</span>
 </pre>
 
 </div>
-<h4>last</h4>
+<h4 id="retrieving-multiple-objects-last">last</h4>
 
-<p><code>Model.last(limit)</code> finds the number of records specified by <code>limit</code> ordered by primary key in descending order:</p>
+<p><code>Model.last(limit)</code> 方法获取按主键降序排列的前 <code>limit</code> 个记录：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">last</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 <span class="c1"># =&gt; [#&lt;Client id: 10, first_name: "Ryan"&gt;,</span>
@@ -2194,17 +2203,17 @@
 </pre>
 
 </div>
-<p>The SQL equivalent of the above is:</p>
+<p>和上述方法等价的 SQL 查询是：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">clients</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">id</span> <span class="k">DESC</span> <span class="k">LIMIT</span> <span class="mi">2</span>
 </pre>
 
 </div>
-<h3>Retrieving Multiple Objects in Batches</h3>
+<h3 id="retrieving-multiple-objects-in-batches">批量获取多个对象</h3>
 
-<p>We often need to iterate over a large set of records, as when we send a newsletter to a large set of users, or when we export data.</p>
+<p>我们经常需要遍历由很多记录组成的集合，例如给大量用户发送邮件列表，或者导出数据。</p>
 
-<p>This may appear straightforward:</p>
+<p>我们可能会直接写出如下的代码：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="c1"># This is very inefficient when the users table has thousands of rows.</span>
 <span class="no">User</span><span class="p">.</span><span class="nf">all</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">user</span><span class="o">|</span>
@@ -2213,15 +2222,18 @@
 </pre>
 
 </div>
-<p>But this approach becomes increasingly impractical as the table size increases, since <code>User.all.each</code> instructs Active Record to fetch <em>the entire table</em> in a single pass, build a model object per row, and then keep the entire array of model objects in memory. Indeed, if we have a large number of records, the entire collection may exceed the amount of memory available.</p>
+<p>但这种方法在数据表很大时就有点不现实了，因为 <code>User.all.each</code> 会一次读取整个数据表，一行记录创建一个模型对象，然后把整个模型对象数组存入内存。如果记录数非常多，可能会用完内存。</p>
 
-<p>Rails provides two methods that address this problem by dividing records into memory-friendly batches for processing. The first method, <code>find_each</code>, retrieves a batch of records and then yields <em>each</em> record to the block individually as a model. The second method, <code>find_in_batches</code>, retrieves a batch of records and then yields <em>the entire batch</em> to the block as an array of models.</p>
+<p>Rails 为了解决这种问题提供了两个方法，把记录分成几个批次，不占用过多内存。第一个方法是 <code>find_each</code>，获取一批记录，然后分别把每个记录传入代码块。第二个方法是 <code>find_in_batches</code>，获取一批记录，然后把整批记录作为数组传入代码块。</p>
 
-<p>TIP: The <code>find_each</code> and <code>find_in_batches</code> methods are intended for use in the batch processing of a large number of records that wouldn’t fit in memory all at once. If you just need to loop over a thousand records the regular find methods are the preferred option.</p>
+          <div class="box tip-box">
+  <p><code>find_each</code> 和 <code>find_in_batches</code> 方法的目的是分批处理无法一次载入内存的巨量记录。如果只想遍历几千个记录，更推荐使用常规的查询方法。</p>
+</div>
 
-<h4><code>find_each</code></h4>
 
-<p>The <code>find_each</code> method retrieves a batch of records and then yields <em>each</em> record to the block individually as a model. In the following example, <code>find_each</code> will retrieve 1000 records (the current default for both <code>find_each</code> and <code>find_in_batches</code>) and then yield each record individually to the block as a model. This process is repeated until all of the records have been processed:</p>
+<h4 id="find-each"><code>find_each</code></h4>
+
+<p><code>find_each</code> 方法获取一批记录，然后分别把每个记录传入代码块。在下面的例子中，<code>find_each</code> 获取 1000 各记录，然后把每个记录传入代码块，知道所有记录都处理完为止：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">User</span><span class="p">.</span><span class="nf">find_each</span> <span class="k">do</span> <span class="o">|</span><span class="n">user</span><span class="o">|</span>
   <span class="no">NewsLetter</span><span class="p">.</span><span class="nf">weekly_deliver</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
@@ -2229,15 +2241,15 @@
 </pre>
 
 </div>
-<h5>Options for <code>find_each</code></h5>
+<h5 id="options-for-find-each"><code>find_each</code> 方法的选项</h5>
 
-<p>The <code>find_each</code> method accepts most of the options allowed by the regular <code>find</code> method, except for <code>:order</code> and <code>:limit</code>, which are reserved for internal use by <code>find_each</code>.</p>
+<p>在 <code>find_each</code> 方法中可使用 <code>find</code> 方法的大多数选项，但不能使用 <code>:order</code> 和 <code>:limit</code>，因为这两个选项是保留给 <code>find_each</code> 内部使用的。</p>
 
-<p>Two additional options, <code>:batch_size</code> and <code>:start</code>, are available as well.</p>
+<p><code>find_each</code> 方法还可使用另外两个选项：<code>:batch_size</code> 和 <code>:start</code>。</p>
 
 <p><strong><code>:batch_size</code></strong></p>
 
-<p>The <code>:batch_size</code> option allows you to specify the number of records to be retrieved in each batch, before being passed individually to the block. For example, to retrieve records in batches of 5000:</p>
+<p><code>:batch_size</code> 选项指定在把各记录传入代码块之前，各批次获取的记录数量。例如，一个批次获取 5000 个记录：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">User</span><span class="p">.</span><span class="nf">find_each</span><span class="p">(</span><span class="ss">batch_size: </span><span class="mi">5000</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">user</span><span class="o">|</span>
   <span class="no">NewsLetter</span><span class="p">.</span><span class="nf">weekly_deliver</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
@@ -2247,9 +2259,9 @@
 </div>
 <p><strong><code>:start</code></strong></p>
 
-<p>By default, records are fetched in ascending order of the primary key, which must be an integer. The <code>:start</code> option allows you to configure the first ID of the sequence whenever the lowest ID is not the one you need. This would be useful, for example, if you wanted to resume an interrupted batch process, provided you saved the last processed ID as a checkpoint.</p>
+<p>默认情况下，按主键的升序方式获取记录，其中主键的类型必须是整数。如果不想用最小的 ID，可以使用 <code>:start</code> 选项指定批次的起始 ID。例如，前面的批量处理中断了，但保存了中断时的 ID，就可以使用这个选项继续处理。</p>
 
-<p>For example, to send newsletters only to users with the primary key starting from 2000, and to retrieve them in batches of 5000:</p>
+<p>例如，在有 5000 个记录的批次中，只向主键大于 2000 的用户发送邮件列表，可以这么做：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">User</span><span class="p">.</span><span class="nf">find_each</span><span class="p">(</span><span class="ss">start: </span><span class="mi">2000</span><span class="p">,</span> <span class="ss">batch_size: </span><span class="mi">5000</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">user</span><span class="o">|</span>
   <span class="no">NewsLetter</span><span class="p">.</span><span class="nf">weekly_deliver</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
@@ -2257,11 +2269,11 @@
 </pre>
 
 </div>
-<p>Another example would be if you wanted multiple workers handling the same processing queue. You could have each worker handle 10000 records by setting the appropriate <code>:start</code> option on each worker.</p>
+<p>还有一个例子是，使用多个 worker 处理同一个进程队列。如果需要每个 worker 处理 10000 个记录，就可以在每个 worker 中设置相应的 <code>:start</code> 选项。</p>
 
-<h4><code>find_in_batches</code></h4>
+<h4 id="find-in-batches"><code>find_in_batches</code></h4>
 
-<p>The <code>find_in_batches</code> method is similar to <code>find_each</code>, since both retrieve batches of records. The difference is that <code>find_in_batches</code> yields <em>batches</em> to the block as an array of models, instead of individually. The following example will yield to the supplied block an array of up to 1000 invoices at a time, with the final block containing any remaining invoices:</p>
+<p><code>find_in_batches</code> 方法和 <code>find_each</code> 类似，都获取一批记录。二者的不同点是，<code>find_in_batches</code> 把整批记录作为一个数组传入代码块，而不是单独传入各记录。在下面的例子中，会把 1000 个单据一次性传入代码块，让代码块后面的程序处理剩下的单据：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="c1"># Give add_invoices an array of 1000 invoices at a time</span>
 <span class="no">Invoice</span><span class="p">.</span><span class="nf">find_in_batches</span><span class="p">(</span><span class="kp">include</span><span class="p">:</span> <span class="ss">:invoice_lines</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">invoices</span><span class="o">|</span>
@@ -2270,137 +2282,152 @@
 </pre>
 
 </div>
-<p>NOTE: The <code>:include</code> option allows you to name associations that should be loaded alongside with the models.</p>
+          <div class="box information-box">
+  <p><code>:include</code> 选项可以让指定的关联和模型一同加载。</p>
+</div>
 
-<h5>Options for <code>find_in_batches</code></h5>
 
-<p>The <code>find_in_batches</code> method accepts the same <code>:batch_size</code> and <code>:start</code> options as <code>find_each</code>, as well as most of the options allowed by the regular <code>find</code> method, except for <code>:order</code> and <code>:limit</code>, which are reserved for internal use by <code>find_in_batches</code>.</p>
+<h5 id="options-for-find-in-batches"><code>find_in_batches</code> 方法的选项</h5>
 
-<h2>Conditions</h2>
+<p><code>find_in_batches</code> 方法和 <code>find_each</code> 方法一样，可以使用 <code>:batch_size</code> 和 <code>:start</code> 选项，还可使用常规的 <code>find</code> 方法中的大多数选项，但不能使用 <code>:order</code> 和 <code>:limit</code> 选项，因为这两个选项保留给 <code>find_in_batches</code> 方法内部使用。</p>
 
-<p>The <code>where</code> method allows you to specify conditions to limit the records returned, representing the <code>WHERE</code>-part of the SQL statement. Conditions can either be specified as a string, array, or hash.</p>
+<h2 id="conditions">条件查询</h2>
 
-<h3>Pure String Conditions</h3>
+<p><code>where</code> 方法用来指定限制获取记录的条件，用于 SQL 语句的 <code>WHERE</code> 子句。条件可使用字符串、数组或 Hash 指定。</p>
 
-<p>If you’d like to add conditions to your find, you could just specify them in there, just like <code>Client.where("orders_count = '2'")</code>. This will find all clients where the <code>orders_count</code> field’s value is 2.</p>
+<h3 id="pure-string-conditions">纯字符串条件</h3>
 
-<p>WARNING: Building your own conditions as pure strings can leave you vulnerable to SQL injection exploits. For example, <code>Client.where("first_name LIKE '%#{params[:first_name]}%'")</code> is not safe. See the next section for the preferred way to handle conditions using an array.</p>
+<p>如果查询时要使用条件，可以直接指定。例如 <code>Client.where("orders_count = '2'")</code>，获取 <code>orders_count</code> 字段为 <code>2</code> 的客户记录。</p>
 
-<h3>Array Conditions</h3>
+          <div class="box warning-box">
+  <p>使用纯字符串指定条件可能导致 SQL 注入漏洞。例如，<code>Client.where("first_name LIKE '%#{params[:first_name]}%'")</code>，这里的条件就不安全。推荐使用的条件指定方式是数组，请阅读下一节。</p>
+</div>
 
-<p>Now what if that number could vary, say as an argument from somewhere? The find would then take the form:</p>
+
+<h3 id="array-conditions">数组条件</h3>
+
+<p>如果数字是在别处动态生成的话应该怎么处理呢？可用下面的查询：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s2">"orders_count = ?"</span><span class="p">,</span> <span class="n">params</span><span class="o">[</span><span class="ss">:orders</span><span class="o">]</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>Active Record will go through the first element in the conditions value and any additional elements will replace the question marks <code>(?)</code> in the first element.</p>
+<p>Active Record 会先处理第一个元素中的条件，然后使用后续元素替换第一个元素中的问号（<code>?</code>）。</p>
 
-<p>If you want to specify multiple conditions:</p>
+<p>指定多个条件的方式如下：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s2">"orders_count = ? AND locked = ?"</span><span class="p">,</span> <span class="n">params</span><span class="o">[</span><span class="ss">:orders</span><span class="o">]</span><span class="p">,</span> <span class="kp">false</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>In this example, the first question mark will be replaced with the value in <code>params[:orders]</code> and the second will be replaced with the SQL representation of <code>false</code>, which depends on the adapter.</p>
+<p>在这个例子中，第一个问号会替换成 <code>params[:orders]</code> 的值；第二个问号会替换成 <code>false</code> 在 SQL 中对应的值，具体的值视所用的适配器而定。</p>
 
-<p>This code is highly preferable:</p>
+<p>下面这种形式</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s2">"orders_count = ?"</span><span class="p">,</span> <span class="n">params</span><span class="o">[</span><span class="ss">:orders</span><span class="o">]</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>to this code:</p>
+<p>要比这种形式好</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s2">"orders_count = </span><span class="si">#{</span><span class="n">params</span><span class="o">[</span><span class="ss">:orders</span><span class="o">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>because of argument safety. Putting the variable directly into the conditions string will pass the variable to the database <strong>as-is</strong>. This means that it will be an unescaped variable directly from a user who may have malicious intent. If you do this, you put your entire database at risk because once a user finds out they can exploit your database they can do just about anything to it. Never ever put your arguments directly inside the conditions string.</p>
+<p>因为前者传入的参数更安全。直接在条件字符串中指定的条件会原封不动的传给数据库。也就是说，即使用户不怀好意，条件也会转义。如果这么做，整个数据库就处在一个危险境地，只要用户发现可以接触数据库，就能做任何想做的事。所以，千万别直接在条件字符串中使用参数。</p>
 
-<p>TIP: For more information on the dangers of SQL injection, see the <a href="security.html#sql-injection">Ruby on Rails Security Guide</a>.</p>
+          <div class="box tip-box">
+  <p>关于 SQL 注入更详细的介绍，请阅读“<a href="http://docs-china.com/rails/security.html#sql-injection">Ruby on Rails 安全指南</a>”</p>
+</div>
 
-<h4>Placeholder Conditions</h4>
 
-<p>Similar to the <code>(?)</code> replacement style of params, you can also specify keys/values hash in your array conditions:</p>
+<h4 id="placeholder-conditions">条件中的占位符</h4>
+
+<p>除了使用问号占位之外，在数组条件中还可使用键值对 Hash 形式的占位符：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s2">"created_at &gt;= :start_date AND created_at &lt;= :end_date"</span><span class="p">,</span>
   <span class="p">{</span><span class="ss">start_date: </span><span class="n">params</span><span class="o">[</span><span class="ss">:start_date</span><span class="o">]</span><span class="p">,</span> <span class="ss">end_date: </span><span class="n">params</span><span class="o">[</span><span class="ss">:end_date</span><span class="o">]</span><span class="p">})</span>
 </pre>
 
 </div>
-<p>This makes for clearer readability if you have a large number of variable conditions.</p>
+<p>如果条件中有很多参数，使用这种形式可读性更高。</p>
 
-<h3>Hash Conditions</h3>
+<h3 id="hash-conditions">Hash 条件</h3>
 
-<p>Active Record also allows you to pass in hash conditions which can increase the readability of your conditions syntax. With hash conditions, you pass in a hash with keys of the fields you want conditionalised and the values of how you want to conditionalise them:</p>
+<p>Active Record 还允许使用 Hash 条件，提高条件语句的可读性。使用 Hash 条件时，传入 Hash 的键是要设定条件的字段，值是要设定的条件。</p>
 
-<p>NOTE: Only equality, range and subset checking are possible with Hash conditions.</p>
+          <div class="box information-box">
+  <p>在 Hash 条件中只能指定相等。范围和子集这三种条件。</p>
+</div>
 
-<h4>Equality Conditions</h4>
+
+<h4 id="equality-conditions">相等</h4>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">locked: </span><span class="kp">true</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>The field name can also be a string:</p>
+<p>字段的名字还可使用字符串表示：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s1">'locked'</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>In the case of a belongs_to relationship, an association key can be used to specify the model if an Active Record object is used as the value. This method works with polymorphic relationships as well.</p>
+<p>在 <code>belongs_to</code> 关联中，如果条件中的值是模型对象，可用关联键表示。这种条件指定方式也可用于多态关联。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Post</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">author: </span><span class="n">author</span><span class="p">)</span>
 <span class="no">Author</span><span class="p">.</span><span class="nf">joins</span><span class="p">(</span><span class="ss">:posts</span><span class="p">).</span><span class="nf">where</span><span class="p">(</span><span class="ss">posts: </span><span class="p">{</span> <span class="ss">author: </span><span class="n">author</span> <span class="p">})</span>
 </pre>
 
 </div>
-<p>NOTE: The values cannot be symbols. For example, you cannot do <code>Client.where(status: :active)</code>.</p>
+          <div class="box information-box">
+  <p>条件的值不能为 Symbol。例如，不能这么指定条件：<code>Client.where(status: :active)</code>。</p>
+</div>
 
-<h4>Range Conditions</h4>
+
+<h4 id="range-conditions">范围</h4>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">created_at: </span><span class="p">(</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">midnight</span> <span class="o">-</span> <span class="mi">1</span><span class="p">.</span><span class="nf">day</span><span class="p">).</span><span class="nf">.</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">midnight</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>This will find all clients created yesterday by using a <code>BETWEEN</code> SQL statement:</p>
+<p>指定这个条件后，会使用 SQL <code>BETWEEN</code> 子句查询昨天创建的客户：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">clients</span> <span class="k">WHERE</span> <span class="p">(</span><span class="n">clients</span><span class="p">.</span><span class="n">created_at</span> <span class="k">BETWEEN</span> <span class="s1">'2008-12-21 00:00:00'</span> <span class="k">AND</span> <span class="s1">'2008-12-22 00:00:00'</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>This demonstrates a shorter syntax for the examples in <a href="#array-conditions">Array Conditions</a></p>
+<p>这段代码演示了<a href="#array-conditions">数组条件</a>的简写形式。</p>
 
-<h4>Subset Conditions</h4>
+<h4 id="subset-conditions">子集</h4>
 
-<p>If you want to find records using the <code>IN</code> expression you can pass an array to the conditions hash:</p>
+<p>如果想使用 <code>IN</code> 子句查询记录，可以在 Hash 条件中使用数组：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">orders_count: </span><span class="o">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="o">]</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>This code will generate SQL like this:</p>
+<p>上述代码生成的 SQL 语句如下：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">clients</span> <span class="k">WHERE</span> <span class="p">(</span><span class="n">clients</span><span class="p">.</span><span class="n">orders_count</span> <span class="k">IN</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
 </pre>
 
 </div>
-<h3>NOT Conditions</h3>
+<h3 id="not-conditions"><code>NOT</code> 条件</h3>
 
-<p><code>NOT</code> SQL queries can be built by <code>where.not</code>.</p>
+<p>SQL <code>NOT</code> 查询可用 <code>where.not</code> 方法构建。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Post</span><span class="p">.</span><span class="nf">where</span><span class="p">.</span><span class="nf">not</span><span class="p">(</span><span class="ss">author: </span><span class="n">author</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>In other words, this query can be generated by calling <code>where</code> with no argument, then immediately chain with <code>not</code> passing <code>where</code> conditions.</p>
+<p>也即是说，这个查询首先调用没有参数的 <code>where</code> 方法，然后再调用 <code>not</code> 方法。</p>
 
-<h2>Ordering</h2>
+<h2 id="ordering">排序</h2>
 
-<p>To retrieve records from the database in a specific order, you can use the <code>order</code> method.</p>
+<p>要想按照特定的顺序从数据库中获取记录，可以使用 <code>order</code> 方法。</p>
 
-<p>For example, if you’re getting a set of records and want to order them in ascending order by the <code>created_at</code> field in your table:</p>
+<p>例如，想按照 <code>created_at</code> 的升序方式获取一些记录，可以这么做：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="ss">:created_at</span><span class="p">)</span>
 <span class="c1"># OR</span>
@@ -2408,7 +2435,7 @@
 </pre>
 
 </div>
-<p>You could specify <code>ASC</code> or <code>DESC</code> as well:</p>
+<p>还可使用 <code>ASC</code> 或 <code>DESC</code> 指定排序方式：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="ss">created_at: :desc</span><span class="p">)</span>
 <span class="c1"># OR</span>
@@ -2420,7 +2447,7 @@
 </pre>
 
 </div>
-<p>Or ordering by multiple fields:</p>
+<p>或者使用多个字段排序：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="ss">orders_count: :asc</span><span class="p">,</span> <span class="ss">created_at: :desc</span><span class="p">)</span>
 <span class="c1"># OR</span>
@@ -2432,52 +2459,52 @@
 </pre>
 
 </div>
-<p>If you want to call <code>order</code> multiple times e.g. in different context, new order will append previous one</p>
+<p>如果想在不同的上下文中多次调用 <code>order</code>，可以在前一个 <code>order</code> 后再调用一次：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="s2">"orders_count ASC"</span><span class="p">).</span><span class="nf">order</span><span class="p">(</span><span class="s2">"created_at DESC"</span><span class="p">)</span>
 <span class="c1"># SELECT * FROM clients ORDER BY orders_count ASC, created_at DESC</span>
 </pre>
 
 </div>
-<h2>Selecting Specific Fields</h2>
+<h2 id="selecting-specific-fields">查询指定字段</h2>
 
-<p>By default, <code>Model.find</code> selects all the fields from the result set using <code>select *</code>.</p>
+<p>默认情况下，<code>Model.find</code> 使用 <code>SELECT *</code> 查询所有字段。</p>
 
-<p>To select only a subset of fields from the result set, you can specify the subset via the <code>select</code> method.</p>
+<p>要查询部分字段，可使用 <code>select</code> 方法。</p>
 
-<p>For example, to select only <code>viewable_by</code> and <code>locked</code> columns:</p>
+<p>例如，只查询 <code>viewable_by</code> 和 <code>locked</code> 字段：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="s2">"viewable_by, locked"</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>The SQL query used by this find call will be somewhat like:</p>
+<p>上述查询使用的 SQL 语句如下：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="n">viewable_by</span><span class="p">,</span> <span class="n">locked</span> <span class="k">FROM</span> <span class="n">clients</span>
 </pre>
 
 </div>
-<p>Be careful because this also means you’re initializing a model object with only the fields that you’ve selected. If you attempt to access a field that is not in the initialized record you’ll receive:</p>
+<p>使用时要注意，因为模型对象只会使用选择的字段初始化。如果字段不能初始化模型对象，会得到以下异常：</p>
 
 <div class="codeblock bash"><pre class="highlight">ActiveModel::MissingAttributeError: missing attribute: &lt;attribute&gt;
 </pre>
 
 </div>
-<p>Where <code>&lt;attribute&gt;</code> is the attribute you asked for. The <code>id</code> method will not raise the <code>ActiveRecord::MissingAttributeError</code>, so just be careful when working with associations because they need the <code>id</code> method to function properly.</p>
+<p>其中 <code>&lt;attribute&gt;</code> 是所查询的字段。<code>id</code> 字段不会抛出 <code>ActiveRecord::MissingAttributeError</code> 异常，所以在关联中使用时要注意，因为关联需要 <code>id</code> 字段才能正常使用。</p>
 
-<p>If you would like to only grab a single record per unique value in a certain field, you can use <code>distinct</code>:</p>
+<p>如果查询时希望指定字段的同值记录只出现一次，可以使用 <code>distinct</code> 方法：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="ss">:name</span><span class="p">).</span><span class="nf">distinct</span>
 </pre>
 
 </div>
-<p>This would generate SQL like:</p>
+<p>上述方法生成的 SQL 语句如下：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="k">DISTINCT</span> <span class="n">name</span> <span class="k">FROM</span> <span class="n">clients</span>
 </pre>
 
 </div>
-<p>You can also remove the uniqueness constraint:</p>
+<p>查询后还可以删除唯一性限制：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">query</span> <span class="o">=</span> <span class="no">Client</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="ss">:name</span><span class="p">).</span><span class="nf">distinct</span>
 <span class="c1"># =&gt; Returns unique names</span>
@@ -2487,47 +2514,47 @@
 </pre>
 
 </div>
-<h2>Limit and Offset</h2>
+<h2 id="limit-and-offset">限量和偏移</h2>
 
-<p>To apply <code>LIMIT</code> to the SQL fired by the <code>Model.find</code>, you can specify the <code>LIMIT</code> using <code>limit</code> and <code>offset</code> methods on the relation.</p>
+<p>要想在 <code>Model.find</code> 方法中使用 SQL <code>LIMIT</code> 子句，可使用 <code>limit</code> 和 <code>offset</code> 方法。</p>
 
-<p>You can use <code>limit</code> to specify the number of records to be retrieved, and use <code>offset</code> to specify the number of records to skip before starting to return the records. For example</p>
+<p><code>limit</code> 方法指定获取的记录数量，<code>offset</code> 方法指定在返回结果之前跳过多少个记录。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">limit</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>will return a maximum of 5 clients and because it specifies no offset it will return the first 5 in the table. The SQL it executes looks like this:</p>
+<p>上述查询最大只会返回 5 各客户对象，因为没指定偏移，多以会返回数据表中的前 5 个记录。生成的 SQL 语句如下：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">clients</span> <span class="k">LIMIT</span> <span class="mi">5</span>
 </pre>
 
 </div>
-<p>Adding <code>offset</code> to that</p>
+<p>再加上 <code>offset</code> 方法：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">limit</span><span class="p">(</span><span class="mi">5</span><span class="p">).</span><span class="nf">offset</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>will return instead a maximum of 5 clients beginning with the 31st. The SQL looks like:</p>
+<p>这时会从第 31 个记录开始，返回最多 5 个客户对象。生成的 SQL 语句如下：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">clients</span> <span class="k">LIMIT</span> <span class="mi">5</span> <span class="k">OFFSET</span> <span class="mi">30</span>
 </pre>
 
 </div>
-<h2>Group</h2>
+<h2 id="group">分组</h2>
 
-<p>To apply a <code>GROUP BY</code> clause to the SQL fired by the finder, you can specify the <code>group</code> method on the find.</p>
+<p>要想在查询时使用 SQL <code>GROUP BY</code> 子句，可以使用 <code>group</code> 方法。</p>
 
-<p>For example, if you want to find a collection of the dates orders were created on:</p>
+<p>例如，如果想获取一组订单的创建日期，可以这么做：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Order</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="s2">"date(created_at) as ordered_date, sum(price) as total_price"</span><span class="p">).</span><span class="nf">group</span><span class="p">(</span><span class="s2">"date(created_at)"</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>And this will give you a single <code>Order</code> object for each date where there are orders in the database.</p>
+<p>上述查询会只会为相同日期下的订单创建一个 <code>Order</code> 对象。</p>
 
-<p>The SQL that would be executed would be something like this:</p>
+<p>生成的 SQL 语句如下：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="n">date</span><span class="p">(</span><span class="n">created_at</span><span class="p">)</span> <span class="k">as</span> <span class="n">ordered_date</span><span class="p">,</span> <span class="k">sum</span><span class="p">(</span><span class="n">price</span><span class="p">)</span> <span class="k">as</span> <span class="n">total_price</span>
 <span class="k">FROM</span> <span class="n">orders</span>
@@ -2535,18 +2562,18 @@
 </pre>
 
 </div>
-<h2>Having</h2>
+<h2 id="having">分组筛选</h2>
 
-<p>SQL uses the <code>HAVING</code> clause to specify conditions on the <code>GROUP BY</code> fields. You can add the <code>HAVING</code> clause to the SQL fired by the <code>Model.find</code> by adding the <code>:having</code> option to the find.</p>
+<p>SQL 使用 <code>HAVING</code> 子句指定 <code>GROUP BY</code> 分组的条件。在 <code>Model.find</code> 方法中可使用 <code>:having</code> 选项指定 <code>HAVING</code> 子句。</p>
 
-<p>For example:</p>
+<p>例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Order</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="s2">"date(created_at) as ordered_date, sum(price) as total_price"</span><span class="p">)</span><span class="o">.</span>
   <span class="n">group</span><span class="p">(</span><span class="s2">"date(created_at)"</span><span class="p">).</span><span class="nf">having</span><span class="p">(</span><span class="s2">"sum(price) &gt; ?"</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>The SQL that would be executed would be something like this:</p>
+<p>生成的 SQL 如下：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="n">date</span><span class="p">(</span><span class="n">created_at</span><span class="p">)</span> <span class="k">as</span> <span class="n">ordered_date</span><span class="p">,</span> <span class="k">sum</span><span class="p">(</span><span class="n">price</span><span class="p">)</span> <span class="k">as</span> <span class="n">total_price</span>
 <span class="k">FROM</span> <span class="n">orders</span>
@@ -2555,64 +2582,61 @@
 </pre>
 
 </div>
-<p>This will return single order objects for each day, but only those that are ordered more than $100 in a day.</p>
+<p>这个查询只会为同一天下的订单创建一个 <code>Order</code> 对象，而且这一天的订单总额要大于 $100。</p>
 
-<h2>Overriding Conditions</h2>
+<h2 id="overriding-conditions">条件覆盖</h2>
 
-<h3><code>unscope</code></h3>
+<h3 id="unscope"><code>unscope</code></h3>
 
-<p>You can specify certain conditions to be removed using the <code>unscope</code> method. For example:</p>
+<p>如果要删除某个条件可使用 <code>unscope</code> 方法。例如：</p>
 
-<div class="codeblock ruby"><pre class="highlight"><span class="no">Post</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s1">'id &gt; 10'</span><span class="p">).</span><span class="nf">limit</span><span class="p">(</span><span class="mi">20</span><span class="p">).</span><span class="nf">order</span><span class="p">(</span><span class="s1">'id asc'</span><span class="p">).</span><span class="nf">except</span><span class="p">(</span><span class="ss">:order</span><span class="p">)</span>
+<div class="codeblock ruby"><pre class="highlight"><span class="no">Post</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s1">'id &gt; 10'</span><span class="p">).</span><span class="nf">limit</span><span class="p">(</span><span class="mi">20</span><span class="p">).</span><span class="nf">order</span><span class="p">(</span><span class="s1">'id asc'</span><span class="p">).</span><span class="nf">unscope</span><span class="p">(</span><span class="ss">:order</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>The SQL that would be executed:</p>
+<p>生成的 SQL 语句如下：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">posts</span> <span class="k">WHERE</span> <span class="n">id</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="k">LIMIT</span> <span class="mi">20</span>
 
 <span class="o">#</span> <span class="n">Original</span> <span class="n">query</span> <span class="k">without</span> <span class="nv">`unscope`</span>
 <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">posts</span> <span class="k">WHERE</span> <span class="n">id</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">id</span> <span class="k">asc</span> <span class="k">LIMIT</span> <span class="mi">20</span>
-
 </pre>
 
 </div>
-<p>You can additionally unscope specific where clauses. For example:</p>
+<p><code>unscope</code> 还可删除 <code>WHERE</code> 子句中的条件。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Post</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="ss">trashed: </span><span class="kp">false</span><span class="p">).</span><span class="nf">unscope</span><span class="p">(</span><span class="ss">where: :id</span><span class="p">)</span>
 <span class="c1"># SELECT "posts".* FROM "posts" WHERE trashed = 0</span>
 </pre>
 
 </div>
-<p>A relation which has used <code>unscope</code> will affect any relation it is
-merged in to:</p>
+<p><code>unscope</code> 还可影响合并后的查询：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Post</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="s1">'id asc'</span><span class="p">).</span><span class="nf">merge</span><span class="p">(</span><span class="no">Post</span><span class="p">.</span><span class="nf">unscope</span><span class="p">(</span><span class="ss">:order</span><span class="p">))</span>
 <span class="c1"># SELECT "posts".* FROM "posts"</span>
 </pre>
 
 </div>
-<h3><code>only</code></h3>
+<h3 id="only"><code>only</code></h3>
 
-<p>You can also override conditions using the <code>only</code> method. For example:</p>
+<p>查询条件还可使用 <code>only</code> 方法覆盖。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Post</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s1">'id &gt; 10'</span><span class="p">).</span><span class="nf">limit</span><span class="p">(</span><span class="mi">20</span><span class="p">).</span><span class="nf">order</span><span class="p">(</span><span class="s1">'id desc'</span><span class="p">).</span><span class="nf">only</span><span class="p">(</span><span class="ss">:order</span><span class="p">,</span> <span class="ss">:where</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>The SQL that would be executed:</p>
+<p>执行的 SQL 语句如下：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">posts</span> <span class="k">WHERE</span> <span class="n">id</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">id</span> <span class="k">DESC</span>
 
 <span class="o">#</span> <span class="n">Original</span> <span class="n">query</span> <span class="k">without</span> <span class="nv">`only`</span>
 <span class="k">SELECT</span> <span class="nv">"posts"</span><span class="p">.</span><span class="o">*</span> <span class="k">FROM</span> <span class="nv">"posts"</span> <span class="k">WHERE</span> <span class="p">(</span><span class="n">id</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">)</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">id</span> <span class="k">desc</span> <span class="k">LIMIT</span> <span class="mi">20</span>
-
 </pre>
 
 </div>
-<h3><code>reorder</code></h3>
+<h3 id="reorder"><code>reorder</code></h3>
 
-<p>The <code>reorder</code> method overrides the default scope order. For example:</p>
+<p><code>reorder</code> 方法覆盖原来的 <code>order</code> 条件。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="p">.</span><span class="nf">.</span>
@@ -2624,75 +2648,75 @@ merged in to:</p>
 </pre>
 
 </div>
-<p>The SQL that would be executed:</p>
+<p>执行的 SQL 语句如下：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">posts</span> <span class="k">WHERE</span> <span class="n">id</span> <span class="o">=</span> <span class="mi">10</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">name</span>
 </pre>
 
 </div>
-<p>In case the <code>reorder</code> clause is not used, the SQL executed would be:</p>
+<p>没用 <code>reorder</code> 方法时执行的 SQL 语句如下：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">posts</span> <span class="k">WHERE</span> <span class="n">id</span> <span class="o">=</span> <span class="mi">10</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">posted_at</span> <span class="k">DESC</span>
 </pre>
 
 </div>
-<h3><code>reverse_order</code></h3>
+<h3 id="reverse-order"><code>reverse_order</code></h3>
 
-<p>The <code>reverse_order</code> method reverses the ordering clause if specified.</p>
+<p><code>reverse_order</code> 方法翻转 <code>ORDER</code> 子句的条件。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s2">"orders_count &gt; 10"</span><span class="p">).</span><span class="nf">order</span><span class="p">(</span><span class="ss">:name</span><span class="p">).</span><span class="nf">reverse_order</span>
 </pre>
 
 </div>
-<p>The SQL that would be executed:</p>
+<p>执行的 SQL 语句如下：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">clients</span> <span class="k">WHERE</span> <span class="n">orders_count</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">name</span> <span class="k">DESC</span>
 </pre>
 
 </div>
-<p>If no ordering clause is specified in the query, the <code>reverse_order</code> orders by the primary key in reverse order.</p>
+<p>如果查询中没有使用 <code>ORDER</code> 子句，<code>reverse_order</code> 方法会按照主键的逆序查询：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s2">"orders_count &gt; 10"</span><span class="p">).</span><span class="nf">reverse_order</span>
 </pre>
 
 </div>
-<p>The SQL that would be executed:</p>
+<p>执行的 SQL 语句如下：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">clients</span> <span class="k">WHERE</span> <span class="n">orders_count</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">clients</span><span class="p">.</span><span class="n">id</span> <span class="k">DESC</span>
 </pre>
 
 </div>
-<p>This method accepts <strong>no</strong> arguments.</p>
+<p>这个方法<strong>没有</strong>参数。</p>
 
-<h3><code>rewhere</code></h3>
+<h3 id="rewhere"><code>rewhere</code></h3>
 
-<p>The <code>rewhere</code> method overrides an existing, named where condition. For example:</p>
+<p><code>rewhere</code> 方法覆盖前面的 <code>where</code> 条件。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Post</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">trashed: </span><span class="kp">true</span><span class="p">).</span><span class="nf">rewhere</span><span class="p">(</span><span class="ss">trashed: </span><span class="kp">false</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>The SQL that would be executed:</p>
+<p>执行的 SQL 语句如下：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">posts</span> <span class="k">WHERE</span> <span class="nv">`trashed`</span> <span class="o">=</span> <span class="mi">0</span>
 </pre>
 
 </div>
-<p>In case the <code>rewhere</code> clause is not used,</p>
+<p>如果不使用 <code>rewhere</code> 方法，写成：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Post</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">trashed: </span><span class="kp">true</span><span class="p">).</span><span class="nf">where</span><span class="p">(</span><span class="ss">trashed: </span><span class="kp">false</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>the SQL executed would be:</p>
+<p>执行的 SQL 语句如下：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">posts</span> <span class="k">WHERE</span> <span class="nv">`trashed`</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">AND</span> <span class="nv">`trashed`</span> <span class="o">=</span> <span class="mi">0</span>
 </pre>
 
 </div>
-<h2>Null Relation</h2>
+<h2 id="null-relation">空关系</h2>
 
-<p>The <code>none</code> method returns a chainable relation with no records. Any subsequent conditions chained to the returned relation will continue generating empty relations. This is useful in scenarios where you need a chainable response to a method or a scope that could return zero results.</p>
+<p><code>none</code> 返回一个可链接的关系，没有相应的记录。<code>none</code> 方法返回对象的后续条件查询，得到的还是空关系。如果想以可链接的方式响应可能无返回结果的方法或者作用域，可使用 <code>none</code> 方法。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Post</span><span class="p">.</span><span class="nf">none</span> <span class="c1"># returns an empty Relation and fires no queries.</span>
 </pre>
@@ -2714,9 +2738,9 @@ merged in to:</p>
 </pre>
 
 </div>
-<h2>Readonly Objects</h2>
+<h2 id="readonly-objects">只读对象</h2>
 
-<p>Active Record provides <code>readonly</code> method on a relation to explicitly disallow modification of any of the returned objects. Any attempt to alter a readonly record will not succeed, raising an <code>ActiveRecord::ReadOnlyRecord</code> exception.</p>
+<p>Active Record 提供了 <code>readonly</code> 方法，禁止修改获取的对象。试图修改只读记录的操作不会成功，而且会抛出 <code>ActiveRecord::ReadOnlyRecord</code> 异常。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">client</span> <span class="o">=</span> <span class="no">Client</span><span class="p">.</span><span class="nf">readonly</span><span class="p">.</span><span class="nf">first</span>
 <span class="n">client</span><span class="p">.</span><span class="nf">visits</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -2724,26 +2748,26 @@ merged in to:</p>
 </pre>
 
 </div>
-<p>As <code>client</code> is explicitly set to be a readonly object, the above code will raise an <code>ActiveRecord::ReadOnlyRecord</code> exception when calling <code>client.save</code> with an updated value of <em>visits</em>.</p>
+<p>因为把 <code>client</code> 设为了只读对象，所以上述代码调用 <code>client.save</code> 方法修改 <code>visits</code> 的值时会抛出 <code>ActiveRecord::ReadOnlyRecord</code> 异常。</p>
 
-<h2>Locking Records for Update</h2>
+<h2 id="locking-records-for-update">更新时锁定记录</h2>
 
-<p>Locking is helpful for preventing race conditions when updating records in the database and ensuring atomic updates.</p>
+<p>锁定可以避免更新记录时的条件竞争，也能保证原子更新。</p>
 
-<p>Active Record provides two locking mechanisms:</p>
+<p>Active Record 提供了两种锁定机制：</p>
 
 <ul>
-  <li>Optimistic Locking</li>
-  <li>Pessimistic Locking</li>
+  <li>乐观锁定</li>
+  <li>悲观锁定</li>
 </ul>
 
-<h3>Optimistic Locking</h3>
+<h3 id="optimistic-locking">乐观锁定</h3>
 
-<p>Optimistic locking allows multiple users to access the same record for edits, and assumes a minimum of conflicts with the data. It does this by checking whether another process has made changes to a record since it was opened. An <code>ActiveRecord::StaleObjectError</code> exception is thrown if that has occurred and the update is ignored.</p>
+<p>乐观锁定允许多个用户编辑同一个记录，假设数据发生冲突的可能性最小。Rails 会检查读取记录后是否有其他程序在修改这个记录。如果检测到有其他程序在修改，就会抛出 <code>ActiveRecord::StaleObjectError</code> 异常，忽略改动。</p>
 
-<p><strong>Optimistic locking column</strong></p>
+<p><strong>乐观锁定字段</strong></p>
 
-<p>In order to use optimistic locking, the table needs to have a column called <code>lock_version</code> of type integer. Each time the record is updated, Active Record increments the <code>lock_version</code> column. If an update request is made with a lower value in the <code>lock_version</code> field than is currently in the <code>lock_version</code> column in the database, the update request will fail with an <code>ActiveRecord::StaleObjectError</code>. Example:</p>
+<p>为了使用乐观锁定，数据表中要有一个类型为整数的 <code>lock_version</code> 字段。每次更新记录时，Active Record 都会增加 <code>lock_version</code> 字段的值。如果更新请求中的 <code>lock_version</code> 字段值比数据库中的 <code>lock_version</code> 字段值小，会抛出 <code>ActiveRecord::StaleObjectError</code> 异常，更新失败。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">c1</span> <span class="o">=</span> <span class="no">Client</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">c2</span> <span class="o">=</span> <span class="no">Client</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
@@ -2756,11 +2780,11 @@ merged in to:</p>
 </pre>
 
 </div>
-<p>You’re then responsible for dealing with the conflict by rescuing the exception and either rolling back, merging, or otherwise apply the business logic needed to resolve the conflict.</p>
+<p>抛出异常后，你要负责处理冲突，可以回滚操作、合并操作或者使用其他业务逻辑处理。</p>
 
-<p>This behavior can be turned off by setting <code>ActiveRecord::Base.lock_optimistically = false</code>.</p>
+<p>乐观锁定可以使用 <code>ActiveRecord::Base.lock_optimistically = false</code> 关闭。</p>
 
-<p>To override the name of the <code>lock_version</code> column, <code>ActiveRecord::Base</code> provides a class attribute called <code>locking_column</code>:</p>
+<p>要想修改 <code>lock_version</code> 字段的名字，可以使用 <code>ActiveRecord::Base</code> 提供的 <code>locking_column</code> 类方法：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Client</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="nb">self</span><span class="p">.</span><span class="nf">locking_column</span> <span class="o">=</span> <span class="ss">:lock_client_column</span>
@@ -2768,11 +2792,11 @@ merged in to:</p>
 </pre>
 
 </div>
-<h3>Pessimistic Locking</h3>
+<h3 id="pessimistic-locking">悲观锁定</h3>
 
-<p>Pessimistic locking uses a locking mechanism provided by the underlying database. Using <code>lock</code> when building a relation obtains an exclusive lock on the selected rows. Relations using <code>lock</code> are usually wrapped inside a transaction for preventing deadlock conditions.</p>
+<p>悲观锁定使用底层数据库提供的锁定机制。使用 <code>lock</code> 方法构建的关系在所选记录上生成一个“互斥锁”（exclusive lock）。使用 <code>lock</code> 方法构建的关系一般都放入事务中，避免死锁。</p>
 
-<p>For example:</p>
+<p>例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Item</span><span class="p">.</span><span class="nf">transaction</span> <span class="k">do</span>
   <span class="n">i</span> <span class="o">=</span> <span class="no">Item</span><span class="p">.</span><span class="nf">lock</span><span class="p">.</span><span class="nf">first</span>
@@ -2782,7 +2806,7 @@ merged in to:</p>
 </pre>
 
 </div>
-<p>The above session produces the following SQL for a MySQL backend:</p>
+<p>在 MySQL 中，上述代码生成的 SQL 如下：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SQL</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">2</span><span class="n">ms</span><span class="p">)</span>   <span class="k">BEGIN</span>
 <span class="n">Item</span> <span class="k">Load</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">3</span><span class="n">ms</span><span class="p">)</span>   <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="nv">`items`</span> <span class="k">LIMIT</span> <span class="mi">1</span> <span class="k">FOR</span> <span class="k">UPDATE</span>
@@ -2791,7 +2815,7 @@ merged in to:</p>
 </pre>
 
 </div>
-<p>You can also pass raw SQL to the <code>lock</code> method for allowing different types of locks. For example, MySQL has an expression called <code>LOCK IN SHARE MODE</code> where you can lock a record but still allow other queries to read it. To specify this expression just pass it in as the lock option:</p>
+<p><code>lock</code> 方法还可以接受 SQL 语句，使用其他锁定类型。例如，MySQL 中有一个语句是 <code>LOCK IN SHARE MODE</code>，会锁定记录，但还是允许其他查询读取记录。要想使用这个语句，直接传入 <code>lock</code> 方法即可：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Item</span><span class="p">.</span><span class="nf">transaction</span> <span class="k">do</span>
   <span class="n">i</span> <span class="o">=</span> <span class="no">Item</span><span class="p">.</span><span class="nf">lock</span><span class="p">(</span><span class="s2">"LOCK IN SHARE MODE"</span><span class="p">).</span><span class="nf">find</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
@@ -2800,7 +2824,7 @@ merged in to:</p>
 </pre>
 
 </div>
-<p>If you already have an instance of your model, you can start a transaction and acquire the lock in one go using the following code:</p>
+<p>如果已经创建了模型实例，可以在事务中加上这种锁定，如下所示：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">item</span> <span class="o">=</span> <span class="no">Item</span><span class="p">.</span><span class="nf">first</span>
 <span class="n">item</span><span class="p">.</span><span class="nf">with_lock</span> <span class="k">do</span>
@@ -2811,31 +2835,34 @@ merged in to:</p>
 </pre>
 
 </div>
-<h2>Joining Tables</h2>
+<h2 id="joining-tables">连接数据表</h2>
 
-<p>Active Record provides a finder method called <code>joins</code> for specifying <code>JOIN</code> clauses on the resulting SQL. There are multiple ways to use the <code>joins</code> method.</p>
+<p>Active Record 提供了一个查询方法名为 <code>joins</code>，用来指定 SQL <code>JOIN</code> 子句。<code>joins</code> 方法的用法有很多种。</p>
 
-<h3>Using a String SQL Fragment</h3>
+<h3 id="using-a-string-sql-fragment">使用字符串形式的 SQL 语句</h3>
 
-<p>You can just supply the raw SQL specifying the <code>JOIN</code> clause to <code>joins</code>:</p>
+<p>在 <code>joins</code> 方法中可以直接使用 <code>JOIN</code> 子句的 SQL：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">joins</span><span class="p">(</span><span class="s1">'LEFT OUTER JOIN addresses ON addresses.client_id = clients.id'</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>This will result in the following SQL:</p>
+<p>生成的 SQL 语句如下：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="n">clients</span><span class="p">.</span><span class="o">*</span> <span class="k">FROM</span> <span class="n">clients</span> <span class="k">LEFT</span> <span class="k">OUTER</span> <span class="k">JOIN</span> <span class="n">addresses</span> <span class="k">ON</span> <span class="n">addresses</span><span class="p">.</span><span class="n">client_id</span> <span class="o">=</span> <span class="n">clients</span><span class="p">.</span><span class="n">id</span>
 </pre>
 
 </div>
-<h3>Using Array/Hash of Named Associations</h3>
+<h3 id="using-array-hash-of-named-associations">使用数组或 Hash 指定具名关联</h3>
 
-<p>WARNING: This method only works with <code>INNER JOIN</code>.</p>
+          <div class="box warning-box">
+  <p>这种方法只用于 <code>INNER JOIN</code>。</p>
+</div>
 
-<p>Active Record lets you use the names of the <a href="association_basics.html">associations</a> defined on the model as a shortcut for specifying <code>JOIN</code> clause for those associations when using the <code>joins</code> method.</p>
 
-<p>For example, consider the following <code>Category</code>, <code>Post</code>, <code>Comment</code>, <code>Guest</code> and <code>Tag</code> models:</p>
+<p>使用 <code>joins</code> 方法时，可以使用声明<a href="http://docs-china.com/rails/association_basics.html">关联</a>时使用的关联名指定 <code>JOIN</code> 子句。</p>
+
+<p>例如，假如按照如下方式定义 <code>Category</code>、<code>Post</code>、<code>Comment</code>、<code>Guest</code> 和 <code>Tag</code> 模型：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Category</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:posts</span>
@@ -2862,30 +2889,30 @@ merged in to:</p>
 </pre>
 
 </div>
-<p>Now all of the following will produce the expected join queries using <code>INNER JOIN</code>:</p>
+<p>下面各种用法能都使用 <code>INNER JOIN</code> 子句生成正确的连接查询：</p>
 
-<h4>Joining a Single Association</h4>
+<h4 id="joining-a-single-association">连接单个关联</h4>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Category</span><span class="p">.</span><span class="nf">joins</span><span class="p">(</span><span class="ss">:posts</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>This produces:</p>
+<p>生成的 SQL 语句如下：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="n">categories</span><span class="p">.</span><span class="o">*</span> <span class="k">FROM</span> <span class="n">categories</span>
   <span class="k">INNER</span> <span class="k">JOIN</span> <span class="n">posts</span> <span class="k">ON</span> <span class="n">posts</span><span class="p">.</span><span class="n">category_id</span> <span class="o">=</span> <span class="n">categories</span><span class="p">.</span><span class="n">id</span>
 </pre>
 
 </div>
-<p>Or, in English: “return a Category object for all categories with posts”. Note that you will see duplicate categories if more than one post has the same category. If you want unique categories, you can use <code>Category.joins(:posts).uniq</code>.</p>
+<p>用人类语言表达，上述查询的意思是，“使用文章的分类创建分类对象”。注意，分类对象可能有重复，因为多篇文章可能属于同一分类。如果不想出现重复，可使用 <code>Category.joins(:posts).uniq</code> 方法。</p>
 
-<h4>Joining Multiple Associations</h4>
+<h4 id="joining-multiple-associations">连接多个关联</h4>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Post</span><span class="p">.</span><span class="nf">joins</span><span class="p">(</span><span class="ss">:category</span><span class="p">,</span> <span class="ss">:comments</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>This produces:</p>
+<p>生成的 SQL 语句如下：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="n">posts</span><span class="p">.</span><span class="o">*</span> <span class="k">FROM</span> <span class="n">posts</span>
   <span class="k">INNER</span> <span class="k">JOIN</span> <span class="n">categories</span> <span class="k">ON</span> <span class="n">posts</span><span class="p">.</span><span class="n">category_id</span> <span class="o">=</span> <span class="n">categories</span><span class="p">.</span><span class="n">id</span>
@@ -2893,15 +2920,15 @@ merged in to:</p>
 </pre>
 
 </div>
-<p>Or, in English: “return all posts that have a category and at least one comment”. Note again that posts with multiple comments will show up multiple times.</p>
+<p>用人类语言表达，上述查询的意思是，“返回指定分类且至少有一个评论的所有文章”。注意，如果文章有多个评论，同个文章对象会出现多次。</p>
 
-<h4>Joining Nested Associations (Single Level)</h4>
+<h4 id="joining-nested-associations-single-level">连接一层嵌套关联</h4>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Post</span><span class="p">.</span><span class="nf">joins</span><span class="p">(</span><span class="ss">comments: :guest</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>This produces:</p>
+<p>生成的 SQL 语句如下：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="n">posts</span><span class="p">.</span><span class="o">*</span> <span class="k">FROM</span> <span class="n">posts</span>
   <span class="k">INNER</span> <span class="k">JOIN</span> <span class="n">comments</span> <span class="k">ON</span> <span class="n">comments</span><span class="p">.</span><span class="n">post_id</span> <span class="o">=</span> <span class="n">posts</span><span class="p">.</span><span class="n">id</span>
@@ -2909,15 +2936,15 @@ merged in to:</p>
 </pre>
 
 </div>
-<p>Or, in English: “return all posts that have a comment made by a guest.”</p>
+<p>用人类语言表达，上述查询的意思是，“返回有一个游客发布评论的所有文章”。</p>
 
-<h4>Joining Nested Associations (Multiple Level)</h4>
+<h4 id="joining-nested-associations-multiple-level">连接多层嵌套关联</h4>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Category</span><span class="p">.</span><span class="nf">joins</span><span class="p">(</span><span class="ss">posts: </span><span class="o">[</span><span class="p">{</span> <span class="ss">comments: :guest</span> <span class="p">},</span> <span class="ss">:tags</span><span class="o">]</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>This produces:</p>
+<p>生成的 SQL 语句如下：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="n">categories</span><span class="p">.</span><span class="o">*</span> <span class="k">FROM</span> <span class="n">categories</span>
   <span class="k">INNER</span> <span class="k">JOIN</span> <span class="n">posts</span> <span class="k">ON</span> <span class="n">posts</span><span class="p">.</span><span class="n">category_id</span> <span class="o">=</span> <span class="n">categories</span><span class="p">.</span><span class="n">id</span>
@@ -2927,31 +2954,31 @@ merged in to:</p>
 </pre>
 
 </div>
-<h3>Specifying Conditions on the Joined Tables</h3>
+<h3 id="specifying-conditions-on-the-joined-tables">指定用于连接数据表上的条件</h3>
 
-<p>You can specify conditions on the joined tables using the regular <a href="#array-conditions">Array</a> and <a href="#pure-string-conditions">String</a> conditions. <a href="#hash-conditions">Hash conditions</a> provides a special syntax for specifying conditions for the joined tables:</p>
+<p>作用在连接数据表上的条件可以使用<a href="#array-conditions">数组</a>和<a href="#pure-string-conditions">字符串</a>指定。[Hash 形式的条件]((#hash-conditions)使用的句法有点特殊：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">time_range</span> <span class="o">=</span> <span class="p">(</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">midnight</span> <span class="o">-</span> <span class="mi">1</span><span class="p">.</span><span class="nf">day</span><span class="p">).</span><span class="nf">.</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">midnight</span>
 <span class="no">Client</span><span class="p">.</span><span class="nf">joins</span><span class="p">(</span><span class="ss">:orders</span><span class="p">).</span><span class="nf">where</span><span class="p">(</span><span class="s1">'orders.created_at'</span> <span class="o">=&gt;</span> <span class="n">time_range</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>An alternative and cleaner syntax is to nest the hash conditions:</p>
+<p>还有一种更简洁的句法是使用嵌套 Hash：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">time_range</span> <span class="o">=</span> <span class="p">(</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">midnight</span> <span class="o">-</span> <span class="mi">1</span><span class="p">.</span><span class="nf">day</span><span class="p">).</span><span class="nf">.</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">midnight</span>
 <span class="no">Client</span><span class="p">.</span><span class="nf">joins</span><span class="p">(</span><span class="ss">:orders</span><span class="p">).</span><span class="nf">where</span><span class="p">(</span><span class="ss">orders: </span><span class="p">{</span> <span class="ss">created_at: </span><span class="n">time_range</span> <span class="p">})</span>
 </pre>
 
 </div>
-<p>This will find all clients who have orders that were created yesterday, again using a <code>BETWEEN</code> SQL expression.</p>
+<p>上述查询会获取昨天下订单的所有客户对象，再次用到了 SQL <code>BETWEEN</code> 语句。</p>
 
-<h2>Eager Loading Associations</h2>
+<h2 id="eager-loading-associations">按需加载关联</h2>
 
-<p>Eager loading is the mechanism for loading the associated records of the objects returned by <code>Model.find</code> using as few queries as possible.</p>
+<p>使用 <code>Model.find</code> 方法获取对象的关联记录时，按需加载机制会使用尽量少的查询次数。</p>
 
-<p><strong>N + 1 queries problem</strong></p>
+<p><strong>N + 1 查询问题</strong></p>
 
-<p>Consider the following code, which finds 10 clients and prints their postcodes:</p>
+<p>假设有如下的代码，获取 10 个客户对象，并把客户的邮编打印出来</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">clients</span> <span class="o">=</span> <span class="no">Client</span><span class="p">.</span><span class="nf">limit</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 
@@ -2961,13 +2988,13 @@ merged in to:</p>
 </pre>
 
 </div>
-<p>This code looks fine at the first sight. But the problem lies within the total number of queries executed. The above code executes 1 (to find 10 clients) + 10 (one per each client to load the address) = <strong>11</strong> queries in total.</p>
+<p>上述代码初看起来很好，但问题在于查询的总次数。上述代码总共会执行 1（获取 10 个客户记录）+ 10（分别获取 10 个客户的地址）= <em>11</em> 次查询。</p>
 
-<p><strong>Solution to N + 1 queries problem</strong></p>
+<p><strong>N + 1 查询的解决办法</strong></p>
 
-<p>Active Record lets you specify in advance all the associations that are going to be loaded. This is possible by specifying the <code>includes</code> method of the <code>Model.find</code> call. With <code>includes</code>, Active Record ensures that all of the specified associations are loaded using the minimum possible number of queries.</p>
+<p>在 Active Record 中可以进一步指定要加载的所有关联，调用 <code>Model.find</code> 方法是使用 <code>includes</code> 方法实现。使用 <code>includes</code> 后，Active Record 会使用尽可能少的查询次数加载所有指定的关联。</p>
 
-<p>Revisiting the above case, we could rewrite <code>Client.limit(10)</code> to use eager load addresses:</p>
+<p>我们可以使用按需加载机制加载客户的地址，把 <code>Client.limit(10)</code> 改写成：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">clients</span> <span class="o">=</span> <span class="no">Client</span><span class="p">.</span><span class="nf">includes</span><span class="p">(</span><span class="ss">:address</span><span class="p">).</span><span class="nf">limit</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 
@@ -2977,7 +3004,7 @@ merged in to:</p>
 </pre>
 
 </div>
-<p>The above code will execute just <strong>2</strong> queries, as opposed to <strong>11</strong> queries in the previous case:</p>
+<p>和前面的 <strong>11</strong> 次查询不同，上述代码只会执行 <strong>2</strong> 次查询：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">clients</span> <span class="k">LIMIT</span> <span class="mi">10</span>
 <span class="k">SELECT</span> <span class="n">addresses</span><span class="p">.</span><span class="o">*</span> <span class="k">FROM</span> <span class="n">addresses</span>
@@ -2985,51 +3012,51 @@ merged in to:</p>
 </pre>
 
 </div>
-<h3>Eager Loading Multiple Associations</h3>
+<h3 id="eager-loading-multiple-associations">按需加载多个关联</h3>
 
-<p>Active Record lets you eager load any number of associations with a single <code>Model.find</code> call by using an array, hash, or a nested hash of array/hash with the <code>includes</code> method.</p>
+<p>调用 <code>Model.find</code> 方法时，使用 <code>includes</code> 方法可以一次加载任意数量的关联，加载的关联可以通过数组、Hash、嵌套 Hash 指定。</p>
 
-<h4>Array of Multiple Associations</h4>
+<h4 id="array-of-multiple-associations">用数组指定多个关联</h4>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Post</span><span class="p">.</span><span class="nf">includes</span><span class="p">(</span><span class="ss">:category</span><span class="p">,</span> <span class="ss">:comments</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>This loads all the posts and the associated category and comments for each post.</p>
+<p>上述代码会加载所有文章，以及和每篇文章关联的分类和评论。</p>
 
-<h4>Nested Associations Hash</h4>
+<h4 id="nested-associations-hash">使用 Hash 指定嵌套关联</h4>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Category</span><span class="p">.</span><span class="nf">includes</span><span class="p">(</span><span class="ss">posts: </span><span class="o">[</span><span class="p">{</span> <span class="ss">comments: :guest</span> <span class="p">},</span> <span class="ss">:tags</span><span class="o">]</span><span class="p">).</span><span class="nf">find</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>This will find the category with id 1 and eager load all of the associated posts, the associated posts’ tags and comments, and every comment’s guest association.</p>
+<p>上述代码会获取 ID 为 1 的分类，按需加载所有关联的文章，文章的标签和评论，以及每个评论的 <code>guest</code> 关联。</p>
 
-<h3>Specifying Conditions on Eager Loaded Associations</h3>
+<h3 id="specifying-conditions-on-eager-loaded-associations">指定用于按需加载关联上的条件</h3>
 
-<p>Even though Active Record lets you specify conditions on the eager loaded associations just like <code>joins</code>, the recommended way is to use <a href="#joining-tables">joins</a> instead.</p>
+<p>虽然 Active Record 允许使用 <code>joins</code> 方法指定用于按需加载关联上的条件，但是推荐的做法是使用<a href="#joining-tables">连接数据表</a>。</p>
 
-<p>However if you must do this, you may use <code>where</code> as you would normally.</p>
+<p>如果非要这么做，可以按照常规方式使用 <code>where</code> 方法。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Post</span><span class="p">.</span><span class="nf">includes</span><span class="p">(</span><span class="ss">:comments</span><span class="p">).</span><span class="nf">where</span><span class="p">(</span><span class="s2">"comments.visible"</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>This would generate a query which contains a <code>LEFT OUTER JOIN</code> whereas the <code>joins</code> method would generate one using the <code>INNER JOIN</code> function instead.</p>
+<p>上述代码生成的查询中会包含 <code>LEFT OUTER JOIN</code> 子句，而 <code>joins</code> 方法生成的查询使用的是 <code>INNER JOIN</code> 子句。</p>
 
-<div class="codeblock ruby"><pre class="highlight">  <span class="no">SELECT</span> <span class="s2">"posts"</span><span class="o">.</span><span class="s2">"id"</span> <span class="no">AS</span> <span class="n">t0_r0</span><span class="p">,</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="s2">"comments"</span><span class="o">.</span><span class="s2">"updated_at"</span> <span class="no">AS</span> <span class="n">t1_r5</span> <span class="no">FROM</span> <span class="s2">"posts"</span> <span class="no">LEFT</span> <span class="no">OUTER</span> <span class="no">JOIN</span> <span class="s2">"comments"</span> <span class="no">ON</span> <span class="s2">"comments"</span><span class="o">.</span><span class="s2">"post_id"</span> <span class="o">=</span> <span class="s2">"posts"</span><span class="o">.</span><span class="s2">"id"</span> <span class="no">WHERE</span> <span class="p">(</span><span class="n">comments</span><span class="p">.</span><span class="nf">visible</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+<div class="codeblock ruby"><pre class="highlight"><span class="no">SELECT</span> <span class="s2">"posts"</span><span class="o">.</span><span class="s2">"id"</span> <span class="no">AS</span> <span class="n">t0_r0</span><span class="p">,</span> <span class="p">.</span><span class="nf">.</span><span class="o">.</span> <span class="s2">"comments"</span><span class="o">.</span><span class="s2">"updated_at"</span> <span class="no">AS</span> <span class="n">t1_r5</span> <span class="no">FROM</span> <span class="s2">"posts"</span> <span class="no">LEFT</span> <span class="no">OUTER</span> <span class="no">JOIN</span> <span class="s2">"comments"</span> <span class="no">ON</span> <span class="s2">"comments"</span><span class="o">.</span><span class="s2">"post_id"</span> <span class="o">=</span> <span class="s2">"posts"</span><span class="o">.</span><span class="s2">"id"</span> <span class="no">WHERE</span> <span class="p">(</span><span class="n">comments</span><span class="p">.</span><span class="nf">visible</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>If there was no <code>where</code> condition, this would generate the normal set of two queries.</p>
+<p>如果没指定 <code>where</code> 条件，上述代码会生成两个查询语句。</p>
 
-<p>If, in the case of this <code>includes</code> query, there were no comments for any posts, all the posts would still be loaded. By using <code>joins</code> (an INNER JOIN), the join conditions <strong>must</strong> match, otherwise no records will be returned.</p>
+<p>如果像上面的代码一样使用 <code>includes</code>，即使所有文章都没有评论，也会加载所有文章。使用 <code>joins</code> 方法（<code>INNER JOIN</code>）时，必须满足连接条件，否则不会得到任何记录。</p>
 
-<h2>Scopes</h2>
+<h2 id="scopes">作用域</h2>
 
-<p>Scoping allows you to specify commonly-used queries which can be referenced as method calls on the association objects or models. With these scopes, you can use every method previously covered such as <code>where</code>, <code>joins</code> and <code>includes</code>. All scope methods will return an <code>ActiveRecord::Relation</code> object which will allow for further methods (such as other scopes) to be called on it.</p>
+<p>作用域把常用的查询定义成方法，在关联对象或模型上调用。在作用域中可以使用前面介绍的所有方法，例如 <code>where</code>、<code>joins</code> 和 <code>includes</code>。所有作用域方法都会返回一个 <code>ActiveRecord::Relation</code> 对象，允许继续调用其他方法（例如另一个作用域方法）。</p>
 
-<p>To define a simple scope, we use the <code>scope</code> method inside the class, passing the query that we’d like to run when this scope is called:</p>
+<p>要想定义简单的作用域，可在类中调用 <code>scope</code> 方法，传入执行作用域时运行的代码：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">scope</span> <span class="ss">:published</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span><span class="p">(</span><span class="ss">published: </span><span class="kp">true</span><span class="p">)</span> <span class="p">}</span>
@@ -3037,7 +3064,7 @@ merged in to:</p>
 </pre>
 
 </div>
-<p>This is exactly the same as defining a class method, and which you use is a matter of personal preference:</p>
+<p>上述方式和直接定义类方法的作用一样，使用哪种方式只是个人喜好：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">published</span>
@@ -3047,7 +3074,7 @@ merged in to:</p>
 </pre>
 
 </div>
-<p>Scopes are also chainable within scopes:</p>
+<p>作用域可以链在一起调用：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">scope</span> <span class="ss">:published</span><span class="p">,</span>               <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span><span class="p">(</span><span class="ss">published: </span><span class="kp">true</span><span class="p">)</span> <span class="p">}</span>
@@ -3056,22 +3083,22 @@ merged in to:</p>
 </pre>
 
 </div>
-<p>To call this <code>published</code> scope we can call it on either the class:</p>
+<p>可以在模型类上调用 <code>published</code> 作用域：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Post</span><span class="p">.</span><span class="nf">published</span> <span class="c1"># =&gt; [published posts]</span>
 </pre>
 
 </div>
-<p>Or on an association consisting of <code>Post</code> objects:</p>
+<p>也可以在包含 <code>Post</code> 对象的关联上调用：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">category</span> <span class="o">=</span> <span class="no">Category</span><span class="p">.</span><span class="nf">first</span>
 <span class="n">category</span><span class="p">.</span><span class="nf">posts</span><span class="p">.</span><span class="nf">published</span> <span class="c1"># =&gt; [published posts belonging to this category]</span>
 </pre>
 
 </div>
-<h3>Passing in arguments</h3>
+<h3 id="passing-in-arguments">传入参数</h3>
 
-<p>Your scope can take arguments:</p>
+<p>作用域可接受参数：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">scope</span> <span class="ss">:created_before</span><span class="p">,</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">time</span><span class="p">)</span> <span class="p">{</span> <span class="n">where</span><span class="p">(</span><span class="s2">"created_at &lt; ?"</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span> <span class="p">}</span>
@@ -3079,13 +3106,13 @@ merged in to:</p>
 </pre>
 
 </div>
-<p>Call the scope as if it were a class method:</p>
+<p>作用域的调用方法和类方法一样：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Post</span><span class="p">.</span><span class="nf">created_before</span><span class="p">(</span><span class="no">Time</span><span class="p">.</span><span class="nf">zone</span><span class="p">.</span><span class="nf">now</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>However, this is just duplicating the functionality that would be provided to you by a class method.</p>
+<p>不过这就和类方法的作用一样了。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">created_before</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
@@ -3095,15 +3122,15 @@ merged in to:</p>
 </pre>
 
 </div>
-<p>Using a class method is the preferred way to accept arguments for scopes. These methods will still be accessible on the association objects:</p>
+<p>如果作用域要接受参数，推荐直接使用类方法。有参数的作用域也可在关联对象上调用：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">category</span><span class="p">.</span><span class="nf">posts</span><span class="p">.</span><span class="nf">created_before</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
 </pre>
 
 </div>
-<h3>Merging of scopes</h3>
+<h3 id="merging-of-scopes">合并作用域</h3>
 
-<p>Just like <code>where</code> clauses scopes are merged using <code>AND</code> conditions.</p>
+<p>和 <code>where</code> 方法一样，作用域也可通过 <code>AND</code> 合并查询条件：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">scope</span> <span class="ss">:active</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span> <span class="ss">state: </span><span class="s1">'active'</span> <span class="p">}</span>
@@ -3115,24 +3142,21 @@ merged in to:</p>
 </pre>
 
 </div>
-<p>We can mix and match <code>scope</code> and <code>where</code> conditions and the final sql
-will have all conditions joined with <code>AND</code>.</p>
+<p>作用域还可以 <code>where</code> 一起使用，生成的 SQL 语句会使用 <code>AND</code> 连接所有条件。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">User</span><span class="p">.</span><span class="nf">active</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">state: </span><span class="s1">'finished'</span><span class="p">)</span>
 <span class="c1"># SELECT "users".* FROM "users" WHERE "users"."state" = 'active' AND "users"."state" = 'finished'</span>
 </pre>
 
 </div>
-<p>If we do want the <code>last where clause</code> to win then <code>Relation#merge</code> can
-be used.</p>
+<p>如果不想让最后一个 <code>WHERE</code> 子句获得优先权，可以使用 <code>Relation#merge</code> 方法。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">User</span><span class="p">.</span><span class="nf">active</span><span class="p">.</span><span class="nf">merge</span><span class="p">(</span><span class="no">User</span><span class="p">.</span><span class="nf">inactive</span><span class="p">)</span>
 <span class="c1"># SELECT "users".* FROM "users" WHERE "users"."state" = 'inactive'</span>
 </pre>
 
 </div>
-<p>One important caveat is that <code>default_scope</code> will be prepended in
-<code>scope</code> and <code>where</code> conditions.</p>
+<p>使用作用域时要注意，<code>default_scope</code> 会添加到作用域和 <code>where</code> 方法指定的条件之前。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">default_scope</span> <span class="p">{</span> <span class="n">where</span> <span class="ss">state: </span><span class="s1">'pending'</span> <span class="p">}</span>
@@ -3151,13 +3175,11 @@ be used.</p>
 </pre>
 
 </div>
-<p>As you can see above the <code>default_scope</code> is being merged in both
-<code>scope</code> and <code>where</code> conditions.</p>
+<p>如上所示，<code>default_scope</code> 中的条件添加到了 <code>active</code> 和 <code>where</code> 之前。</p>
 
-<h3>Applying a default scope</h3>
+<h3 id="applying-a-default-scope">指定默认作用域</h3>
 
-<p>If we wish for a scope to be applied across all queries to the model we can use the
-<code>default_scope</code> method within the model itself.</p>
+<p>如果某个作用域要用在模型的所有查询中，可以在模型中使用 <code>default_scope</code> 方法指定。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Client</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">default_scope</span> <span class="p">{</span> <span class="n">where</span><span class="p">(</span><span class="s2">"removed_at IS NULL"</span><span class="p">)</span> <span class="p">}</span>
@@ -3165,15 +3187,13 @@ be used.</p>
 </pre>
 
 </div>
-<p>When queries are executed on this model, the SQL query will now look something like
-this:</p>
+<p>执行查询时使用的 SQL 语句如下：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">clients</span> <span class="k">WHERE</span> <span class="n">removed_at</span> <span class="k">IS</span> <span class="k">NULL</span>
 </pre>
 
 </div>
-<p>If you need to do more complex things with a default scope, you can alternatively
-define it as a class method:</p>
+<p>如果默认作用域中的条件比较复杂，可以使用类方法的形式定义：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Client</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">default_scope</span>
@@ -3183,20 +3203,17 @@ define it as a class method:</p>
 </pre>
 
 </div>
-<h3>Removing All Scoping</h3>
+<h3 id="removing-all-scoping">删除所有作用域</h3>
 
-<p>If we wish to remove scoping for any reason we can use the <code>unscoped</code> method. This is
-especially useful if a <code>default_scope</code> is specified in the model and should not be
-applied for this particular query.</p>
+<p>如果基于某些原因想删除作用域，可以使用 <code>unscoped</code> 方法。如果模型中定义了 <code>default_scope</code>，而在这个作用域中不需要使用，就可以使用 <code>unscoped</code> 方法。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">unscoped</span><span class="p">.</span><span class="nf">load</span>
 </pre>
 
 </div>
-<p>This method removes all scoping and will do a normal query on the table.</p>
+<p><code>unscoped</code> 方法会删除所有作用域，在数据表中执行常规查询。</p>
 
-<p>Note that chaining <code>unscoped</code> with a <code>scope</code> does not work. In these cases, it is
-recommended that you use the block form of <code>unscoped</code>:</p>
+<p>注意，不能在作用域后链式调用 <code>unscoped</code>，这时可以使用代码块形式的 <code>unscoped</code> 方法：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">unscoped</span> <span class="p">{</span>
   <span class="no">Client</span><span class="p">.</span><span class="nf">created_before</span><span class="p">(</span><span class="no">Time</span><span class="p">.</span><span class="nf">zone</span><span class="p">.</span><span class="nf">now</span><span class="p">)</span>
@@ -3204,35 +3221,35 @@ recommended that you use the block form of <code>unscoped</code>:</p>
 </pre>
 
 </div>
-<h2>Dynamic Finders</h2>
+<h2 id="dynamic-finders">动态查询方法</h2>
 
-<p>For every field (also known as an attribute) you define in your table, Active Record provides a finder method. If you have a field called <code>first_name</code> on your <code>Client</code> model for example, you get <code>find_by_first_name</code> for free from Active Record. If you have a <code>locked</code> field on the <code>Client</code> model, you also get <code>find_by_locked</code> and methods.</p>
+<p>Active Record 为数据表中的每个字段都提供了一个查询方法。例如，在 <code>Client</code> 模型中有个 <code>first_name</code> 字段，那么 Active Record 就会生成 <code>find_by_first_name</code> 方法。如果在 <code>Client</code> 模型中有个 <code>locked</code> 字段，就有一个 <code>find_by_locked</code> 方法。</p>
 
-<p>You can specify an exclamation point (<code>!</code>) on the end of the dynamic finders to get them to raise an <code>ActiveRecord::RecordNotFound</code> error if they do not return any records, like <code>Client.find_by_name!("Ryan")</code></p>
+<p>在这些动态生成的查询方法后，可以加上感叹号（<code>!</code>），例如 <code>Client.find_by_name!("Ryan")</code>。此时，如果找不到记录就会抛出 <code>ActiveRecord::RecordNotFound</code> 异常。</p>
 
-<p>If you want to find both by name and locked, you can chain these finders together by simply typing “<code>and</code>” between the fields. For example, <code>Client.find_by_first_name_and_locked("Ryan", true)</code>.</p>
+<p>如果想同时查询 <code>first_name</code> 和 <code>locked</code> 字段，可以用 <code>and</code> 把两个字段连接起来，获得所需的查询方法，例如 <code>Client.find_by_first_name_and_locked("Ryan", true)</code>。</p>
 
-<h2>Find or Build a New Object</h2>
+<h2 id="find-or-build-a-new-object">查找或构建新对象</h2>
 
-<p>NOTE: Some dynamic finders have been deprecated in Rails 4.0 and will be
-removed in Rails 4.1. The best practice is to use Active Record scopes
-instead. You can find the deprecation gem at
-https://github.com/rails/activerecord-deprecated_finders</p>
+          <div class="box information-box">
+  <p>某些动态查询方法在 Rails 4.0 中已经启用，会在 Rails 4.1 中删除。推荐的做法是使用 Active Record 作用域。废弃的方法可以在这个 gem 中查看：<a href="https://github.com/rails/activerecord-deprecated_finders">https://github.com/rails/activerecord-deprecated_finders</a>。</p>
+</div>
 
-<p>It’s common that you need to find a record or create it if it doesn’t exist. You can do that with the <code>find_or_create_by</code> and <code>find_or_create_by!</code> methods.</p>
 
-<h3><code>find_or_create_by</code></h3>
+<p>我们经常需要在查询不到记录时创建一个新记录。这种需求可以使用 <code>find_or_create_by</code> 或 <code>find_or_create_by!</code> 方法实现。</p>
 
-<p>The <code>find_or_create_by</code> method checks whether a record with the attributes exists. If it doesn’t, then <code>create</code> is called. Let’s see an example.</p>
+<h3 id="find-or-create-by"><code>find_or_create_by</code></h3>
 
-<p>Suppose you want to find a client named ‘Andy’, and if there’s none, create one. You can do so by running:</p>
+<p><code>find_or_create_by</code> 方法首先检查指定属性对应的记录是否存在，如果不存在就调用 <code>create</code> 方法。我们来看一个例子。</p>
+
+<p>假设你想查找一个名为“Andy”的客户，如果这个客户不存在就新建。这个需求可以使用下面的代码完成：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">find_or_create_by</span><span class="p">(</span><span class="ss">first_name: </span><span class="s1">'Andy'</span><span class="p">)</span>
 <span class="c1"># =&gt; #&lt;Client id: 1, first_name: "Andy", orders_count: 0, locked: true, created_at: "2011-08-30 06:09:27", updated_at: "2011-08-30 06:09:27"&gt;</span>
 </pre>
 
 </div>
-<p>The SQL generated by this method looks like this:</p>
+<p>上述方法生成的 SQL 语句如下：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">clients</span> <span class="k">WHERE</span> <span class="p">(</span><span class="n">clients</span><span class="p">.</span><span class="n">first_name</span> <span class="o">=</span> <span class="s1">'Andy'</span><span class="p">)</span> <span class="k">LIMIT</span> <span class="mi">1</span>
 <span class="k">BEGIN</span>
@@ -3241,22 +3258,19 @@ https://github.com/rails/activerecord-deprecated_finders</p>
 </pre>
 
 </div>
-<p><code>find_or_create_by</code> returns either the record that already exists or the new record. In our case, we didn’t already have a client named Andy so the record is created and returned.</p>
+<p><code>find_or_create_by</code> 方法返回现有的记录或者新建的记录。在上面的例子中，名为“Andy”的客户不存在，所以会新建一个记录，然后将其返回。</p>
 
-<p>The new record might not be saved to the database; that depends on whether validations passed or not (just like <code>create</code>).</p>
+<p>新纪录可能没有存入数据库，这取决于是否能通过数据验证（就像 <code>create</code> 方法一样）。</p>
 
-<p>Suppose we want to set the ‘locked’ attribute to <code>false</code> if we’re
-creating a new record, but we don’t want to include it in the query. So
-we want to find the client named “Andy”, or if that client doesn’t
-exist, create a client named “Andy” which is not locked.</p>
+<p>假设创建新记录时，要把 <code>locked</code> 属性设为 <code>false</code>，但不想在查询中设置。例如，我们要查询一个名为“Andy”的客户，如果这个客户不存在就新建一个，而且 <code>locked</code> 属性为 <code>false</code>。</p>
 
-<p>We can achieve this in two ways. The first is to use <code>create_with</code>:</p>
+<p>这种需求有两种实现方法。第一种，使用 <code>create_with</code> 方法：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">create_with</span><span class="p">(</span><span class="ss">locked: </span><span class="kp">false</span><span class="p">).</span><span class="nf">find_or_create_by</span><span class="p">(</span><span class="ss">first_name: </span><span class="s1">'Andy'</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>The second way is using a block:</p>
+<p>第二种，使用代码块：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">find_or_create_by</span><span class="p">(</span><span class="ss">first_name: </span><span class="s1">'Andy'</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
   <span class="n">c</span><span class="p">.</span><span class="nf">locked</span> <span class="o">=</span> <span class="kp">false</span>
@@ -3264,31 +3278,26 @@ exist, create a client named “Andy” which is not locked.</p>
 </pre>
 
 </div>
-<p>The block will only be executed if the client is being created. The
-second time we run this code, the block will be ignored.</p>
+<p>代码块中的代码只会在创建客户之后执行。再次运行这段代码时，会忽略代码块中的代码。</p>
 
-<h3><code>find_or_create_by!</code></h3>
+<h3 id="find-or-create-by-bang"><code>find_or_create_by!</code></h3>
 
-<p>You can also use <code>find_or_create_by!</code> to raise an exception if the new record is invalid. Validations are not covered on this guide, but let’s assume for a moment that you temporarily add</p>
+<p>还可使用 <code>find_or_create_by!</code> 方法，如果新纪录不合法，会抛出异常。本文不涉及数据验证，假设已经在 <code>Client</code> 模型中定义了下面的验证：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">validates</span> <span class="ss">:orders_count</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span>
 </pre>
 
 </div>
-<p>to your <code>Client</code> model. If you try to create a new <code>Client</code> without passing an <code>orders_count</code>, the record will be invalid and an exception will be raised:</p>
+<p>如果创建新 <code>Client</code> 对象时没有指定 <code>orders_count</code> 属性的值，这个对象就是不合法的，会抛出以下异常：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">find_or_create_by!</span><span class="p">(</span><span class="ss">first_name: </span><span class="s1">'Andy'</span><span class="p">)</span>
 <span class="c1"># =&gt; ActiveRecord::RecordInvalid: Validation failed: Orders count can't be blank</span>
 </pre>
 
 </div>
-<h3><code>find_or_initialize_by</code></h3>
+<h3 id="find-or-initialize-by"><code>find_or_initialize_by</code></h3>
 
-<p>The <code>find_or_initialize_by</code> method will work just like
-<code>find_or_create_by</code> but it will call <code>new</code> instead of <code>create</code>. This
-means that a new model instance will be created in memory but won’t be
-saved to the database. Continuing with the <code>find_or_create_by</code> example, we
-now want the client named ‘Nick’:</p>
+<p><code>find_or_initialize_by</code> 方法和 <code>find_or_create_by</code> 的作用差不多，但不调用 <code>create</code> 方法，而是 <code>new</code> 方法。也就是说新建的模型实例在内存中，没有存入数据库。继续使用前面的例子，现在我们要查询的客户名为“Nick”：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">nick</span> <span class="o">=</span> <span class="no">Client</span><span class="p">.</span><span class="nf">find_or_initialize_by</span><span class="p">(</span><span class="ss">first_name: </span><span class="s1">'Nick'</span><span class="p">)</span>
 <span class="c1"># =&gt; &lt;Client id: nil, first_name: "Nick", orders_count: 0, locked: true, created_at: "2011-08-30 06:09:27", updated_at: "2011-08-30 06:09:27"&gt;</span>
@@ -3301,22 +3310,22 @@ now want the client named ‘Nick’:</p>
 </pre>
 
 </div>
-<p>Because the object is not yet stored in the database, the SQL generated looks like this:</p>
+<p>因为对象不会存入数据库，上述代码生成的 SQL 语句如下：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">clients</span> <span class="k">WHERE</span> <span class="p">(</span><span class="n">clients</span><span class="p">.</span><span class="n">first_name</span> <span class="o">=</span> <span class="s1">'Nick'</span><span class="p">)</span> <span class="k">LIMIT</span> <span class="mi">1</span>
 </pre>
 
 </div>
-<p>When you want to save it to the database, just call <code>save</code>:</p>
+<p>如果想把对象存入数据库，调用 <code>save</code> 方法即可：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="n">nick</span><span class="p">.</span><span class="nf">save</span>
 <span class="c1"># =&gt; true</span>
 </pre>
 
 </div>
-<h2>Finding by SQL</h2>
+<h2 id="finding-by-sql">使用 SQL 语句查询</h2>
 
-<p>If you’d like to use your own SQL to find records in a table you can use <code>find_by_sql</code>. The <code>find_by_sql</code> method will return an array of objects even if the underlying query returns just a single record. For example you could run this query:</p>
+<p>如果想使用 SQL 语句查询数据表中的记录，可以使用 <code>find_by_sql</code> 方法。就算只找到一个记录，<code>find_by_sql</code> 方法也会返回一个由记录组成的数组。例如，可以运行下面的查询：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">find_by_sql</span><span class="p">(</span><span class="s2">"SELECT * FROM clients
   INNER JOIN orders ON clients.id = orders.client_id
@@ -3324,19 +3333,19 @@ now want the client named ‘Nick’:</p>
 </pre>
 
 </div>
-<p><code>find_by_sql</code> provides you with a simple way of making custom calls to the database and retrieving instantiated objects.</p>
+<p><code>find_by_sql</code> 方法提供了一种定制查询的简单方式。</p>
 
-<h3><code>select_all</code></h3>
+<h3 id="select-all"><code>select_all</code></h3>
 
-<p><code>find_by_sql</code> has a close relative called <code>connection#select_all</code>. <code>select_all</code> will retrieve objects from the database using custom SQL just like <code>find_by_sql</code> but will not instantiate them. Instead, you will get an array of hashes where each hash indicates a record.</p>
+<p><code>find_by_sql</code> 方法有一个近亲，名为 <code>connection#select_all</code>。和 <code>find_by_sql</code> 一样，<code>select_all</code> 方法会使用 SQL 语句查询数据库，获取记录，但不会初始化对象。<code>select_all</code> 返回的结果是一个由 Hash 组成的数组，每个 Hash 表示一个记录。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">connection</span><span class="p">.</span><span class="nf">select_all</span><span class="p">(</span><span class="s2">"SELECT * FROM clients WHERE id = '1'"</span><span class="p">)</span>
 </pre>
 
 </div>
-<h3><code>pluck</code></h3>
+<h3 id="pluck"><code>pluck</code></h3>
 
-<p><code>pluck</code> can be used to query a single or multiple columns from the underlying table of a model. It accepts a list of column names as argument and returns an array of values of the specified columns with the corresponding data type.</p>
+<p><code>pluck</code> 方法可以在模型对应的数据表中查询一个或多个字段，其参数是一组字段名，返回结果是由各字段的值组成的数组。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">active: </span><span class="kp">true</span><span class="p">).</span><span class="nf">pluck</span><span class="p">(</span><span class="ss">:id</span><span class="p">)</span>
 <span class="c1"># SELECT id FROM clients WHERE active = 1</span>
@@ -3352,7 +3361,7 @@ now want the client named ‘Nick’:</p>
 </pre>
 
 </div>
-<p><code>pluck</code> makes it possible to replace code like:</p>
+<p>如下的代码：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="ss">:id</span><span class="p">).</span><span class="nf">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span> <span class="n">c</span><span class="p">.</span><span class="nf">id</span> <span class="p">}</span>
 <span class="c1"># or</span>
@@ -3362,7 +3371,7 @@ now want the client named ‘Nick’:</p>
 </pre>
 
 </div>
-<p>with:</p>
+<p>可用 <code>pluck</code> 方法实现：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">pluck</span><span class="p">(</span><span class="ss">:id</span><span class="p">)</span>
 <span class="c1"># or</span>
@@ -3370,10 +3379,7 @@ now want the client named ‘Nick’:</p>
 </pre>
 
 </div>
-<p>Unlike <code>select</code>, <code>pluck</code> directly converts a database result into a Ruby <code>Array</code>,
-without constructing <code>ActiveRecord</code> objects. This can mean better performance for
-a large or often-running query. However, any model method overrides will
-not be available. For example:</p>
+<p>和 <code>select</code> 方法不一样，<code>pluck</code> 直接把查询结果转换成 Ruby 数组，不生成 Active Record 对象，可以提升大型查询或常用查询的执行效率。但 <code>pluck</code> 方法不会使用重新定义的属性方法处理查询结果。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Client</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="k">def</span> <span class="nf">name</span>
@@ -3389,9 +3395,7 @@ not be available. For example:</p>
 </pre>
 
 </div>
-<p>Furthermore, unlike <code>select</code> and other <code>Relation</code> scopes, <code>pluck</code> triggers an immediate
-query, and thus cannot be chained with any further scopes, although it can work with
-scopes already constructed earlier:</p>
+<p>而且，与 <code>select</code> 和其他 <code>Relation</code> 作用域不同的是，<code>pluck</code> 方法会直接执行查询，因此后面不能和其他作用域链在一起，但是可以链接到已经执行的作用域之后：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">pluck</span><span class="p">(</span><span class="ss">:name</span><span class="p">).</span><span class="nf">limit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 <span class="c1"># =&gt; NoMethodError: undefined method `limit' for #&lt;Array:0x007ff34d3ad6d8&gt;</span>
@@ -3401,9 +3405,9 @@ scopes already constructed earlier:</p>
 </pre>
 
 </div>
-<h3><code>ids</code></h3>
+<h3 id="ids"><code>ids</code></h3>
 
-<p><code>ids</code> can be used to pluck all the IDs for the relation using the table’s primary key.</p>
+<p><code>ids</code> 方法可以直接获取数据表的主键。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Person</span><span class="p">.</span><span class="nf">ids</span>
 <span class="c1"># SELECT id FROM people</span>
@@ -3419,18 +3423,15 @@ scopes already constructed earlier:</p>
 </pre>
 
 </div>
-<h2>Existence of Objects</h2>
+<h2 id="existence-of-objects">检查对象是否存在</h2>
 
-<p>If you simply want to check for the existence of the object there’s a method called <code>exists?</code>.
-This method will query the database using the same query as <code>find</code>, but instead of returning an
-object or collection of objects it will return either <code>true</code> or <code>false</code>.</p>
+<p>如果只想检查对象是否存在，可以使用 <code>exists?</code> 方法。这个方法使用的数据库查询和 <code>find</code> 方法一样，但不会返回对象或对象集合，而是返回 <code>true</code> 或 <code>false</code>。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">exists?</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>The <code>exists?</code> method also takes multiple values, but the catch is that it will return <code>true</code> if any
-one of those records exists.</p>
+<p><code>exists?</code> 方法可以接受多个值，但只要其中一个记录存在，就会返回 <code>true</code>。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">exists?</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="o">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="o">]</span><span class="p">)</span>
 <span class="c1"># or</span>
@@ -3438,22 +3439,21 @@ one of those records exists.</p>
 </pre>
 
 </div>
-<p>It’s even possible to use <code>exists?</code> without any arguments on a model or a relation.</p>
+<p>在模型或关系上调用 <code>exists?</code> 方法时，可以不指定任何参数。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">first_name: </span><span class="s1">'Ryan'</span><span class="p">).</span><span class="nf">exists?</span>
 </pre>
 
 </div>
-<p>The above returns <code>true</code> if there is at least one client with the <code>first_name</code> ‘Ryan’ and <code>false</code>
-otherwise.</p>
+<p>在上述代码中，只要有一个客户的 <code>first_name</code> 字段值为 <code>'Ryan'</code>，就会返回 <code>true</code>，否则返回 <code>false</code>。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">exists?</span>
 </pre>
 
 </div>
-<p>The above returns <code>false</code> if the <code>clients</code> table is empty and <code>true</code> otherwise.</p>
+<p>在上述代码中，如果 <code>clients</code> 表是空的，会返回 <code>false</code>，否则返回 <code>true</code>。</p>
 
-<p>You can also use <code>any?</code> and <code>many?</code> to check for existence on a model or relation.</p>
+<p>在模型或关系中检查存在性时还可使用 <code>any?</code> 和 <code>many?</code> 方法。</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="c1"># via a model</span>
 <span class="no">Post</span><span class="p">.</span><span class="nf">any?</span>
@@ -3473,31 +3473,31 @@ otherwise.</p>
 </pre>
 
 </div>
-<h2>Calculations</h2>
+<h2 id="calculations">计算</h2>
 
-<p>This section uses count as an example method in this preamble, but the options described apply to all sub-sections.</p>
+<p>这里先以 <code>count</code> 方法为例，所有的选项都可在后面各方法中使用。</p>
 
-<p>All calculation methods work directly on a model:</p>
+<p>所有计算型方法都可直接在模型上调用：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">count</span>
 <span class="c1"># SELECT count(*) AS count_all FROM clients</span>
 </pre>
 
 </div>
-<p>Or on a relation:</p>
+<p>或者在关系上调用：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">first_name: </span><span class="s1">'Ryan'</span><span class="p">).</span><span class="nf">count</span>
 <span class="c1"># SELECT count(*) AS count_all FROM clients WHERE (first_name = 'Ryan')</span>
 </pre>
 
 </div>
-<p>You can also use various finder methods on a relation for performing complex calculations:</p>
+<p>执行复杂计算时还可使用各种查询方法：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">includes</span><span class="p">(</span><span class="s2">"orders"</span><span class="p">).</span><span class="nf">where</span><span class="p">(</span><span class="ss">first_name: </span><span class="s1">'Ryan'</span><span class="p">,</span> <span class="ss">orders: </span><span class="p">{</span> <span class="ss">status: </span><span class="s1">'received'</span> <span class="p">}).</span><span class="nf">count</span>
 </pre>
 
 </div>
-<p>Which will execute:</p>
+<p>上述代码执行的 SQL 语句如下：</p>
 
 <div class="codeblock sql"><pre class="highlight"><span class="k">SELECT</span> <span class="k">count</span><span class="p">(</span><span class="k">DISTINCT</span> <span class="n">clients</span><span class="p">.</span><span class="n">id</span><span class="p">)</span> <span class="k">AS</span> <span class="n">count_all</span> <span class="k">FROM</span> <span class="n">clients</span>
   <span class="k">LEFT</span> <span class="k">OUTER</span> <span class="k">JOIN</span> <span class="n">orders</span> <span class="k">ON</span> <span class="n">orders</span><span class="p">.</span><span class="n">client_id</span> <span class="o">=</span> <span class="n">client</span><span class="p">.</span><span class="n">id</span> <span class="k">WHERE</span>
@@ -3505,63 +3505,63 @@ otherwise.</p>
 </pre>
 
 </div>
-<h3>Count</h3>
+<h3 id="count">计数</h3>
 
-<p>If you want to see how many records are in your model’s table you could call <code>Client.count</code> and that will return the number. If you want to be more specific and find all the clients with their age present in the database you can use <code>Client.count(:age)</code>.</p>
+<p>如果想知道模型对应的数据表中有多少条记录，可以使用 <code>Client.count</code> 方法。如果想更精确的计算设定了 <code>age</code> 字段的记录数，可以使用 <code>Client.count(:age)</code>。</p>
 
-<p>For options, please see the parent section, <a href="#calculations">Calculations</a>.</p>
+<p><code>count</code> 方法可用的选项<a href="#calculations">如前所述</a>。</p>
 
-<h3>Average</h3>
+<h3 id="average">平均值</h3>
 
-<p>If you want to see the average of a certain number in one of your tables you can call the <code>average</code> method on the class that relates to the table. This method call will look something like this:</p>
+<p>如果想查看某个字段的平均值，可以使用 <code>average</code> 方法。用法如下：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">average</span><span class="p">(</span><span class="s2">"orders_count"</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>This will return a number (possibly a floating point number such as 3.14159265) representing the average value in the field.</p>
+<p>这个方法会返回指定字段的平均值，得到的有可能是浮点数，例如 3.14159265。</p>
 
-<p>For options, please see the parent section, <a href="#calculations">Calculations</a>.</p>
+<p><code>average</code> 方法可用的选项<a href="#calculations">如前所述</a>。</p>
 
-<h3>Minimum</h3>
+<h3 id="minimum">最小值</h3>
 
-<p>If you want to find the minimum value of a field in your table you can call the <code>minimum</code> method on the class that relates to the table. This method call will look something like this:</p>
+<p>如果想查看某个字段的最小值，可以使用 <code>minimum</code> 方法。用法如下：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">minimum</span><span class="p">(</span><span class="s2">"age"</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>For options, please see the parent section, <a href="#calculations">Calculations</a>.</p>
+<p><code>minimum</code> 方法可用的选项<a href="#calculations">如前所述</a>。</p>
 
-<h3>Maximum</h3>
+<h3 id="maximum">最大值</h3>
 
-<p>If you want to find the maximum value of a field in your table you can call the <code>maximum</code> method on the class that relates to the table. This method call will look something like this:</p>
+<p>如果想查看某个字段的最大值，可以使用 <code>maximum</code> 方法。用法如下：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">maximum</span><span class="p">(</span><span class="s2">"age"</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>For options, please see the parent section, <a href="#calculations">Calculations</a>.</p>
+<p><code>maximum</code> 方法可用的选项<a href="#calculations">如前所述</a>。</p>
 
-<h3>Sum</h3>
+<h3 id="sum">求和</h3>
 
-<p>If you want to find the sum of a field for all records in your table you can call the <code>sum</code> method on the class that relates to the table. This method call will look something like this:</p>
+<p>如果想查看所有记录中某个字段的总值，可以使用 <code>sum</code> 方法。用法如下：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">Client</span><span class="p">.</span><span class="nf">sum</span><span class="p">(</span><span class="s2">"orders_count"</span><span class="p">)</span>
 </pre>
 
 </div>
-<p>For options, please see the parent section, <a href="#calculations">Calculations</a>.</p>
+<p><code>sum</code> 方法可用的选项<a href="#calculations">如前所述</a>。</p>
 
-<h2>Running EXPLAIN</h2>
+<h2 id="running-explain">执行 EXPLAIN 命令</h2>
 
-<p>You can run EXPLAIN on the queries triggered by relations. For example,</p>
+<p>可以在关系执行的查询中执行 EXPLAIN 命令。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">User</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="mi">1</span><span class="p">).</span><span class="nf">joins</span><span class="p">(</span><span class="ss">:posts</span><span class="p">).</span><span class="nf">explain</span>
 </pre>
 
 </div>
-<p>may yield</p>
+<p>在 MySQL 中得到的输出如下：</p>
 
 <div class="codeblock text"><pre class="highlight">EXPLAIN for: SELECT `users`.* FROM `users` INNER JOIN `posts` ON `posts`.`user_id` = `users`.`id` WHERE `users`.`id` = 1
 +----+-------------+-------+-------+---------------+---------+---------+-------+------+-------------+
@@ -3574,10 +3574,7 @@ otherwise.</p>
 </pre>
 
 </div>
-<p>under MySQL.</p>
-
-<p>Active Record performs a pretty printing that emulates the one of the database
-shells. So, the same query running with the PostgreSQL adapter would yield instead</p>
+<p>Active Record 会按照所用数据库 shell 的方式输出结果。所以，相同的查询在 PostgreSQL 中得到的输出如下：</p>
 
 <div class="codeblock text"><pre class="highlight">EXPLAIN for: SELECT "users".* FROM "users" INNER JOIN "posts" ON "posts"."user_id" = "users"."id" WHERE "users"."id" = 1
                                   QUERY PLAN
@@ -3592,15 +3589,13 @@ shells. So, the same query running with the PostgreSQL adapter would yield inste
 </pre>
 
 </div>
-<p>Eager loading may trigger more than one query under the hood, and some queries
-may need the results of previous ones. Because of that, <code>explain</code> actually
-executes the query, and then asks for the query plans. For example,</p>
+<p>按需加载会触发多次查询，而且有些查询要用到之前查询的结果。鉴于此，<code>explain</code> 方法会真正执行查询，然后询问查询计划。例如：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="no">User</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="mi">1</span><span class="p">).</span><span class="nf">includes</span><span class="p">(</span><span class="ss">:posts</span><span class="p">).</span><span class="nf">explain</span>
 </pre>
 
 </div>
-<p>yields</p>
+<p>在 MySQL 中得到的输出如下：</p>
 
 <div class="codeblock text"><pre class="highlight">EXPLAIN for: SELECT `users`.* FROM `users`  WHERE `users`.`id` = 1
 +----+-------------+-------+-------+---------------+---------+---------+-------+------+-------+
@@ -3620,23 +3615,14 @@ EXPLAIN for: SELECT `posts`.* FROM `posts`  WHERE `posts`.`user_id` IN (1)
 </pre>
 
 </div>
-<p>under MySQL.</p>
+<h3 id="interpreting-explain">解读 EXPLAIN 命令的输出结果</h3>
 
-<h3>Interpreting EXPLAIN</h3>
-
-<p>Interpretation of the output of EXPLAIN is beyond the scope of this guide. The
-following pointers may be helpful:</p>
+<p>解读 EXPLAIN 命令的输出结果不在本文的范畴之内。下面列出的链接可以帮助你进一步了解相关知识：</p>
 
 <ul>
-  <li>
-    <p>SQLite3: <a href="http://www.sqlite.org/eqp.html">EXPLAIN QUERY PLAN</a></p>
-  </li>
-  <li>
-    <p>MySQL: <a href="http://dev.mysql.com/doc/refman/5.6/en/explain-output.html">EXPLAIN Output Format</a></p>
-  </li>
-  <li>
-    <p>PostgreSQL: <a href="http://www.postgresql.org/docs/current/static/using-explain.html">Using EXPLAIN</a></p>
-  </li>
+  <li>SQLite3: <a href="http://www.sqlite.org/eqp.html">EXPLAIN QUERY PLAN</a></li>
+  <li>MySQL: <a href="http://dev.mysql.com/doc/refman/5.6/en/explain-output.html">EXPLAIN 的输出格式</a></li>
+  <li>PostgreSQL: <a href="http://www.postgresql.org/docs/current/static/using-explain.html">使用 EXPLAIN</a></li>
 </ul>
 
                     </article>
