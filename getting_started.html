@@ -1885,7 +1885,7 @@
   <li>如何安装 Rails，新建 Rails 程序，如何连接数据库；</li>
   <li>Rails 程序的基本文件结构；</li>
   <li>MVC（模型，视图，控制器）和 REST 架构的基本原理；</li>
-  <li>如何快速生成 Rails 程序骨架</li>
+  <li>如何快速生成 Rails 程序骨架；</li>
 </ul>
 
 <hr />
@@ -1897,7 +1897,7 @@
 <ul>
   <li><a href="http://www.ruby-lang.org/en/downloads">Ruby</a>  1.9.3 及以上版本</li>
   <li>包管理工具 <a href="http://rubygems.org">RubyGems</a>，随 Ruby 1.9+ 安装。想深入了解 RubyGems，请阅读 <a href="http://guides.rubygems.org">RubyGems 指南</a></li>
-  <li><a href="http://www.sqlite.org">SQLite3 Database</a></li>
+  <li><a href="http://www.sqlite.org">SQLite3</a> 数据库</li>
 </ul>
 
 <p>Rails 是使用 Ruby 语言开发的网页程序框架。如果之前没接触过 Ruby，学习 Rails 可要深下一番功夫。网上有很多资源可以学习 Ruby：</p>
@@ -1907,7 +1907,7 @@
   <li><a href="http://resrc.io/list/10/list-of-free-programming-books/#ruby">reSRC 列出的免费编程书籍</a></li>
 </ul>
 
-<p>记住，某些资源虽然很好，但一般针对 Ruby 1.8，甚至 1.6，所以没有介绍一些 Rails 日常开发会用到的句法。</p>
+<p>记住，某些资源虽然很好，但肯针对 Ruby 1.8，甚至 1.6，所以没有介绍一些 Rails 日常开发会用到的句法。</p>
 
 <h2 id="what-is-rails">Rails 是什么？</h2>
 
@@ -1929,13 +1929,13 @@
 <p>本文会新建一个名为 <code>blog</code> 的 Rails 程序，这是一个非常简单的博客。在开始开发程序之前，要确保已经安装了 Rails。</p>
 
           <div class="box tip-box">
-  <p>文中的示例代码使用 <code>$</code> 表示命令行提示符，你的提示符可能修改过，所以可能不一样。在 Windows 中，提示符可能是 <code>c:\source_code&gt;</code>。</p>
+  <p>文中的示例代码使用 <code>$</code> 表示命令行提示符，你的提示符可能修改过，所以会不一样。在 Windows 中，提示符可能是 <code>c:\source_code&gt;</code>。</p>
 </div>
 
 
 <h3 id="installing-rails">安装 Rails</h3>
 
-<p>打开命令行：在 Mac OS X 中打开 Terminal.app，在 Windows 中选择“运行”，然后输入“cmd.exe”。下文中任何以 <code>$</code> 开头的代码，都要在命令行中运行。先确认是否安装了 Ruby 最新版：</p>
+<p>打开命令行：在 Mac OS X 中打开 Terminal.app，在 Windows 中选择“运行”，然后输入“cmd.exe”。下文中所有以 <code>$</code> 开头的代码，都要在命令行中运行。先确认是否安装了 Ruby 最新版：</p>
 
           <div class="box tip-box">
   <p>有很多工具可以帮助你快速在系统中安装 Ruby 和 Ruby on Rails。Windows 用户可以使用 <a href="http://railsinstaller.org">Rails Installer</a>，Mac OS X 用户可以使用 <a href="http://railsoneclick.com">Rails One Click</a>。</p>
@@ -1955,7 +1955,7 @@ ruby 2.0.0p353
 </pre>
 
 </div>
-<p>命令行应该显示版本才对。</p>
+<p>命令行应该回显版本才对。</p>
 
 <p>安装 Rails，请使用 RubyGems 提供的 <code>gem install</code> 命令：</p>
 
@@ -2006,7 +2006,7 @@ ruby 2.0.0p353
   <tbody>
     <tr>
       <td>app/</td>
-      <td>存放程序的控制器、模型、视图、帮助方法、邮件和静态资源文件。本文注意关注的是这个文件夹。</td>
+      <td>存放程序的控制器、模型、视图、帮助方法、邮件和静态资源文件。本文主要关注的是这个文件夹。</td>
     </tr>
     <tr>
       <td>bin/</td>
@@ -2014,7 +2014,7 @@ ruby 2.0.0p353
     </tr>
     <tr>
       <td>config/</td>
-      <td>设置程序的路由，数据库等。详情参阅<a href="http://docs-china.com/rails/configuring.html">设置 Rails 程序</a>一文。</td>
+      <td>设置程序的路由，数据库等。详情参阅“<a href="http://docs-china.com/rails/configuring.html">设置 Rails 程序</a>”一文。</td>
     </tr>
     <tr>
       <td>config.ru</td>
@@ -2025,8 +2025,8 @@ ruby 2.0.0p353
       <td>存放当前数据库的模式，以及数据库迁移文件。</td>
     </tr>
     <tr>
-      <td>Gemfile<br />Gemfile.lock</td>
-      <td>这些文件用来指定程序所需的 gem 依赖件，用于 Bundler gem。关于 Bundler 的详细介绍，请访问 <a href="http://gembundler.com">Bundler 官网</a>。</td>
+      <td>Gemfile, Gemfile.lock</td>
+      <td>这两个文件用来指定程序所需的 gem 依赖件，用于 Bundler gem。关于 Bundler 的详细介绍，请访问 <a href="http://gembundler.com">Bundler 官网</a>。</td>
     </tr>
     <tr>
       <td>lib/</td>
@@ -2042,7 +2042,7 @@ ruby 2.0.0p353
     </tr>
     <tr>
       <td>Rakefile</td>
-      <td>保存并加载可在命令行中执行的任务。任务在 Rails 的各组件中定义。如果想添加自己的任务，不要修改这个文件，把任务定义保存在 <code>lib/tasks</code> 文件夹中。</td>
+      <td>保存并加载可在命令行中执行的任务。任务在 Rails 的各组件中定义。如果想添加自己的任务，不要修改这个文件，把任务保存在 <code>lib/tasks</code> 文件夹中。</td>
     </tr>
     <tr>
       <td>README.rdoc</td>
@@ -2050,7 +2050,7 @@ ruby 2.0.0p353
     </tr>
     <tr>
       <td>test/</td>
-      <td>单元测试，固件等测试用文件。详情参阅<a href="http://docs-china.com/rails/testing.html">测试 Rails 程序</a>一文。</td>
+      <td>单元测试，固件等测试用文件。详情参阅“<a href="http://docs-china.com/rails/testing.html">测试 Rails 程序</a>”一文。</td>
     </tr>
     <tr>
       <td>tmp/</td>
@@ -2069,14 +2069,14 @@ ruby 2.0.0p353
 
 <h3 id="starting-up-the-web-server">启动服务器</h3>
 
-<p>现在，新建的 Rails 程序是可以正常运行的。要访问网站，需要在开发电脑商启动服务器。请在 <code>blog</code> 文件夹中执行下面的命令：</p>
+<p>现在，新建的 Rails 程序已经可以正常运行。要访问网站，需要在开发电脑上启动服务器。请在 <code>blog</code> 文件夹中执行下面的命令：</p>
 
 <div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails server
 </pre>
 
 </div>
           <div class="box tip-box">
-  <p>把 CoffeeScript 编译成 JavaScript 需要 JavaScript 运行时，如果没有运行时，会报错，提示没有 <code>execjs</code>。Mac OS X 和 Windows 一般都提供了 JavaScript 运行时。Rails 生成的 <code>Gemfile</code> 中，安装 <code>therubyracer</code> gem 的代码被注释掉了，如果需要使用这个 gem，请把前面的注释去掉。在 JRuby 中推荐使用 <code>therubyracer</code>。在 JRuby 中生成的 <code>Gemfile</code> 以及包含了这个 gem。所以支持使用的运行时参见 <a href="https://github.com/sstephenson/execjs#readme">ExecJS</a>。</p>
+  <p>把 CoffeeScript 编译成 JavaScript 需要 JavaScript 运行时，如果没有运行时，会报错，提示没有 <code>execjs</code>。Mac OS X 和 Windows 一般都提供了 JavaScript 运行时。Rails 生成的 <code>Gemfile</code> 中，安装 <code>therubyracer</code> gem 的代码被注释掉了，如果需要使用这个 gem，请把前面的注释去掉。在 JRuby 中推荐使用 <code>therubyracer</code>。在 JRuby 中生成的 <code>Gemfile</code> 已经包含了这个 gem。所有支持的运行时参见 <a href="https://github.com/sstephenson/execjs#readme">ExecJS</a>。</p>
 </div>
 
 
@@ -2089,7 +2089,7 @@ ruby 2.0.0p353
 </div>
 
 
-<p>“欢迎使用”页面是新建 Rails 程序后的“冒烟测试”：确保程序设置正确，能顺利运行。你可以点击“About your application’s environment”链接查看程序运行环境的信息。</p>
+<p>“欢迎使用”页面是新建 Rails 程序后的“冒烟测试”：确保程序设置正确，能顺利运行。你可以点击“About your application’s environment”链接查看程序所处环境的信息。</p>
 
 <h3 id="say-hello-rails">显示“Hello, Rails!”</h3>
 
@@ -2136,7 +2136,7 @@ create      app/assets/stylesheets/welcome.css.scss
 </div>
 <h3 id="setting-the-application-home-page">设置程序的首页</h3>
 
-<p>我们已经创建了控制器和视图，现在要告诉 Rails 在哪个地址显示“Hello, Rails!”。这里，我们希望访问根地址 <a href="http://localhost:3000">http://localhost:3000</a> 时显示。但是现在显示的还是欢迎页面。</p>
+<p>我们已经创建了控制器和视图，现在要告诉 Rails 在哪个地址上显示“Hello, Rails!”。这里，我们希望访问根地址 <a href="http://localhost:3000">http://localhost:3000</a> 时显示。但是现在显示的还是欢迎页面。</p>
 
 <p>我们要告诉 Rails 真正的首页是什么。</p>
 
@@ -2166,7 +2166,7 @@ create      app/assets/stylesheets/welcome.css.scss
 <p>如果生成控制器时停止了服务器，请再次启动（<code>rails server</code>），然后在浏览器中访问 <a href="http://localhost:3000">http://localhost:3000</a>。你会看到之前写入 <code>app/views/welcome/index.html.erb</code> 文件的“Hello, Rails!”，说明新定义的路由把根目录交给 <code>WelcomeController</code> 的 <code>index</code> 动作处理了，而且也正确的渲染了视图。</p>
 
           <div class="box tip-box">
-  <p>关于路由的详细介绍，请阅读 <a href="http://docs-china.com/rails/routing.html">Rails 路由全解</a>一文。</p>
+  <p>关于路由的详细介绍，请阅读“<a href="http://docs-china.com/rails/routing.html">Rails 路由全解</a>”一文。</p>
 </div>
 
 
@@ -2217,7 +2217,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 
 <p><img src="http://docs-china.com/rails/images/getting_started/routing_error_no_controller.png" alt="路由错误，常量 ArticlesController 未初始化" /></p>
 
-<p>产生这个错误的原因是，要为路由定义控制器来处理请求。解决这个问题的方法很简单：创建名为 <code>ArticlesController</code> 的控制器。执行下面的命令即可：</p>
+<p>产生这个错误的原因是，没有定义用来处理该请求的控制器。解决这个问题的方法很简单：创建名为 <code>ArticlesController</code> 的控制器。执行下面的命令即可：</p>
 
 <div class="codeblock bash"><pre class="highlight"><span class="gp">$ </span>rails g controller articles
 </pre>
@@ -2254,7 +2254,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 
 <p><img src="http://docs-china.com/rails/images/getting_started/template_is_missing_articles_new.png" alt="找不到 articles/new 所用模板" /></p>
 
-<p>产生这个错误的原因是，Rails 希望这样的常规动作有对应的视图，显示内容。没有视图可用，Rails 就报错了。</p>
+<p>产生这个错误的原因是，Rails 希望这样的常规动作有对应的视图，用来显示内容。没有视图可用，Rails 就报错了。</p>
 
 <p>在上图中，最后一行被截断了，我们来看一下完整的信息：</p>
 
@@ -2266,9 +2266,9 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 
 <p>第一部分说明找不到哪个模板，这里，丢失的是 <code>articles/new</code> 模板。Rails 首先会寻找这个模板，如果找不到，再找名为 <code>application/new</code> 的模板。之所以这么找，是因为 <code>ArticlesController</code> 继承自 <code>ApplicationController</code>。</p>
 
-<p>后面一部分是个 Hash。<code>:locale</code> 表示要找哪国语言模板，默认是英语（<code>"en"</code>）。<code>:format</code> 表示响应使用的模板格式，默认为 <code>:html</code>，所以 Rails 要寻找一个 HTML 模板。<code>:handlers</code> 表示可用来处理模板的程序，HTML 模板一般使用 <code>:erb</code>，XML 模板使用 <code>:builder</code>，<code>:coffee</code> 用来把 CoffeeScript 转换成 JavaScript。</p>
+<p>后面一部分是个 Hash。<code>:locale</code> 表示要找哪国语言模板，默认是英语（<code>"en"</code>）。<code>:format</code> 表示响应使用的模板格式，默认为 <code>:html</code>，所以 Rails 要寻找一个 HTML 模板。<code>:handlers</code> 表示用来处理模板的程序，HTML 模板一般使用 <code>:erb</code>，XML 模板使用 <code>:builder</code>，<code>:coffee</code> 用来把 CoffeeScript 转换成 JavaScript。</p>
 
-<p>最后一部分说明 Rails 在哪里寻找模板。在这个简单的程序里，模板都存放在一个地方，复杂的程序可能用多个位置存放模板。</p>
+<p>最后一部分说明 Rails 在哪里寻找模板。在这个简单的程序里，模板都存放在一个地方，复杂的程序可能存放在多个位置。</p>
 
 <p>让这个程序正常运行，最简单的一种模板是 <code>app/views/articles/new.html.erb</code>。模板文件的扩展名是关键所在：第一个扩展名是模板的类型，第二个扩展名是模板的处理程序。Rails 会尝试在 <code>app/views</code> 文件夹中寻找名为 <code>articles/new</code> 的模板。这个模板的类型只能是 <code>html</code>，处理程序可以是 <code>erb</code>、<code>builder</code> 或 <code>coffee</code>。因为我们要编写一个 HTML 表单，所以使用 <code>erb</code>。所以这个模板文件应该命名为 <code>articles/new.html.erb</code>，还要放在 <code>app/views</code> 文件夹中。</p>
 
@@ -2282,7 +2282,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 
 <h3 id="the-first-form">首个表单</h3>
 
-<p>要在模板中编写表单，可以使用“表单构造器”。Rails 中常用的表单构造器是 <code>forn_for</code>。在 <code>app/views/articles/new.html.erb</code> 文件中加入以下代码：</p>
+<p>要在模板中编写表单，可以使用“表单构造器”。Rails 中常用的表单构造器是 <code>form_for</code>。在 <code>app/views/articles/new.html.erb</code> 文件中加入以下代码：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">form_for</span> <span class="ss">:article</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="cp">%&gt;</span>
   <span class="nt">&lt;p&gt;</span>
@@ -2302,7 +2302,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 </pre>
 
 </div>
-<p>现在刷新页面，会看到如上代码所示的表单。在 Rails 中编写表单就是这么简单！</p>
+<p>现在刷新页面，会看到上述代码生成的表单。在 Rails 中编写表单就是这么简单！</p>
 
 <p>调用 <code>form_for</code> 方法时，要指定一个对象。在上面的表单中，指定的是 <code>:article</code>。这个对象告诉 <code>form_for</code>，这个表单是用来处理哪个资源的。在 <code>form_for</code> 方法的块中，<code>FormBuilder</code> 对象（用 <code>f</code> 表示）创建了两个标签和两个文本字段，一个用于文章标题，一个用于文章内容。最后，在 <code>f</code> 对象上调用 <code>submit</code> 方法，创建一个提交按钮。</p>
 
@@ -2332,7 +2332,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 </pre>
 
 </div>
-<p><code>articles_path</code> 帮助方法告诉 Rails，对应的地址指向 <code>articels</code> 前缀，默认情况下，这个表单会向这个路由发起 <code>POST</code> 请求。这个路由对应于 <code>ArticlesController</code> 控制器的 <code>create</code> 动作。</p>
+<p><code>articles_path</code> 帮助方法告诉 Rails，对应的地址是 <code>/articels</code>，默认情况下，这个表单会向这个路由发起 <code>POST</code> 请求。这个路由对应于 <code>ArticlesController</code> 控制器的 <code>create</code> 动作。</p>
 
 <p>表单写好了，路由也定义了，现在可以填写表单，然后点击提交按钮新建文章了。请实际操作一下。提交表单后，会看到一个熟悉的错误：</p>
 
@@ -2372,7 +2372,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 </pre>
 
 </div>
-<p><code>create</code> 动作把表单体检的参数显示出来了。不过这么做没什么用，看到了参数又怎样，什么都没发生。</p>
+<p><code>create</code> 动作把表单提交的参数显示出来了。不过这么做没什么用，看到了参数又怎样，什么都没发生。</p>
 
 <h3 id="creating-the-article-model">创建 Article 模型</h3>
 
@@ -2387,7 +2387,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 <p>执行这个命令后，Rails 会生成一堆文件。现在我们只关注 <code>app/models/article.rb</code> 和 <code>db/migrate/20140120191729_create_articles.rb</code>（你得到的文件名可能有点不一样）这两个文件。后者用来创建数据库结构，下一节会详细说明。</p>
 
           <div class="box tip-box">
-  <p>Active Record 很智能，能自能把数据表中的字段映射到模型的属性上。所以无需在 Rails 的模型中声明属性，因为 Active Record 会自动映射。</p>
+  <p>Active Record 很智能，能自动把数据表中的字段映射到模型的属性上。所以无需在 Rails 的模型中声明属性，因为 Active Record 会自动映射。</p>
 </div>
 
 
@@ -2410,10 +2410,10 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 </pre>
 
 </div>
-<p>在这个迁移中定义了一个名为 <code>change</code> 的方法，在运行迁移时执行。<code>change</code> 方法中定义的操作都是可逆的，Rails 知道如何撤销这次迁移操作。运行迁移后，会创建 <code>articles</code> 表，以及一个字符串字段和文本字段。同时还会创建两个时间戳字段，Rails 用来跟踪记录的创建时间和更新时间。</p>
+<p>在这个迁移中定义了一个名为 <code>change</code> 的方法，在运行迁移时执行。<code>change</code> 方法中定义的操作都是可逆的，Rails 知道如何撤销这次迁移操作。运行迁移后，会创建 <code>articles</code> 表，以及一个字符串字段和文本字段。同时还会创建两个时间戳字段，用来跟踪记录的创建时间和更新时间。</p>
 
           <div class="box tip-box">
-  <p>关于迁移的详细说明，请参阅 <a href="http://docs-china.com/rails/migrations.html">Active Record 数据库迁移</a>一文。</p>
+  <p>关于迁移的详细说明，请参阅“<a href="http://docs-china.com/rails/migrations.html">Active Record 数据库迁移</a>”一文。</p>
 </div>
 
 
@@ -2540,7 +2540,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 </pre>
 
 </div>
-<p>然后编写这个动作的视图，位于 <code>app/views/articles/index.html.erb</code>：</p>
+<p>然后编写这个动作的视图，保存为 <code>app/views/articles/index.html.erb</code>：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="nt">&lt;h1&gt;</span>Listing articles<span class="nt">&lt;/h1&gt;</span>
 
@@ -2639,7 +2639,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 </pre>
 
 </div>
-<p>添加的这段代码可以确保每篇文章都有一个标题，而且至少有五个字符。在模型中可以验证数据是否满足多种条件，包括：字段是否存在、是否唯一，数据类型，以及关联对象是否存在。<a href="http://docs-china.com/rails/active_record_validations.html">Active Record 验证</a>一文会详细介绍数据验证。</p>
+<p>添加的这段代码可以确保每篇文章都有一个标题，而且至少有五个字符。在模型中可以验证数据是否满足多种条件，包括：字段是否存在、是否唯一，数据类型，以及关联对象是否存在。“<a href="http://docs-china.com/rails/active_record_validations.html">Active Record 数据验证</a>”一文会详细介绍数据验证。</p>
 
 <p>添加数据验证后，如果把不满足验证条件的文章传递给 <code>@article.save</code>，会返回 <code>false</code>。打开 <code>app/controllers/articles_controller.rb</code> 文件，会发现，我们还没在 <code>create</code> 动作中检查 <code>@article.save</code> 的返回结果。如果保存失败，应该再次显示表单。为了实现这种功能，请打开 <code>app/controllers/articles_controller.rb</code> 文件，把 <code>new</code> 和 <code>create</code> 动作改成：</p>
 
@@ -2664,11 +2664,11 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 </pre>
 
 </div>
-<p>在 <code>new</code> 动作中添加了一个实例变量 <code>@article</code>。稍后不会知道为什么要这么做。</p>
+<p>在 <code>new</code> 动作中添加了一个实例变量 <code>@article</code>。稍后你会知道为什么要这么做。</p>
 
 <p>注意，在 <code>create</code> 动作中，如果保存失败，调用的是 <code>render</code> 方法而不是 <code>redirect_to</code> 方法。用 <code>render</code> 方法才能在保存失败后把 <code>@article</code> 对象传给 <code>new</code> 动作的视图。渲染操作和表单提交在同一次请求中完成；而 <code>redirect_to</code> 会让浏览器发起一次新请求。</p>
 
-<p>刷新 <a href="http://localhost:3000/articles/new">http://localhost:3000/articles/new</a>，提交一个没有标题的文章，Rails 会退回这个页面，但这种处理方法没多少用，你要告诉用户出错了。为了实现这种功能，请在 <code>app/views/articles/new.html.erb</code> 文件中检测错误消息：</p>
+<p>刷新 <a href="http://localhost:3000/articles/new">http://localhost:3000/articles/new</a>，提交一个没有标题的文章，Rails 会退回这个页面，但这种处理方法没多少用，你要告诉用户哪儿出错了。为了实现这种功能，请在 <code>app/views/articles/new.html.erb</code> 文件中检测错误消息：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="cp">&lt;%=</span> <span class="n">form_for</span> <span class="ss">:article</span><span class="p">,</span> <span class="ss">url: </span><span class="n">articles_path</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="cp">%&gt;</span>
   <span class="cp">&lt;%</span> <span class="k">if</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">any?</span> <span class="cp">%&gt;</span>
@@ -2705,7 +2705,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 
 <p><code>pluralize</code> 是 Rails 提供的帮助方法，接受一个数字和字符串作为参数。如果数字比 1 大，字符串会被转换成复数形式。</p>
 
-<p>在 <code>new</code> 动作中加入 <code>@article = Article.new</code> 的原因是，如果没定义，在视图中 <code>@article</code> 的值就是 <code>nil</code>，调用 <code>@article.errors.any?</code> 时会发生错误。</p>
+<p>在 <code>new</code> 动作中加入 <code>@article = Article.new</code> 的原因是，如果不这么做，在视图中 <code>@article</code> 的值就是 <code>nil</code>，调用 <code>@article.errors.any?</code> 时会发生错误。</p>
 
           <div class="box tip-box">
   <p>Rails 会自动把出错的表单字段包含在一个 <code>div</code> 中，并为其添加了一个 class：<code>field_with_errors</code>。我们可以定义一些样式，凸显出错的字段。</p>
@@ -2827,16 +2827,16 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 </pre>
 
 </div>
-<p>下图是首页现在的样子：</p>
+<p>下图是文章列表页面现在的样子：</p>
 
-<p><img src="http://docs-china.com/rails/images/getting_started/index_action_with_edit_link.png" alt="在首页显示了编辑了编辑链接" /></p>
+<p><img src="http://docs-china.com/rails/images/getting_started/index_action_with_edit_link.png" alt="在文章列表页面显示了编辑链接" /></p>
 
 <h3 id="using-partials-to-clean-up-duplication-in-views">使用局部视图去掉视图中的重复代码</h3>
 
 <p>编辑文章页面和新建文章页面很相似，显示表单的代码是相同的。下面使用局部视图去掉两个视图中的重复代码。按照约定，局部视图的文件名以下划线开头。</p>
 
           <div class="box tip-box">
-  <p>关于局部视图的详细介绍参阅 <a href="http://docs-china.com/rails/layouts_and_rendering.html">Layouts and Rendering in Rails</a> 一文。</p>
+  <p>关于局部视图的详细介绍参阅“<a href="http://docs-china.com/rails/layouts_and_rendering.html">Layouts and Rendering in Rails</a>”一文。</p>
 </div>
 
 
@@ -2871,7 +2871,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 </pre>
 
 </div>
-<p>除了第一行 <code>form_for</code> 的用法变了之外，其他代码都和之前一样。之所以能在两个动作中共用一个 <code>form_for</code> 是因为，<code>@article</code> 是一个资源，对应于符合 REST 架构的路由，Rails 能自动分辨使用哪个地址和请求方法。</p>
+<p>除了第一行 <code>form_for</code> 的用法变了之外，其他代码都和之前一样。之所以能在两个动作中共用一个 <code>form_for</code>，是因为 <code>@article</code> 是一个资源，对应于符合 REST 架构的路由，Rails 能自动分辨使用哪个地址和请求方法。</p>
 
 <p>关于这种 <code>form_for</code> 用法的详细说明，请查阅 <a href="http://api.rubyonrails.org/classes/ActionView/Helpers/FormHelper.html#method-i-form_for-label-Resource-oriented+style">API 文档</a>。</p>
 
@@ -2909,7 +2909,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 </pre>
 
 </div>
-<p>删除资源使用 DELETE 方法，路由把请求发往 <code>app/controllers/articles_controller.rb</code> 中的 <code>destroy</code> 动作。<code>destroy</code> 动作现在还不存在，下面来添加：</p>
+<p>删除资源使用 DELETE 方法，路由会把请求发往 <code>app/controllers/articles_controller.rb</code> 中的 <code>destroy</code> 动作。<code>destroy</code> 动作现在还不存在，下面来添加：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">def</span> <span class="nf">destroy</span>
   <span class="vi">@article</span> <span class="o">=</span> <span class="no">Article</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">params</span><span class="o">[</span><span class="ss">:id</span><span class="o">]</span><span class="p">)</span>
@@ -2920,7 +2920,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 </pre>
 
 </div>
-<p>想把记录从数据库删除，可以在 Active Record 对象上调用 <code>destroy</code> 方法。注意，我们无需为这个动作编写视图，因为会转向 <code>index</code> 动作。</p>
+<p>想把记录从数据库删除，可以在 Active Record 对象上调用 <code>destroy</code> 方法。注意，我们无需为这个动作编写视图，因为它会转向 <code>index</code> 动作。</p>
 
 <p>最后，在 <code>index</code> 动作的模板（<code>app/views/articles/index.html.erb</code>）中加上“Destroy”链接：</p>
 
@@ -2954,7 +2954,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 <p>恭喜，现在你可以新建、显示、列出、更新、删除文章了。</p>
 
           <div class="box tip-box">
-  <p>一般情况下，Rails 建议使用资源对象，而不手动设置路由。关于路由的详细介绍参阅 <a href="http://docs-china.com/rails/routing.html">Rails 路由全解</a>一文。</p>
+  <p>一般情况下，Rails 建议使用资源对象，而不手动设置路由。关于路由的详细介绍参阅“<a href="http://docs-china.com/rails/routing.html">Rails 路由全解</a>”一文。</p>
 </div>
 
 
@@ -2994,7 +2994,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
     </tr>
     <tr>
       <td>test/fixtures/comments.yml</td>
-      <td>测试时使用的评论固件</td>
+      <td>测试时使用的固件</td>
     </tr>
   </tbody>
 </table>
@@ -3042,7 +3042,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 </pre>
 
 </div>
-<h3 id="associating-models">关联模型</h3>
+<h3 id="associating-models">模型关联</h3>
 
 <p>使用 Active Record 关联可以轻易的建立两个模型之间的关系。评论和文章之间的关联是这样的：</p>
 
@@ -3059,7 +3059,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 </pre>
 
 </div>
-<p>我们要编辑 <code>app/models/article.rb</code> 文件，加入这层关系的另一方：</p>
+<p>我们要编辑 <code>app/models/article.rb</code> 文件，加入这层关系的另一端：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Article</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:comments</span>
@@ -3072,7 +3072,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 <p>这两行声明能自动完成很多操作。例如，如果实例变量 <code>@article</code> 是一个文章对象，可以使用 <code>@article.comments</code> 取回一个数组，其元素是这篇文章的评论。</p>
 
           <div class="box tip-box">
-  <p>关于 Active Record 关联的详细介绍，参阅 <a href="http://docs-china.com/rails/association_basics.html">Active Record 关联</a>一文。</p>
+  <p>关于 Active Record 关联的详细介绍，参阅“<a href="http://docs-china.com/rails/association_basics.html">Active Record 关联</a>”一文。</p>
 </div>
 
 
@@ -3089,7 +3089,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 <p>我们把 <code>comments</code> 放在 <code>articles</code> 中，这叫做嵌套资源，表明了文章和评论间的层级关系。</p>
 
           <div class="box tip-box">
-  <p>关于路由的详细介绍，参阅 <a href="http://docs-china.com/rails/routing.html">Rails 路由全解</a>一文。</p>
+  <p>关于路由的详细介绍，参阅“<a href="http://docs-china.com/rails/routing.html">Rails 路由全解</a>”一文。</p>
 </div>
 
 
@@ -3101,7 +3101,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 </pre>
 
 </div>
-<p>这个命令生成留个文件和一个空文件夹：</p>
+<p>这个命令生成六个文件和一个空文件夹：</p>
 
 <div class="table-responsive"><table>
   <thead>
@@ -3142,7 +3142,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
   </tbody>
 </table>
 </div>
-<p>在任何一个博客中，读者读完文章后可以直接发布评论，评论发布后，会转会文章显示页面，查看自己的评论是否显示出来了。所以，<code>CommentsController</code> 中要定义新建评论的和删除垃圾评论的方法。</p>
+<p>在任何一个博客中，读者读完文章后就可以发布评论。评论发布后，会转会文章显示页面，查看自己的评论是否显示出来了。所以，<code>CommentsController</code> 中要定义新建评论的和删除垃圾评论的方法。</p>
 
 <p>首先，修改显示文章的模板（<code>app/views/articles/show.html.erb</code>），允许读者发布评论：</p>
 
@@ -3197,7 +3197,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 </div>
 <p>这里使用的代码要比文章的控制器复杂得多，因为设置了嵌套关系，必须这么做评论功能才能使用。发布评论时要知道这个评论属于哪篇文章，所以要在 <code>Article</code> 模型上调用 <code>find</code> 方法查找文章对象。</p>
 
-<p>而且，这段代码还充分利用了关联关系生成的方法。我们在 <code>@article.comments</code> 上调用 <code>create</code> 方法，创建并保存评论。这么做能自动把评论和文章联系起来，所以这个评论属于这篇文章。</p>
+<p>而且，这段代码还充分利用了关联关系生成的方法。我们在 <code>@article.comments</code> 上调用 <code>create</code> 方法，创建并保存评论。这么做能自动把评论和文章联系起来，让这个评论属于这篇文章。</p>
 
 <p>添加评论后，调用 <code>article_path(@article)</code> 帮助方法，转向原来的文章页面。前面说过，这个帮助函数调用 <code>ArticlesController</code> 的 <code>show</code> 动作，渲染 <code>show.html.erb</code> 模板。我们要在这个模板中显示评论，所以要修改一下 <code>app/views/articles/show.html.erb</code>：</p>
 
@@ -3303,7 +3303,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 </pre>
 
 </div>
-<p>这个视图会使用局部视图 <code>app/views/comments/_comment.html.erb</code> 渲染 <code>@article.comments</code> 集合中的每个评论。<code>render</code> 方法会遍历 <code>@article.comments</code> 集合，把每个评论复制给本地一个和局部视图同名的本地变量，在这个例子中本地变量是 <code>comment</code>，这个本地变量可以在局部视图中使用。</p>
+<p>这个视图会使用局部视图 <code>app/views/comments/_comment.html.erb</code> 渲染 <code>@article.comments</code> 集合中的每个评论。<code>render</code> 方法会遍历 <code>@article.comments</code> 集合，把每个评论赋值给一个和局部视图同名的本地变量，在这个例子中本地变量是 <code>comment</code>，这个本地变量可以在局部视图中使用。</p>
 
 <h3 id="rendering-a-partial-form">渲染局部视图中的表单</h3>
 
@@ -3356,7 +3356,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 
 <p>博客还有一个重要的功能是删除垃圾评论。为了实现这个功能，要在视图中添加一个连接，并在 <code>CommentsController</code> 中定义 <code>destroy</code> 动作。</p>
 
-<p>现在 <code>app/views/comments/_comment.html.erb</code> 局部视图中加入删除评论的链接：</p>
+<p>先在 <code>app/views/comments/_comment.html.erb</code> 局部视图中加入删除评论的链接：</p>
 
 <div class="codeblock erb"><pre class="highlight"><span class="nt">&lt;p&gt;</span>
   <span class="nt">&lt;strong&gt;</span>Commenter:<span class="nt">&lt;/strong&gt;</span>
@@ -3404,7 +3404,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 
 <h3 id="deleting-associated-objects">删除关联对象</h3>
 
-<p>如果删除一篇文章，也要删除文章中的评论，不然这些评论会浪费数据库空间。在 Rails 中可以在关联中指定 <code>dependent</code> 选项达到这一目的。把 <code>Article</code> 模型（<code>app/models/article.rb</code>）修改成：</p>
+<p>如果删除一篇文章，也要删除文章中的评论，不然这些评论会占用数据库空间。在 Rails 中可以在关联中指定 <code>dependent</code> 选项达到这一目的。把 <code>Article</code> 模型（<code>app/models/article.rb</code>）修改成：</p>
 
 <div class="codeblock ruby"><pre class="highlight"><span class="k">class</span> <span class="nc">Article</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">has_many</span> <span class="ss">:comments</span><span class="p">,</span> <span class="ss">dependent: :destroy</span>
@@ -3418,11 +3418,11 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 
 <h3 id="basic-authentication">基本认证</h3>
 
-<p>如果把这个博客程序放在网上，现在所有人都能添加、编辑、删除文章和评论。</p>
+<p>如果把这个博客程序放在网上，所有人都能添加、编辑、删除文章和评论。</p>
 
 <p>Rails 提供了一种简单的 HTTP 身份认证机制可以避免出现这种情况。</p>
 
-<p>在 <code>ArticlesController</code> 中，我们要有一种方法禁止未通过认证的用户访问其中几个动作。我们需要的是 <code>http_basic_authenticate_with</code> 方法，通过这个方法的认证后才能访问请求的动作。</p>
+<p>在 <code>ArticlesController</code> 中，我们要用一种方法禁止未通过认证的用户访问其中几个动作。我们需要的是 <code>http_basic_authenticate_with</code> 方法，通过这个方法的认证后才能访问所请求的动作。</p>
 
 <p>要使用这个身份认证机制，需要在 <code>ArticlesController</code> 控制器的顶部调用 <code>http_basic_authenticate_with</code> 方法。除了 <code>index</code> 和 <code>show</code> 动作，访问其他动作都要通过认证，所以在 <code>app/controllers/articles_controller.rb</code> 中，要这么做：</p>
 
@@ -3461,7 +3461,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 
 <h3 id="other-security-considerations">其他安全注意事项</h3>
 
-<p>安全，尤其是在网页程序中，是个很宽泛和值得深入研究的领域。Rails 程序的安全措施，在 <a href="http://docs-china.com/rails/security.html">Ruby on Rails 安全指南</a>中有更深入的说明。</p>
+<p>安全，尤其是在网页程序中，是个很宽泛和值得深入研究的领域。Rails 程序的安全措施，在“<a href="http://docs-china.com/rails/security.html">Ruby on Rails 安全指南</a>”中有更深入的说明。</p>
 
 <h2 id="whats-next">接下来做什么</h2>
 
@@ -3486,7 +3486,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
 </div>
 
 
-<h2 id="configuration-gotchas">配置问题</h2>
+<h2 id="configuration-gotchas">常见问题</h2>
 
 <p>使用 Rails 时，最好使用 UTF-8 编码存储所有外部数据。如果没使用 UTF-8 编码，Ruby 的代码库和 Rails 一般都能将其转换成 UTF-8，但不一定总能成功，所以最好还是确保所有的外部数据都使用 UTF-8 编码。</p>
 
@@ -5524,7 +5524,7 @@ edit_article GET    /articles/:id/edit<span class="o">(</span>.:format<span clas
                 </ul>
             </div>
 
-            <p>本文档授权协议：<a href="http://creativecommons.org/licenses/by-sa/4.0/deed.zh" title="CC BY-SA 4.0">CC BY-SA 4.0</a></p>
+            <p>本文档授权协议：<a href="http://creativecommons.org/licenses/by-sa/3.0/deed.zh" title="CC BY-SA 3.0">CC BY-SA 3.0</a></p>
         </div>
     </footer>
 </body>
